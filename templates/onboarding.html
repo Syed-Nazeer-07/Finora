@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WealthSync – Setup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: { bg: '#0B0F19', card: '#111827', border: '#1F2937' },
+                        brand: { 50:'#eff6ff', 400:'#60a5fa', 500:'#3b82f6', 600:'#2563eb', 900:'#1e3a8a' }
+                    },
+                    animation: { 'pulse-slow': 'pulse 4s cubic-bezier(0.4,0,0.6,1) infinite' }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+
+        @keyframes fadeUp   { from { opacity:0; transform:translateY(28px) } to { opacity:1; transform:translateY(0) } }
+        @keyframes fadeDown { from { opacity:0; transform:translateY(-20px)} to { opacity:1; transform:translateY(0) } }
+        @keyframes fadeIn   { from { opacity:0 } to { opacity:1 } }
+        @keyframes pop      { 0%{transform:scale(.85);opacity:0} 60%{transform:scale(1.04)} 100%{transform:scale(1);opacity:1} }
+        @keyframes confetti { 0%{transform:translateY(0) rotate(0)} 100%{transform:translateY(-80px) rotate(360deg);opacity:0} }
+
+        .step-enter { animation: fadeUp .45s cubic-bezier(.16,1,.3,1) both; }
+        .step-exit  { animation: fadeDown .3s cubic-bezier(.4,0,1,1) both; }
+        .pop        { animation: pop .5s cubic-bezier(.16,1,.3,1) both; }
+
+        .goal-card { transition: all .2s cubic-bezier(.4,0,.2,1); cursor: pointer; }
+        .goal-card:hover { transform: translateY(-2px); }
+        .goal-card.selected {
+            border-color: #3b82f6 !important;
+            background: rgba(59,130,246,.08) !important;
+            box-shadow: 0 0 0 1px #3b82f6, 0 8px 24px rgba(59,130,246,.2);
+        }
+
+        input:focus { border-color: #3b82f6 !important; box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
+
+        .dot { transition: all .3s cubic-bezier(.4,0,.2,1); }
+        .confetti-piece { position: absolute; width: 8px; height: 8px; border-radius: 2px; animation: confetti 1s ease-out both; }
+    </style>
+</head>
+<body class="bg-dark-bg text-slate-200 min-h-screen flex items-center justify-center p-4 sm:p-8 relative overflow-hidden">
+
+    <!-- Background glow -->
+    <div class="fixed -top-40 -left-40 w-[600px] h-[600px] bg-brand-600/10 rounded-full blur-[140px] pointer-events-none animate-pulse-slow"></div>
+    <div class="fixed -bottom-40 -right-40 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none animate-pulse-slow" style="animation-delay:2s"></div>
+
+    <div class="relative w-full max-w-xl" id="wizard">
+
+        <!-- Top bar -->
+        <div class="flex items-center justify-between mb-8">
+            <!-- Logo -->
+            <div class="flex items-center gap-2.5">
+                <div class="p-2 bg-gradient-to-br from-brand-500 to-indigo-600 rounded-xl text-white shadow-lg shadow-brand-500/30">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                    </svg>
+                </div>
+                <span class="font-bold text-lg text-white">WealthSync</span>
+            </div>
+
+            <!-- Step dots -->
+            <div id="step-dots" class="flex items-center gap-1.5"></div>
+        </div>
+
+        <!-- Progress track -->
+        <div class="w-full bg-slate-800/60 rounded-full h-1 mb-10 overflow-hidden">
+            <div id="progress-bar" class="h-full bg-gradient-to-r from-brand-500 to-indigo-500 rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]" style="width:0%"></div>
+        </div>
+
+        <!-- Step panels -->
+        <div id="step-container">
+
+            <!-- Step 1: Income -->
+            <div id="step-1" class="step-enter">
+                <div class="mb-2 text-xs font-semibold text-brand-400 uppercase tracking-widest">Step 1 of 5</div>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-3 leading-tight">Let's understand<br>your cash flow</h2>
+                <p class="text-slate-400 mb-8 text-base">Your monthly income helps us calculate your savings potential and financial health score.</p>
+                <div class="relative">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-lg">₹</span>
+                    <input id="monthly_income" type="number" min="0" placeholder="150,000"
+                        class="w-full pl-10 pr-4 py-4 bg-dark-card border border-dark-border rounded-2xl text-white text-lg font-semibold placeholder-slate-700 focus:outline-none transition-all">
+                </div>
+                <p class="mt-3 text-xs text-slate-600">Include salary, freelance, business income — before taxes.</p>
+            </div>
+
+            <!-- Step 2: Savings -->
+            <div id="step-2" class="step-enter hidden">
+                <div class="mb-2 text-xs font-semibold text-brand-400 uppercase tracking-widest">Step 2 of 5</div>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-3 leading-tight">How much have<br>you already saved?</h2>
+                <p class="text-slate-400 mb-8 text-base">Your current savings balance across all accounts — FDs, liquid funds, savings accounts.</p>
+                <div class="relative">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-lg">₹</span>
+                    <input id="current_savings" type="number" min="0" placeholder="250,000"
+                        class="w-full pl-10 pr-4 py-4 bg-dark-card border border-dark-border rounded-2xl text-white text-lg font-semibold placeholder-slate-700 focus:outline-none transition-all">
+                </div>
+                <p class="mt-3 text-xs text-slate-600">Not sure? A rough estimate works fine.</p>
+            </div>
+
+            <!-- Step 3: Investments -->
+            <div id="step-3" class="step-enter hidden">
+                <div class="mb-2 text-xs font-semibold text-brand-400 uppercase tracking-widest">Step 3 of 5</div>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-3 leading-tight">What's currently<br>invested?</h2>
+                <p class="text-slate-400 mb-8 text-base">Stocks, mutual funds, ETFs, crypto, gold — total current market value.</p>
+                <div class="relative">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-lg">₹</span>
+                    <input id="current_investments" type="number" min="0" placeholder="500,000"
+                        class="w-full pl-10 pr-4 py-4 bg-dark-card border border-dark-border rounded-2xl text-white text-lg font-semibold placeholder-slate-700 focus:outline-none transition-all">
+                </div>
+                <p class="mt-3 text-xs text-slate-600">Enter 0 if you haven't started investing yet — that's perfectly fine.</p>
+            </div>
+
+            <!-- Step 4: Expenses -->
+            <div id="step-4" class="step-enter hidden">
+                <div class="mb-2 text-xs font-semibold text-brand-400 uppercase tracking-widest">Step 4 of 5</div>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-3 leading-tight">What does life<br>cost each month?</h2>
+                <p class="text-slate-400 mb-8 text-base">Rent, food, transport, EMIs, subscriptions — your total monthly outflows.</p>
+                <div class="relative">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-lg">₹</span>
+                    <input id="monthly_expenses" type="number" min="0" placeholder="60,000"
+                        class="w-full pl-10 pr-4 py-4 bg-dark-card border border-dark-border rounded-2xl text-white text-lg font-semibold placeholder-slate-700 focus:outline-none transition-all">
+                </div>
+                <p class="mt-3 text-xs text-slate-600">Include all recurring expenses. EMIs and subscriptions count too.</p>
+            </div>
+
+            <!-- Step 5: Goal cards -->
+            <div id="step-5" class="step-enter hidden">
+                <div class="mb-2 text-xs font-semibold text-brand-400 uppercase tracking-widest">Step 5 of 5</div>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-3 leading-tight">What's your<br>financial goal?</h2>
+                <p class="text-slate-400 mb-6 text-base">Choose one or describe your own — this shapes your roadmap.</p>
+
+                <div id="goal-cards" class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-5">
+                    <div class="goal-card p-4 bg-dark-card border border-dark-border rounded-2xl text-center" data-value="Study Abroad">
+                        <div class="text-2xl mb-2">✈️</div>
+                        <p class="text-sm font-semibold text-white">Study Abroad</p>
+                    </div>
+                    <div class="goal-card p-4 bg-dark-card border border-dark-border rounded-2xl text-center" data-value="Emergency Fund">
+                        <div class="text-2xl mb-2">🛡️</div>
+                        <p class="text-sm font-semibold text-white">Emergency Fund</p>
+                    </div>
+                    <div class="goal-card p-4 bg-dark-card border border-dark-border rounded-2xl text-center" data-value="New Car">
+                        <div class="text-2xl mb-2">🚗</div>
+                        <p class="text-sm font-semibold text-white">New Car</p>
+                    </div>
+                    <div class="goal-card p-4 bg-dark-card border border-dark-border rounded-2xl text-center" data-value="Buy a House">
+                        <div class="text-2xl mb-2">🏠</div>
+                        <p class="text-sm font-semibold text-white">Buy a House</p>
+                    </div>
+                    <div class="goal-card p-4 bg-dark-card border border-dark-border rounded-2xl text-center" data-value="Financial Freedom">
+                        <div class="text-2xl mb-2">🚀</div>
+                        <p class="text-sm font-semibold text-white">Financial Freedom</p>
+                    </div>
+                    <div class="goal-card p-4 bg-dark-card border border-dark-border rounded-2xl text-center" data-value="__custom__">
+                        <div class="text-2xl mb-2">✏️</div>
+                        <p class="text-sm font-semibold text-white">Custom Goal</p>
+                    </div>
+                </div>
+
+                <input id="custom-goal-input" type="text" maxlength="200" placeholder="Describe your goal…"
+                    class="w-full hidden px-4 py-3 bg-dark-card border border-dark-border rounded-2xl text-white placeholder-slate-600 focus:outline-none transition-all text-sm">
+
+                <input type="hidden" id="financial_goal" value="">
+            </div>
+
+            <!-- Celebration screen (step 6) -->
+            <div id="step-6" class="hidden text-center">
+                <div class="relative flex justify-center mb-6">
+                    <div id="confetti-container" class="absolute inset-0 pointer-events-none overflow-hidden rounded-full"></div>
+                    <div class="w-24 h-24 rounded-full bg-gradient-to-br from-brand-500 to-indigo-600 flex items-center justify-center shadow-2xl shadow-brand-500/40 pop">
+                        <i data-lucide="check" class="w-12 h-12 text-white"></i>
+                    </div>
+                </div>
+                <h2 class="text-3xl font-extrabold text-white mb-2 pop" style="animation-delay:.15s">Your financial operating<br>system is ready.</h2>
+                <p class="text-slate-400 mb-8 pop" style="animation-delay:.25s">Here's a summary of what we've set up for you.</p>
+
+                <div id="summary-cards" class="grid grid-cols-2 gap-3 mb-8 text-left pop" style="animation-delay:.3s"></div>
+
+                <button onclick="enterDashboard()" id="enter-btn"
+                    class="w-full py-4 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white rounded-2xl font-bold text-base shadow-xl shadow-brand-900/60 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 pop" style="animation-delay:.4s">
+                    Enter WealthSync
+                    <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Error message -->
+        <p id="step-error" class="text-rose-400 text-sm mt-4 hidden text-center"></p>
+
+        <!-- Navigation -->
+        <div id="nav-buttons" class="flex gap-3 mt-8">
+            <button id="btn-back" onclick="back()"
+                class="hidden px-6 py-3.5 border border-slate-800 hover:border-slate-700 text-slate-400 hover:text-white rounded-2xl font-semibold text-sm transition-all flex items-center gap-2">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> Back
+            </button>
+            <button id="btn-next" onclick="next()"
+                class="flex-1 py-3.5 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white rounded-2xl font-bold text-sm shadow-xl shadow-brand-900/50 hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2">
+                <span>Continue</span>
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+        </div>
+
+    </div>
+
+<script>
+    lucide.createIcons();
+
+    const FIELDS = ['monthly_income','current_savings','current_investments','monthly_expenses','financial_goal'];
+    const TOTAL  = 5;
+    let current  = 1;
+    const data   = {};
+    let selectedGoal = '';
+
+    // Build step dots
+    function buildDots() {
+        const el = document.getElementById('step-dots');
+        el.innerHTML = '';
+        for (let i = 1; i <= TOTAL; i++) {
+            const d = document.createElement('div');
+            d.className = `dot rounded-full ${i === current ? 'w-6 h-2 bg-brand-500' : i < current ? 'w-2 h-2 bg-brand-700' : 'w-2 h-2 bg-slate-700'}`;
+            el.appendChild(d);
+        }
+    }
+
+    // Goal card selection
+    document.querySelectorAll('.goal-card').forEach(card => {
+        card.addEventListener('click', () => {
+            document.querySelectorAll('.goal-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            const val = card.dataset.value;
+            const customInput = document.getElementById('custom-goal-input');
+            if (val === '__custom__') {
+                customInput.classList.remove('hidden');
+                customInput.focus();
+                selectedGoal = '';
+            } else {
+                customInput.classList.add('hidden');
+                selectedGoal = val;
+            }
+            document.getElementById('financial_goal').value = selectedGoal;
+        });
+    });
+    document.getElementById('custom-goal-input').addEventListener('input', e => {
+        selectedGoal = e.target.value;
+        document.getElementById('financial_goal').value = selectedGoal;
+    });
+
+    function showStep(n, direction = 1) {
+        const prev = document.getElementById(`step-${current === n ? n : (direction > 0 ? n - 1 : n + 1)}`);
+        if (prev && prev !== document.getElementById(`step-${n}`)) {
+            prev.classList.add('hidden');
+        }
+        const next = document.getElementById(`step-${n}`);
+        if (next) {
+            next.classList.remove('hidden');
+            next.className = next.className.replace(/step-enter|step-exit/g, '').trim();
+            next.classList.add(direction >= 0 ? 'step-enter' : 'step-exit');
+        }
+
+        const pct = ((n - 1) / TOTAL) * 100;
+        document.getElementById('progress-bar').style.width = pct + '%';
+        document.getElementById('btn-back').classList.toggle('hidden', n === 1);
+        const nextBtn = document.getElementById('btn-next');
+        nextBtn.querySelector('span').textContent = n === TOTAL ? 'Finish Setup' : 'Continue';
+        document.getElementById('step-error').classList.add('hidden');
+
+        const inputId = FIELDS[n - 1];
+        const input = document.getElementById(inputId);
+        if (input && input.type !== 'hidden') {
+            input.value = data[inputId] ?? '';
+            setTimeout(() => input.focus(), 80);
+        }
+
+        current = n;
+        buildDots();
+    }
+
+    function back() {
+        if (current > 1) {
+            document.getElementById(`step-${current}`).classList.add('hidden');
+            showStep(current - 1, -1);
+        }
+    }
+
+    async function next() {
+        const field = FIELDS[current - 1];
+        let val;
+
+        if (field === 'financial_goal') {
+            val = document.getElementById('financial_goal').value.trim() ||
+                  document.getElementById('custom-goal-input').value.trim();
+            if (!val) {
+                showError('Please select or describe your financial goal.');
+                return;
+            }
+        } else {
+            const input = document.getElementById(field);
+            val = input ? input.value.trim() : '';
+            if (!val) { showError('Please enter a value to continue.'); return; }
+        }
+
+        data[field] = field === 'financial_goal' ? val : parseFloat(val);
+
+        if (current < TOTAL) {
+            document.getElementById(`step-${current}`).classList.add('hidden');
+            showStep(current + 1, 1);
+            return;
+        }
+
+        // Save
+        const btn = document.getElementById('btn-next');
+        btn.disabled = true;
+        btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="60" stroke-dashoffset="30"/></svg><span>Saving…</span>';
+
+        const payload = { ...data, onboarding_completed: true };
+        const res = await fetch('/api/profile', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) {
+            btn.disabled = false;
+            btn.innerHTML = '<span>Finish Setup</span><i data-lucide="arrow-right" class="w-4 h-4"></i>';
+            lucide.createIcons({ nodes: [btn] });
+            showError('Failed to save. Please try again.');
+            return;
+        }
+
+        showCelebration();
+    }
+
+    function showError(msg) {
+        const el = document.getElementById('step-error');
+        el.textContent = msg;
+        el.classList.remove('hidden');
+    }
+
+    function fmt(n) {
+        return new Intl.NumberFormat('en-IN', { style:'currency', currency:'INR', maximumFractionDigits:0 }).format(n || 0);
+    }
+
+    function showCelebration() {
+        // Hide wizard controls
+        document.getElementById('nav-buttons').classList.add('hidden');
+        document.getElementById('step-dots').classList.add('hidden');
+        document.getElementById('step-error').classList.add('hidden');
+        document.querySelectorAll('[id^="step-"]').forEach(s => s.classList.add('hidden'));
+
+        // Confetti
+        const cc = document.getElementById('confetti-container');
+        const colors = ['#3b82f6','#6366f1','#8b5cf6','#10b981','#f59e0b','#ec4899'];
+        for (let i = 0; i < 18; i++) {
+            const c = document.createElement('div');
+            c.className = 'confetti-piece';
+            c.style.cssText = `left:${20+Math.random()*60}%;top:${40+Math.random()*20}%;background:${colors[i%colors.length]};animation-delay:${Math.random()*.6}s;animation-duration:${.8+Math.random()*.6}s`;
+            cc.appendChild(c);
+        }
+
+        // Summary cards
+        const items = [
+            { label:'Monthly Income',  value: fmt(data.monthly_income),      icon:'trending-up',  color:'text-emerald-400' },
+            { label:'Current Savings', value: fmt(data.current_savings),      icon:'piggy-bank',   color:'text-brand-400'   },
+            { label:'Investments',     value: fmt(data.current_investments),  icon:'bar-chart-2',  color:'text-purple-400'  },
+            { label:'Monthly Goal',    value: data.financial_goal,            icon:'target',       color:'text-amber-400'   },
+        ];
+        document.getElementById('summary-cards').innerHTML = items.map(it => `
+            <div class="p-4 bg-dark-card border border-dark-border rounded-2xl">
+                <div class="flex items-center gap-2 mb-2">
+                    <i data-lucide="${it.icon}" class="w-4 h-4 ${it.color}"></i>
+                    <span class="text-xs text-slate-500 font-medium">${it.label}</span>
+                </div>
+                <p class="font-bold text-white text-sm leading-tight">${it.value}</p>
+            </div>
+        `).join('');
+
+        document.getElementById('step-6').classList.remove('hidden');
+        document.getElementById('progress-bar').style.width = '100%';
+        lucide.createIcons();
+    }
+
+    function enterDashboard() {
+        window.location.href = '/';
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && document.getElementById('step-6').classList.contains('hidden')) next();
+    });
+
+    // Init
+    buildDots();
+    document.getElementById('progress-bar').style.width = '0%';
+</script>
+</body>
+</html>

@@ -36,6 +36,8 @@ const App = {
         transactions: [],
         txLoading: false,
         txError: null,
+        currentUser: null,
+        profile: null,
         budgets: [
             { id: 1, category: 'Food & Dining', limit: 15000 },
             { id: 2, category: 'Shopping', limit: 10000 },
@@ -56,9 +58,7 @@ const App = {
             { id: 2, icon: 'target', title: 'Budget Master', earned: true },
             { id: 3, icon: 'rocket', title: 'Net Worth +25%', earned: false }
         ],
-        aiChats: [
-            { role: 'ai', text: 'Hello Nazeer! I am your WealthSync Financial OS Coach. Based on my analysis, you spent 23% more on food delivery this month. How can I help you optimize your finances today?' }
-        ]
+        aiChats: []
     },
 
     // --- Initialization & Theme ---
@@ -71,7 +71,30 @@ const App = {
         }
         this.updateThemeIcons();
         this.renderSidebarMenu();
+        this.fetchCurrentUser();
+    },
+
+    async fetchCurrentUser() {
+        const res = await fetch('/api/auth/me');
+        if (res.status === 401) { window.location.href = '/login'; return; }
+        this.state.currentUser = await res.json();
+        const el = document.getElementById('sidebar-username');
+        if (el) el.textContent = this.state.currentUser.name;
+        this.state.aiChats = [{ role: 'ai', text: `Hello ${this.state.currentUser.name}! I am your WealthSync Financial OS Coach. How can I help you optimize your finances today?` }];
+
+        const profileRes = await fetch('/api/profile');
+        if (profileRes.ok) {
+            const profile = await profileRes.json();
+            this.state.profile = profile;
+            if (!profile.onboarding_completed) { window.location.href = '/onboarding'; return; }
+        }
+
         this.fetchTransactions();
+    },
+
+    async logout() {
+        await fetch('/api/auth/logout', { method: 'POST' });
+        window.location.href = '/login';
     },
 
     async fetchTransactions() {
@@ -80,6 +103,7 @@ const App = {
         this.render();
         try {
             const res = await fetch('/api/transactions');
+            if (res.status === 401) { window.location.href = '/login'; return; }
             if (!res.ok) throw new Error(`Server error: ${res.status}`);
             this.state.transactions = await res.json();
         } catch (err) {
@@ -125,16 +149,31 @@ const App = {
     // --- Business Logic & Calculations ---
 
     getCalculations() {
-        const totalIncome = this.state.transactions.filter(t => t.type === 'income').reduce((acc, curr) => acc + curr.amount, 0);
-        const totalExpenses = this.state.transactions.filter(t => t.type === 'expense').reduce((acc, curr) => acc + curr.amount, 0);
-        const currentCash = totalIncome - totalExpenses;
-        const totalSavings = this.state.savings.reduce((acc, curr) => acc + curr.current, 0);
-        const totalInvestmentValue = this.state.investments.reduce((acc, curr) => acc + (curr.shares * curr.currentPrice), 0);
-        const totalInvestmentCost = this.state.investments.reduce((acc, curr) => acc + (curr.shares * curr.avgCost), 0);
-        const investmentProfit = totalInvestmentValue - totalInvestmentCost;
-        const netWorth = currentCash + totalSavings + totalInvestmentValue;
+        const p = this.state.profile || {};
+
+        // Transaction-derived figures (real ledger data)
+        const txIncome   = this.state.transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
+        const txExpenses = this.state.transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
+
+        // Profile-based figures (onboarding / user-declared)
+        const totalSavings         = p.current_savings     ?? 0;
+        const totalInvestmentValue = p.current_investments ?? 0;
+        const profileIncome        = p.monthly_income      ?? 0;
+        const profileExpenses      = p.monthly_expenses    ?? 0;
+
+        // Use transaction totals for cash flow; profile for balance-sheet items
+        const totalIncome   = txIncome   || profileIncome;
+        const totalExpenses = txExpenses || profileExpenses;
+        const currentCash   = totalIncome - totalExpenses;
+
+        // Net worth = liquid cash + declared savings + declared investments
+        const netWorth         = currentCash + totalSavings + totalInvestmentValue;
         const previousNetWorth = netWorth * 0.877;
-        const netWorthGrowth = ((netWorth - previousNetWorth) / previousNetWorth) * 100;
+        const netWorthGrowth   = ((netWorth - previousNetWorth) / previousNetWorth) * 100;
+
+        // investmentProfit not available without per-holding cost basis — show 0 unless mock data still present
+        const totalInvestmentCost = this.state.investments.reduce((acc, curr) => acc + (curr.shares * curr.avgCost), 0);
+        const investmentProfit    = totalInvestmentValue - totalInvestmentCost;
 
         const budgetProgress = this.state.budgets.map(budget => {
             const spent = this.state.transactions
@@ -143,11 +182,13 @@ const App = {
             return { ...budget, spent };
         });
 
-        let savingsRateScore = (totalSavings / (totalIncome || 1)) > 0.2 ? 30 : 15;
-        let emergencyFundScore = totalSavings > (totalExpenses * 6) ? 20 : 10;
-        let budgetScore = budgetProgress.every(b => b.spent <= b.limit) ? 30 : 15;
-        let investmentScore = totalInvestmentValue > totalSavings * 0.5 ? 20 : 10;
-        let healthScore = Math.min(100, savingsRateScore + emergencyFundScore + budgetScore + investmentScore);
+        // Health score uses profile + transaction data
+        const monthlyIncome = profileIncome || (txIncome / (this.state.transactions.length ? 1 : 1));
+        let savingsRateScore  = (totalSavings / (monthlyIncome * 12 || 1)) > 0.2 ? 30 : 15;
+        let emergencyFundScore = totalSavings > (profileExpenses * 6 || totalExpenses * 6) ? 20 : 10;
+        let budgetScore       = budgetProgress.every(b => b.spent <= b.limit) ? 30 : 15;
+        let investmentScore   = totalInvestmentValue > totalSavings * 0.5 ? 20 : 10;
+        let healthScore       = Math.min(100, savingsRateScore + emergencyFundScore + budgetScore + investmentScore);
 
         return {
             totalIncome, totalExpenses, currentCash, totalSavings,

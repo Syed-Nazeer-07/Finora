@@ -111,7 +111,7 @@
                         <i data-lucide="user" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <p class="text-sm font-bold text-slate-900 dark:text-white">Nazeer</p>
+                        <p id="sidebar-username" class="text-sm font-bold text-slate-900 dark:text-white">…</p>
                         <p class="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
                             <i data-lucide="shield-check" class="w-3 h-3 text-brand-500"></i> Pro Member
                         </p>
@@ -119,6 +119,9 @@
                 </div>
                 <button onclick="App.toggleTheme()" class="p-2 text-slate-400 hover:text-brand-500 dark:hover:text-brand-400 transition-colors bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-100 dark:border-slate-700">
                     <i data-lucide="moon" id="theme-icon" class="w-5 h-5"></i>
+                </button>
+                <button onclick="App.logout()" class="p-2 text-slate-400 hover:text-rose-500 transition-colors bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-100 dark:border-slate-700" title="Sign out">
+                    <i data-lucide="log-out" class="w-5 h-5"></i>
                 </button>
             </div>
         </div>

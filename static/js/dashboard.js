@@ -37,7 +37,7 @@ const AppDashboard = {
             <div class="space-y-6 sm:space-y-8 pb-10">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 slide-up">
                     <div>
-                        <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-1">Good ${timeOfDay}, Nazeer 👋</h1>
+                        <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-1">Good ${timeOfDay}, ${this.state.currentUser?.name ?? ''} 👋</h1>
                         <p class="text-slate-500 dark:text-slate-400 text-sm">Welcome to your Personal Financial OS.</p>
                     </div>
                     <button onclick="App.openModal('transaction')" class="w-full md:w-auto px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-semibold text-sm hover:scale-105 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
