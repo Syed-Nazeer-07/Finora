@@ -320,6 +320,7 @@
         btn.disabled = true;
         btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="60" stroke-dashoffset="30"/></svg><span>Saving…</span>';
 
+        console.log("ONBOARDING SAVE START");
         const payload = { ...data, onboarding_completed: true };
         const res = await fetch('/api/profile', {
             method: 'PUT',
@@ -335,6 +336,7 @@
             return;
         }
 
+        console.log("ONBOARDING SAVE SUCCESS");
         showCelebration();
     }
 
@@ -353,7 +355,10 @@
         document.getElementById('nav-buttons').classList.add('hidden');
         document.getElementById('step-dots').classList.add('hidden');
         document.getElementById('step-error').classList.add('hidden');
-        document.querySelectorAll('[id^="step-"]').forEach(s => s.classList.add('hidden'));
+        // Hide steps 1–5 only, not step-6
+        for (let i = 1; i <= TOTAL; i++) {
+            document.getElementById(`step-${i}`).classList.add('hidden');
+        }
 
         // Confetti
         const cc = document.getElementById('confetti-container');
@@ -388,7 +393,9 @@
     }
 
     function enterDashboard() {
-        window.location.href = '/';
+        console.log("REDIRECTING TO DASHBOARD");
+        console.log("WINDOW LOCATION", window.location.href);
+        window.location.replace('/');
     }
 
     document.addEventListener('keydown', e => {

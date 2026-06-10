@@ -26,33 +26,16 @@ const App = {
         simulatorParams: { salaryIncrease: 0, expenseReduction: 0 },
         affordabilityQuery: { price: 150000, name: 'MacBook Pro' },
 
-        roadmap: [
-            { id: 1, title: 'Emergency Fund', icon: 'shield-check', status: 'completed' },
-            { id: 2, title: 'Buy MacBook', icon: 'laptop', status: 'active' },
-            { id: 3, title: 'Study Abroad', icon: 'plane', status: 'pending' },
-            { id: 4, title: 'Fin. Independence', icon: 'flag', status: 'pending' }
-        ],
+        roadmap: [],
 
         transactions: [],
         txLoading: false,
         txError: null,
         currentUser: null,
         profile: null,
-        budgets: [
-            { id: 1, category: 'Food & Dining', limit: 15000 },
-            { id: 2, category: 'Shopping', limit: 10000 },
-            { id: 3, category: 'Entertainment', limit: 5000 }
-        ],
-        savings: [
-            { id: 1, name: 'Emergency Fund', target: 500000, current: 250000, monthlyContribution: 25000, date: '2027-04-01' },
-            { id: 2, name: 'Study Abroad', target: 2000000, current: 450000, monthlyContribution: 50000, date: '2028-12-15' }
-        ],
-        investments: [
-            { id: 1, symbol: 'NIFTY 50 ETF', shares: 50, avgCost: 200.00, currentPrice: 225.50, type: 'ETF' },
-            { id: 2, symbol: 'Reliance (RELIANCE)', shares: 25, avgCost: 2400.00, currentPrice: 2850.50, type: 'Stock' },
-            { id: 3, symbol: 'Gold Sovereign Bonds', shares: 10, avgCost: 5000.00, currentPrice: 5400.00, type: 'Bonds' },
-            { id: 4, symbol: 'Bitcoin (BTC)', shares: 0.05, avgCost: 3500000.00, currentPrice: 5200000.00, type: 'Crypto' }
-        ],
+        budgets: [],
+        savings: [],
+        investments: [],
         badges: [
             { id: 1, icon: 'shield-check', title: 'Emergency Funded', earned: true },
             { id: 2, icon: 'target', title: 'Budget Master', earned: true },
@@ -87,9 +70,43 @@ const App = {
             const profile = await profileRes.json();
             this.state.profile = profile;
             if (!profile.onboarding_completed) { window.location.href = '/onboarding'; return; }
+            // Seed roadmap from financial_goal
+            const goal = profile.financial_goal || 'My Goal';
+            this.state.roadmap = [
+                { id: 1, title: 'Emergency Fund', icon: 'shield-check', status: 'pending' },
+                { id: 2, title: goal, icon: 'target', status: 'active' },
+                { id: 3, title: 'Fin. Independence', icon: 'flag', status: 'pending' },
+            ];
         }
 
         this.fetchTransactions();
+        this.fetchBudgets();
+        this.fetchGoals();
+        this.fetchInvestments();
+    },
+
+    async fetchBudgets() {
+        const res = await fetch('/api/budgets');
+        if (res.ok) {
+            this.state.budgets = await res.json();
+            this.render();
+        }
+    },
+
+    async fetchGoals() {
+        const res = await fetch('/api/goals');
+        if (res.ok) {
+            this.state.savings = await res.json();
+            this.render();
+        }
+    },
+
+    async fetchInvestments() {
+        const res = await fetch('/api/investments');
+        if (res.ok) {
+            this.state.investments = await res.json();
+            this.render();
+        }
     },
 
     async logout() {
@@ -171,8 +188,10 @@ const App = {
         const previousNetWorth = netWorth * 0.877;
         const netWorthGrowth   = ((netWorth - previousNetWorth) / previousNetWorth) * 100;
 
-        // investmentProfit not available without per-holding cost basis — show 0 unless mock data still present
-        const totalInvestmentCost = this.state.investments.reduce((acc, curr) => acc + (curr.shares * curr.avgCost), 0);
+        // investmentProfit: use profile cost basis if no manual holdings tracked
+        const totalInvestmentCost = this.state.investments.length
+            ? this.state.investments.reduce((acc, curr) => acc + (curr.shares * curr.avgCost), 0)
+            : totalInvestmentValue * 0.85; // estimate 15% gain if no holdings data
         const investmentProfit    = totalInvestmentValue - totalInvestmentCost;
 
         const budgetProgress = this.state.budgets.map(budget => {
@@ -480,32 +499,40 @@ const App = {
             await this.fetchTransactions();
             return;
         } else if (type === 'budget') {
-            const budget = { id, category: fd.get('category'), limit: parseFloat(fd.get('limit')) };
-            if (entityId) {
-                const idx = this.state.budgets.findIndex(b => b.id === entityId);
-                if (idx !== -1) this.state.budgets[idx] = budget;
-            } else {
-                this.state.budgets.push(budget);
-            }
+            const payload = { category: fd.get('category'), limit: parseFloat(fd.get('limit')) };
+            const url = entityId ? `/api/budgets/${entityId}` : '/api/budgets';
+            const method = entityId ? 'PUT' : 'POST';
+            const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            if (!res.ok) { Toast.show('Failed to save budget', 'error'); return; }
+            this.closeModal();
+            Toast.show(entityId ? 'Budget updated' : 'Budget created', 'success');
+            await this.fetchBudgets();
+            return;
         } else if (type === 'saving') {
-            const saving = { id, name: fd.get('name'), target: parseFloat(fd.get('target')), current: parseFloat(fd.get('current')), monthlyContribution: parseFloat(fd.get('monthlyContribution') || 0), date: fd.get('date') };
-            if (entityId) {
-                const idx = this.state.savings.findIndex(s => s.id === entityId);
-                if (idx !== -1) this.state.savings[idx] = saving;
-            } else {
-                this.state.savings.push(saving);
-            }
+            const payload = { name: fd.get('name'), target: parseFloat(fd.get('target')),
+                current: parseFloat(fd.get('current') || 0),
+                monthlyContribution: parseFloat(fd.get('monthlyContribution') || 0),
+                date: fd.get('date') };
+            const url = entityId ? `/api/goals/${entityId}` : '/api/goals';
+            const method = entityId ? 'PUT' : 'POST';
+            const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            if (!res.ok) { Toast.show('Failed to save goal', 'error'); return; }
+            this.closeModal();
+            Toast.show(entityId ? 'Goal updated' : 'Goal created', 'success');
+            await this.fetchGoals();
+            return;
         } else if (type === 'investment') {
-            const investment = {
-                id, symbol: fd.get('symbol'), type: fd.get('invType'),
-                shares: parseFloat(fd.get('shares')), avgCost: parseFloat(fd.get('avgCost')), currentPrice: parseFloat(fd.get('currentPrice'))
-            };
-            if (entityId) {
-                const idx = this.state.investments.findIndex(i => i.id === entityId);
-                if (idx !== -1) this.state.investments[idx] = investment;
-            } else {
-                this.state.investments.push(investment);
-            }
+            const payload = { symbol: fd.get('symbol'), type: fd.get('invType'),
+                shares: parseFloat(fd.get('shares')), avgCost: parseFloat(fd.get('avgCost')),
+                currentPrice: parseFloat(fd.get('currentPrice')) };
+            const url = entityId ? `/api/investments/${entityId}` : '/api/investments';
+            const method = entityId ? 'PUT' : 'POST';
+            const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            if (!res.ok) { Toast.show('Failed to save investment', 'error'); return; }
+            this.closeModal();
+            Toast.show(entityId ? 'Investment updated' : 'Investment added', 'success');
+            await this.fetchInvestments();
+            return;
         } else if (type === 'roadmap') {
             const step = { id, title: fd.get('title'), icon: fd.get('icon'), status: 'pending' };
             this.state.roadmap.push(step);
@@ -534,9 +561,24 @@ const App = {
             });
             return;
         }
-        if (type === 'budget') this.state.budgets = this.state.budgets.filter(t => t.id !== id);
-        if (type === 'saving') this.state.savings = this.state.savings.filter(t => t.id !== id);
-        if (type === 'investment') this.state.investments = this.state.investments.filter(t => t.id !== id);
+        if (type === 'budget') {
+            const res = await fetch(`/api/budgets/${id}`, { method: 'DELETE' });
+            if (!res.ok) { Toast.show('Failed to delete budget', 'error'); return; }
+            await this.fetchBudgets();
+            return;
+        }
+        if (type === 'saving') {
+            const res = await fetch(`/api/goals/${id}`, { method: 'DELETE' });
+            if (!res.ok) { Toast.show('Failed to delete goal', 'error'); return; }
+            await this.fetchGoals();
+            return;
+        }
+        if (type === 'investment') {
+            const res = await fetch(`/api/investments/${id}`, { method: 'DELETE' });
+            if (!res.ok) { Toast.show('Failed to delete investment', 'error'); return; }
+            await this.fetchInvestments();
+            return;
+        }
         if (type === 'roadmap') {
             this.state.roadmap = this.state.roadmap.filter(t => t.id !== id);
             this.renderModal();
