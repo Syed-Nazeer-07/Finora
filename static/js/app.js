@@ -263,9 +263,22 @@ const App = {
             : (p.current_investments ?? 0);
         const totalIncome   = txIncome   || profileIncome;
         const totalExpenses = txExpenses || profileExpenses;
-        const currentCash   = txIncome - txExpenses;  
-        const availableBalance = currentCash;
-        const netWorth = currentCash + totalSavings + totalInvestmentValue;
+        
+        let currentCash, availableBalance, netWorth;
+        
+        if (isCashFlow) {
+            currentCash = profileIncome + txIncome - txExpenses;
+            availableBalance = currentCash;
+            netWorth = currentCash + totalSavings + totalInvestmentValue;
+        } else {
+            if (this.state.transactions.length === 0) {
+                currentCash = profileIncome - profileExpenses;
+            } else {
+                currentCash = profileIncome + txIncome - profileExpenses - txExpenses;
+            }
+            availableBalance = currentCash;
+            netWorth = currentCash + totalSavings + totalInvestmentValue;
+        }
         const now = new Date();
         const thisYM  = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
         const lastDate = new Date(now.getFullYear(), now.getMonth()-1, 1);

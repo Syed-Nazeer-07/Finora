@@ -12,9 +12,13 @@ load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 app = Flask(__name__)
 
 database_url = os.environ.get("DATABASE_URL")
-if database_url and database_url.startswith("postgres://"):
+if not database_url:
+    if os.environ.get("FLASK_ENV") == "production":
+        raise RuntimeError("DATABASE_URL environment variable is required in production")
+    database_url = "sqlite:///wealthsync.db"
+if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
-app.config["SQLALCHEMY_DATABASE_URI"] = database_url or "sqlite:///wealthsync.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_pre_ping": True,
@@ -42,9 +46,19 @@ if not app.debug:
     # Log database configuration on startup
     db_uri = app.config["SQLALCHEMY_DATABASE_URI"]
     if db_uri.startswith("postgresql://"):
-        app.logger.info(f"✓ Using PostgreSQL: {db_uri.split('@')[1] if '@' in db_uri else 'configured'}")
+        # Extract and mask host
+        parts = db_uri.split('@')
+        if len(parts) == 2:
+            host_db = parts[1].split('/')[0]  # host:port
+            host = host_db.split(':')[0]
+            masked_host = f"{host[:20]}..." if len(host) > 20 else host
+            app.logger.info(f"✓ Using PostgreSQL: {masked_host}")
+        else:
+            app.logger.info("✓ Using PostgreSQL: (configured)")
     elif db_uri.startswith("sqlite:///"):
-        app.logger.warning(f"⚠ Using SQLite: {db_uri} - DATA WILL BE LOST ON DEPLOYMENT!")
+        app.logger.error(f"⚠ CRITICAL: Using SQLite: {db_uri} - DATA WILL BE LOST ON DEPLOYMENT!")
+        if os.environ.get("FLASK_ENV") == "production":
+            raise RuntimeError("SQLite is not allowed in production. Configure DATABASE_URL.")
     else:
         app.logger.info(f"Using database: {db_uri.split(':')[0]}")
     app.logger.info("WealthSync startup")
