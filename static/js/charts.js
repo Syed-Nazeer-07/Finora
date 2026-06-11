@@ -1,20 +1,28 @@
 // Chart initialization methods — attached to App at runtime via app.js
 
 const AppCharts = {
-    initDashboardCharts() {
+    async initDashboardCharts() {
         const isDark = this.state.darkMode;
         const textColor = isDark ? '#94a3b8' : '#64748b';
         const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
 
         const nwCtx = document.getElementById('netWorthChart');
         if (nwCtx) {
+            // Fetch real net-worth history from backend
+            let nwLabels = ['Jan','Feb','Mar','Apr','May','Jun'];
+            let nwData   = [0,0,0,0,0,0];
+            try {
+                const res = await fetch('/api/net-worth-history');
+                if (res.ok) { const d = await res.json(); nwLabels = d.labels; nwData = d.data; }
+            } catch(e) {}
+
             this.state.charts.nw = new Chart(nwCtx, {
                 type: 'line',
                 data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    labels: nwLabels,
                     datasets: [{
                         label: 'Net Worth',
-                        data: [850000, 920000, 910000, 1050000, 1150000, 1245000],
+                        data: nwData,
                         borderColor: '#8b5cf6',
                         backgroundColor: 'rgba(139, 92, 246, 0.1)',
                         borderWidth: 3,
@@ -32,7 +40,14 @@ const AppCharts = {
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
                     scales: {
-                        y: { border: {display: false}, grid: { color: gridColor }, ticks: { color: textColor, callback: (val) => '₹' + val/1000 + 'k' } },
+                        y: { border: {display: false}, grid: { color: gridColor }, ticks: { color: textColor, callback: (val) => {
+                            const sym = App.getCurrencySymbol();
+                            const abs = Math.abs(val);
+                            if (abs >= 1e7) return (val/1e7).toFixed(1).replace(/\.0$/,'') + ' Cr';
+                            if (abs >= 1e5) return (val/1e5).toFixed(1).replace(/\.0$/,'') + ' L';
+                            if (abs >= 1e3) return (val/1e3).toFixed(0) + 'k';
+                            return sym + val;
+                        }}},
                         x: { border: {display: false}, grid: { display: false }, ticks: { color: textColor } }
                     },
                     interaction: { mode: 'nearest', axis: 'x', intersect: false }

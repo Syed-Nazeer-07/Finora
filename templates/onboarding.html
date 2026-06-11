@@ -42,6 +42,9 @@
             box-shadow: 0 0 0 1px #3b82f6, 0 8px 24px rgba(59,130,246,.2);
         }
 
+        .mode-card { transition: all .2s cubic-bezier(.4,0,.2,1); cursor: pointer; }
+        .mode-card:hover { transform: translateY(-2px); }
+
         input:focus { border-color: #3b82f6 !important; box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
 
         .dot { transition: all .3s cubic-bezier(.4,0,.2,1); }
@@ -80,56 +83,90 @@
         <!-- Step panels -->
         <div id="step-container">
 
-            <!-- Step 1: Income -->
+            <!-- Step 1: Mode Selection -->
             <div id="step-1" class="step-enter">
-                <div class="mb-2 text-xs font-semibold text-brand-400 uppercase tracking-widest">Step 1 of 5</div>
-                <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-3 leading-tight">Let's understand<br>your cash flow</h2>
-                <p class="text-slate-400 mb-8 text-base">Your monthly income helps us calculate your savings potential and financial health score.</p>
-                <div class="relative">
-                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-lg">₹</span>
-                    <input id="monthly_income" type="number" min="0" placeholder="150,000"
-                        class="w-full pl-10 pr-4 py-4 bg-dark-card border border-dark-border rounded-2xl text-white text-lg font-semibold placeholder-slate-700 focus:outline-none transition-all">
+                <div class="mb-2 text-xs font-semibold text-brand-400 uppercase tracking-widest">Step 1 of 6</div>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-3 leading-tight">How do you manage<br>your finances?</h2>
+                <p class="text-slate-400 mb-8 text-base">Choose the mode that best fits your financial lifestyle.</p>
+                
+                <div class="space-y-4">
+                    <button type="button" onclick="selectMode('cashflow')" id="mode-cashflow" class="mode-card w-full p-5 bg-dark-card border-2 border-dark-border rounded-2xl text-left hover:border-brand-500 transition-all">
+                        <div class="flex items-start gap-4">
+                            <div class="text-3xl">💰</div>
+                            <div class="flex-1">
+                                <h3 class="text-lg font-bold text-white mb-1">Cash Flow Mode</h3>
+                                <p class="text-sm text-slate-400 leading-relaxed">Best for students, allowance users, pocket money tracking, and irregular income.</p>
+                            </div>
+                        </div>
+                    </button>
+                    
+                    <button type="button" onclick="selectMode('income')" id="mode-income" class="mode-card w-full p-5 bg-dark-card border-2 border-dark-border rounded-2xl text-left hover:border-brand-500 transition-all">
+                        <div class="flex items-start gap-4">
+                            <div class="text-3xl">💼</div>
+                            <div class="flex-1">
+                                <h3 class="text-lg font-bold text-white mb-1">Income Mode</h3>
+                                <p class="text-sm text-slate-400 leading-relaxed">Best for salary earners and structured financial planning.</p>
+                            </div>
+                        </div>
+                    </button>
                 </div>
-                <p class="mt-3 text-xs text-slate-600">Include salary, freelance, business income — before taxes.</p>
+                <input type="hidden" id="account_mode" value="">
             </div>
 
-            <!-- Step 2: Savings -->
+            <!-- Step 2: Income / Starting Balance -->
             <div id="step-2" class="step-enter hidden">
-                <div class="mb-2 text-xs font-semibold text-brand-400 uppercase tracking-widest">Step 2 of 5</div>
-                <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-3 leading-tight">How much have<br>you already saved?</h2>
-                <p class="text-slate-400 mb-8 text-base">Your current savings balance across all accounts — FDs, liquid funds, savings accounts.</p>
+                <div class="mb-2 text-xs font-semibold text-brand-400 uppercase tracking-widest">Step 2 of 6</div>
+                <h2 id="step2-title" class="text-3xl sm:text-4xl font-extrabold text-white mb-3 leading-tight">Let's understand<br>your cash flow</h2>
+                <p id="step2-desc" class="text-slate-400 mb-8 text-base">Your monthly income helps us calculate your savings potential and financial health score.</p>
                 <div class="relative">
                     <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-lg">₹</span>
-                    <input id="current_savings" type="number" min="0" placeholder="250,000"
+                    <input id="monthly_income" type="text" inputmode="numeric" placeholder="1,50,000"
+                        oninput="fmtInput(this)"
                         class="w-full pl-10 pr-4 py-4 bg-dark-card border border-dark-border rounded-2xl text-white text-lg font-semibold placeholder-slate-700 focus:outline-none transition-all">
                 </div>
-                <p class="mt-3 text-xs text-slate-600">Not sure? A rough estimate works fine.</p>
+                <p id="step2-hint" class="mt-3 text-xs text-slate-600">Include salary, freelance, business income — before taxes.</p>
+            </div>
+
+            <!-- Step 3: Savings -->
+            <div id="step-3" class="step-enter hidden">
+                <div class="mb-2 text-xs font-semibold text-brand-400 uppercase tracking-widest">Step 3 of 6</div>
+                <h2 id="step3-title" class="text-3xl sm:text-4xl font-extrabold text-white mb-3 leading-tight">How much have<br>you already saved?</h2>
+                <p id="step3-desc" class="text-slate-400 mb-8 text-base">Your current savings balance across all accounts — FDs, liquid funds, savings accounts.</p>
+                <div class="relative">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-lg">₹</span>
+                    <input id="current_savings" type="text" inputmode="numeric" placeholder="2,50,000"
+                        oninput="fmtInput(this)"
+                        class="w-full pl-10 pr-4 py-4 bg-dark-card border border-dark-border rounded-2xl text-white text-lg font-semibold placeholder-slate-700 focus:outline-none transition-all">
+                </div>
+                <p id="step3-hint" class="mt-3 text-xs text-slate-600">Not sure? A rough estimate works fine.</p>
             </div>
 
             <!-- Step 3: Investments -->
             <div id="step-3" class="step-enter hidden">
                 <div class="mb-2 text-xs font-semibold text-brand-400 uppercase tracking-widest">Step 3 of 5</div>
-                <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-3 leading-tight">What's currently<br>invested?</h2>
-                <p class="text-slate-400 mb-8 text-base">Stocks, mutual funds, ETFs, crypto, gold — total current market value.</p>
+                <h2 id="step3b-title" class="text-3xl sm:text-4xl font-extrabold text-white mb-3 leading-tight">What's currently<br>invested?</h2>
+                <p id="step3b-desc" class="text-slate-400 mb-8 text-base">Stocks, mutual funds, ETFs, crypto, gold — total current market value.</p>
                 <div class="relative">
                     <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-lg">₹</span>
-                    <input id="current_investments" type="number" min="0" placeholder="500,000"
+                    <input id="current_investments" type="text" inputmode="numeric" placeholder="5,00,000"
+                        oninput="fmtInput(this)"
                         class="w-full pl-10 pr-4 py-4 bg-dark-card border border-dark-border rounded-2xl text-white text-lg font-semibold placeholder-slate-700 focus:outline-none transition-all">
                 </div>
-                <p class="mt-3 text-xs text-slate-600">Enter 0 if you haven't started investing yet — that's perfectly fine.</p>
+                <p id="step3b-hint" class="mt-3 text-xs text-slate-600">Enter 0 if you haven't started investing yet — that's perfectly fine.</p>
             </div>
 
             <!-- Step 4: Expenses -->
             <div id="step-4" class="step-enter hidden">
                 <div class="mb-2 text-xs font-semibold text-brand-400 uppercase tracking-widest">Step 4 of 5</div>
-                <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-3 leading-tight">What does life<br>cost each month?</h2>
-                <p class="text-slate-400 mb-8 text-base">Rent, food, transport, EMIs, subscriptions — your total monthly outflows.</p>
+                <h2 id="step4-title" class="text-3xl sm:text-4xl font-extrabold text-white mb-3 leading-tight">What does life<br>cost each month?</h2>
+                <p id="step4-desc" class="text-slate-400 mb-8 text-base">Rent, food, transport, EMIs, subscriptions — your total monthly outflows.</p>
                 <div class="relative">
                     <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-lg">₹</span>
-                    <input id="monthly_expenses" type="number" min="0" placeholder="60,000"
+                    <input id="monthly_expenses" type="text" inputmode="numeric" placeholder="60,000"
+                        oninput="fmtInput(this)"
                         class="w-full pl-10 pr-4 py-4 bg-dark-card border border-dark-border rounded-2xl text-white text-lg font-semibold placeholder-slate-700 focus:outline-none transition-all">
                 </div>
-                <p class="mt-3 text-xs text-slate-600">Include all recurring expenses. EMIs and subscriptions count too.</p>
+                <p id="step4-hint" class="mt-3 text-xs text-slate-600">Include all recurring expenses. EMIs and subscriptions count too.</p>
             </div>
 
             <!-- Step 5: Goal cards -->
@@ -171,8 +208,8 @@
                 <input type="hidden" id="financial_goal" value="">
             </div>
 
-            <!-- Celebration screen (step 6) -->
-            <div id="step-6" class="hidden text-center">
+            <!-- Celebration screen (step 7) -->
+            <div id="step-7" class="hidden text-center">
                 <div class="relative flex justify-center mb-6">
                     <div id="confetti-container" class="absolute inset-0 pointer-events-none overflow-hidden rounded-full"></div>
                     <div class="w-24 h-24 rounded-full bg-gradient-to-br from-brand-500 to-indigo-600 flex items-center justify-center shadow-2xl shadow-brand-500/40 pop">
@@ -213,8 +250,82 @@
 <script>
     lucide.createIcons();
 
-    const FIELDS = ['monthly_income','current_savings','current_investments','monthly_expenses','financial_goal'];
-    const TOTAL  = 5;
+    const FIELDS = ['account_mode','monthly_income','current_savings','current_investments','monthly_expenses','financial_goal'];
+    const TOTAL  = 6;
+
+    function selectMode(mode) {
+        document.querySelectorAll('.mode-card').forEach(c => {
+            c.classList.remove('border-brand-500', 'bg-brand-500/5');
+            c.classList.add('border-dark-border');
+        });
+        const card = document.getElementById(`mode-${mode}`);
+        card.classList.remove('border-dark-border');
+        card.classList.add('border-brand-500', 'bg-brand-500/5');
+        document.getElementById('account_mode').value = mode;
+        data['account_mode'] = mode;
+        
+        // Update onboarding content based on mode
+        updateOnboardingContent(mode);
+    }
+    
+    function updateOnboardingContent(mode) {
+        const isCashFlow = mode === 'cashflow';
+        
+        // Step 2: Income / Starting balance
+        document.getElementById('step2-title').innerHTML = isCashFlow 
+            ? 'How much money<br>do you have right now?'
+            : 'Let\\'s understand<br>your cash flow';
+        document.getElementById('step2-desc').textContent = isCashFlow
+            ? 'This is your starting point — money in wallet, bank account, or anywhere you can access.'
+            : 'Your monthly income helps us calculate your savings potential and financial health score.';
+        document.getElementById('monthly_income').placeholder = isCashFlow ? '5,000' : '1,50,000';
+        document.getElementById('step2-hint').textContent = isCashFlow
+            ? 'Enter the total amount you currently have available.'
+            : 'Include salary, freelance, business income — before taxes.';
+        
+        // Step 3: Savings
+        document.getElementById('step3-title').innerHTML = isCashFlow
+            ? 'Any money saved<br>separately?'
+            : 'How much have<br>you already saved?';
+        document.getElementById('step3-desc').textContent = isCashFlow
+            ? 'Money you\\'ve set aside and don\\'t plan to spend soon (like in a savings account or piggy bank).'
+            : 'Your current savings balance across all accounts — FDs, liquid funds, savings accounts.';
+        document.getElementById('current_savings').placeholder = isCashFlow ? '1,000' : '2,50,000';
+        document.getElementById('step3-hint').textContent = isCashFlow
+            ? 'Enter 0 if you don\\'t have any — that\\'s okay!'
+            : 'Not sure? A rough estimate works fine.';
+        
+        // Step 3b: Investments (less relevant for cash flow)
+        document.getElementById('step3b-title').textContent = isCashFlow
+            ? 'Any investments?'
+            : 'What\\'s currently invested?';
+        document.getElementById('step3b-desc').textContent = isCashFlow
+            ? 'If you have any money in stocks, mutual funds, or other investments.'
+            : 'Stocks, mutual funds, ETFs, crypto, gold — total current market value.';
+        document.getElementById('current_investments').placeholder = isCashFlow ? '0' : '5,00,000';
+        
+        // Step 4: Expenses
+        document.getElementById('step4-title').innerHTML = isCashFlow
+            ? 'How much do you<br>usually spend?'
+            : 'What does life<br>cost each month?';
+        document.getElementById('step4-desc').textContent = isCashFlow
+            ? 'An estimate of your typical monthly spending (food, transport, entertainment, subscriptions).'
+            : 'Rent, food, transport, EMIs, subscriptions — your total monthly outflows.';
+        document.getElementById('monthly_expenses').placeholder = isCashFlow ? '3,000' : '60,000';
+        document.getElementById('step4-hint').textContent = isCashFlow
+            ? 'Don\\'t worry about being exact — a rough estimate is perfect.'
+            : 'Include all recurring expenses. EMIs and subscriptions count too.';
+    }
+
+    function fmtInput(input) {
+        const raw = input.value.replace(/,/g, '');
+        if (raw === '' || isNaN(raw)) return;
+        const pos = input.selectionStart;
+        const charsAfter = input.value.length - pos;
+        input.value = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(raw);
+        const newPos = Math.max(0, input.value.length - charsAfter);
+        input.setSelectionRange(newPos, newPos);
+    }
     let current  = 1;
     const data   = {};
     let selectedGoal = '';
@@ -275,7 +386,10 @@
         const inputId = FIELDS[n - 1];
         const input = document.getElementById(inputId);
         if (input && input.type !== 'hidden') {
-            input.value = data[inputId] ?? '';
+            const stored = data[inputId];
+            input.value = (stored != null && stored !== '' && input.inputMode === 'numeric')
+                ? new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(stored)
+                : (data[inputId] ?? '');
             setTimeout(() => input.focus(), 80);
         }
 
@@ -294,7 +408,13 @@
         const field = FIELDS[current - 1];
         let val;
 
-        if (field === 'financial_goal') {
+        if (field === 'account_mode') {
+            val = document.getElementById('account_mode').value.trim();
+            if (!val) {
+                showError('Please select a finance mode to continue.');
+                return;
+            }
+        } else if (field === 'financial_goal') {
             val = document.getElementById('financial_goal').value.trim() ||
                   document.getElementById('custom-goal-input').value.trim();
             if (!val) {
@@ -305,9 +425,22 @@
             const input = document.getElementById(field);
             val = input ? input.value.trim() : '';
             if (!val) { showError('Please enter a value to continue.'); return; }
+            
+            // Validate numeric fields
+            if (field !== 'financial_goal') {
+                const numVal = parseFloat(val.replace(/,/g, ''));
+                if (isNaN(numVal)) {
+                    showError('Please enter a valid number.');
+                    return;
+                }
+                if (numVal < 0) {
+                    showError('Values cannot be negative.');
+                    return;
+                }
+            }
         }
 
-        data[field] = field === 'financial_goal' ? val : parseFloat(val);
+        data[field] = field === 'financial_goal' ? val : parseFloat(val.replace(/,/g, ''));
 
         if (current < TOTAL) {
             document.getElementById(`step-${current}`).classList.add('hidden');
@@ -387,7 +520,7 @@
             </div>
         `).join('');
 
-        document.getElementById('step-6').classList.remove('hidden');
+        document.getElementById('step-7').classList.remove('hidden');
         document.getElementById('progress-bar').style.width = '100%';
         lucide.createIcons();
     }

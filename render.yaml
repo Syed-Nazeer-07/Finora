@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: wealthsync
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --workers 4 --worker-class sync --worker-tmp-dir /dev/shm --timeout 120 --keep-alive 5
+    healthCheckPath: /health
+    healthCheckInterval: 300
+    envVars:
+      - key: PREFERRED_URL_SCHEME
+        value: https
+      - key: FLASK_ENV
+        value: production
+      - key: SECRET_KEY
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: MAIL_SERVER
+        value: smtp.gmail.com
+      - key: MAIL_PORT
+        value: "587"
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: MAIL_DEFAULT_SENDER
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+
+databases:
+  - name: wealthsync-db
+    databaseName: wealthsync
+    user: wealthsync
+    plan: free

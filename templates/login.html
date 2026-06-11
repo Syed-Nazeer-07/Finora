@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en" class="">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,428 +11,318 @@
             theme: {
                 extend: {
                     colors: {
-                        dark: { bg: '#0B0F19', card: '#111827', border: '#1F2937' },
-                        brand: { 50:'#eff6ff', 400:'#60a5fa', 500:'#3b82f6', 600:'#2563eb', 900:'#1e3a8a' }
+                        brand: { 50:'#f0f9ff', 100:'#e0f2fe', 500:'#0ea5e9', 600:'#0284c7', 700:'#0369a1' }
                     },
-                    animation: { 'pulse-slow': 'pulse 4s cubic-bezier(0.4,0,0.6,1) infinite' }
+                    animation: { 'float': 'float 6s ease-in-out infinite' },
+                    keyframes: { float: { '0%, 100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-20px)' } } }
                 }
             }
         }
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
-
-        /* Floating label */
-        .field { position: relative; }
+        body { font-family: 'Inter', sans-serif; }
+        .field { position: relative; margin-bottom: 1rem; }
         .field input {
+            width: 100%;
+            padding: 1rem;
             padding-top: 1.5rem;
-            padding-bottom: 0.5rem;
-            height: 3.5rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.75rem;
+            background-color: white;
+            color: #1e293b;
+            outline: none;
+            transition: all 0.2s ease;
         }
         .field label {
             position: absolute;
             left: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: .875rem;
+            top: 1rem;
+            font-size: 0.875rem;
             color: #64748b;
             pointer-events: none;
-            transition: all .18s cubic-bezier(.16,1,.3,1);
-            /* label rests at the vertical mid of the full input height */
+            transition: all 0.2s ease;
+            background: white;
+            padding: 0 0.25rem;
         }
-        /* Raised state: focus, has value (placeholder trick), or autofill */
-        .field input:focus ~ label,
-        .field input:not(:placeholder-shown) ~ label,
-        .field input:-webkit-autofill ~ label {
-            top: 0.6rem;
-            transform: none;
-            font-size: .6rem;
-            font-weight: 700;
-            letter-spacing: .06em;
-            text-transform: uppercase;
-            color: #60a5fa;
+        /* Raised state */
+        .field input:focus + label,
+        .field input:not(:placeholder-shown) + label,
+        .field input:-webkit-autofill + label {
+            top: -0.5rem;
+            left: 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #0284c7;
         }
-        .field input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
-        /* Keep autofill background dark */
+        .field input:focus {
+            border-color: #0284c7;
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
+        }
+        /* Fix autofill styling */
         .field input:-webkit-autofill,
+        .field input:-webkit-autofill:hover,
         .field input:-webkit-autofill:focus {
-            -webkit-box-shadow: 0 0 0 1000px #111827 inset !important;
-            -webkit-text-fill-color: #fff !important;
-            caret-color: #fff;
+            -webkit-box-shadow: 0 0 0 1000px white inset;
+            -webkit-text-fill-color: #1e293b;
+            transition: background-color 5000s ease-in-out 0s;
         }
-
-        @keyframes fadeUp   { from { opacity:0; transform:translateY(24px) } to { opacity:1; transform:translateY(0) } }
-        @keyframes fadeIn   { from { opacity:0 } to { opacity:1 } }
-        @keyframes slideTab { from { opacity:0; transform:translateX(12px) } to { opacity:1; transform:translateX(0) } }
-        .anim-up   { animation: fadeUp  .55s cubic-bezier(.16,1,.3,1) both; }
-        .anim-in   { animation: fadeIn  .4s  cubic-bezier(.16,1,.3,1) both; }
-        .form-pane { animation: slideTab .35s cubic-bezier(.16,1,.3,1) both; }
+        .gradient-bg { background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); }
     </style>
 </head>
-<body class="bg-dark-bg text-slate-200 min-h-screen flex overflow-hidden">
+<body class="bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen flex">
 
-<!-- ═══ LEFT PANEL ════════════════════════════════════════════════════════════ -->
-<div class="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-14 overflow-hidden">
-
-    <!-- Glow blobs -->
-    <div class="absolute -top-32 -left-32 w-96 h-96 bg-brand-600/30 rounded-full blur-[120px] pointer-events-none animate-pulse-slow"></div>
-    <div class="absolute bottom-0 right-0 w-80 h-80 bg-indigo-600/25 rounded-full blur-[100px] pointer-events-none animate-pulse-slow" style="animation-delay:2s"></div>
-    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-purple-600/15 rounded-full blur-[80px] pointer-events-none"></div>
-
-    <!-- Logo -->
-    <div class="relative anim-up flex items-center gap-3">
-        <div class="p-2.5 bg-gradient-to-br from-brand-500 to-indigo-600 rounded-2xl shadow-2xl shadow-brand-500/40 text-white">
-            <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-            </svg>
-        </div>
-        <span class="font-bold text-2xl tracking-tight text-white">WealthSync</span>
-    </div>
-
-    <!-- Hero copy -->
-    <div class="relative space-y-8 anim-up" style="animation-delay:.1s">
-        <div class="space-y-4">
-            <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-brand-500/10 border border-brand-500/20 rounded-full text-brand-400 text-xs font-semibold tracking-wide">
-                <span class="w-1.5 h-1.5 rounded-full bg-brand-400 animate-pulse"></span>
-                Personal Financial OS
-            </div>
-            <h1 class="text-5xl font-extrabold text-white leading-tight tracking-tight">
-                Your money,<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-indigo-400">finally organized.</span>
-            </h1>
-            <p class="text-slate-400 text-lg leading-relaxed max-w-sm">
-                WealthSync gives you a complete view of your finances — income, savings, investments, and goals — in one beautiful dashboard.
-            </p>
-        </div>
-
-        <!-- Feature highlights -->
-        <div class="space-y-4">
-            <div class="flex items-center gap-4 p-4 bg-white/[0.03] border border-white/[0.06] rounded-2xl backdrop-blur-sm">
-                <div class="p-2.5 bg-emerald-500/10 rounded-xl"><i data-lucide="trending-up" class="w-5 h-5 text-emerald-400"></i></div>
-                <div>
-                    <p class="text-sm font-semibold text-white">Real-time Net Worth</p>
-                    <p class="text-xs text-slate-500">Tracks savings, investments and cash flow</p>
+    <!-- Left Panel - Hero -->
+    <div class="hidden lg:flex lg:w-1/2 gradient-bg relative items-center justify-center p-12">
+        <div class="text-center space-y-8 max-w-md">
+            <!-- Logo -->
+            <div class="flex justify-center mb-8">
+                <div class="w-20 h-20 rounded-2xl overflow-hidden shadow-xl bg-white p-2">
+                    <img src="/static/logo.png" alt="WealthSync" class="w-full h-full object-cover">
                 </div>
             </div>
-            <div class="flex items-center gap-4 p-4 bg-white/[0.03] border border-white/[0.06] rounded-2xl backdrop-blur-sm">
-                <div class="p-2.5 bg-purple-500/10 rounded-xl"><i data-lucide="sparkles" class="w-5 h-5 text-purple-400"></i></div>
-                <div>
-                    <p class="text-sm font-semibold text-white">AI Financial Coach</p>
-                    <p class="text-xs text-slate-500">Personalised insights based on your data</p>
-                </div>
+            
+            <div class="space-y-4">
+                <h1 class="text-4xl font-bold text-slate-800 leading-tight">Your Personal<br>Financial OS</h1>
+                <p class="text-xl text-slate-600">Track expenses, manage budgets, and achieve your financial goals with intelligent insights.</p>
             </div>
-            <div class="flex items-center gap-4 p-4 bg-white/[0.03] border border-white/[0.06] rounded-2xl backdrop-blur-sm">
-                <div class="p-2.5 bg-amber-500/10 rounded-xl"><i data-lucide="target" class="w-5 h-5 text-amber-400"></i></div>
-                <div>
-                    <p class="text-sm font-semibold text-white">Goal Forecasting</p>
-                    <p class="text-xs text-slate-500">See exactly when you'll reach your goals</p>
+            
+            <div class="flex items-center justify-center space-x-8 text-sm text-slate-500">
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="shield-check" class="w-5 h-5 text-brand-500"></i>
+                    <span>Secure</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="trending-up" class="w-5 h-5 text-brand-500"></i>
+                    <span>Smart</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="zap" class="w-5 h-5 text-brand-500"></i>
+                    <span>Simple</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Trust -->
-    <div class="relative anim-up text-xs text-slate-600" style="animation-delay:.2s">
-        Your data is private and stored securely. No ads. No third-party sharing.
-    </div>
-</div>
-
-<!-- ═══ RIGHT PANEL ═══════════════════════════════════════════════════════════ -->
-<div class="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 relative">
-    <div class="absolute inset-0 bg-gradient-to-b from-dark-bg via-dark-bg to-dark-card lg:bg-none"></div>
-
-    <div class="relative w-full max-w-md space-y-8">
-
-        <!-- Mobile logo -->
-        <div class="flex lg:hidden items-center gap-3 justify-center anim-up">
-            <div class="p-2 bg-gradient-to-br from-brand-500 to-indigo-600 rounded-xl text-white">
-                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                </svg>
+    <!-- Right Panel - Forms -->
+    <div class="w-full lg:w-1/2 flex items-center justify-center p-8">
+        <div class="w-full max-w-md space-y-8">
+            
+            <!-- Mobile Logo -->
+            <div class="lg:hidden flex justify-center">
+                <div class="w-16 h-16 rounded-xl overflow-hidden shadow-lg bg-white p-2">
+                    <img src="/static/logo.png" alt="WealthSync" class="w-full h-full object-cover">
+                </div>
             </div>
-            <span class="font-bold text-xl text-white">WealthSync</span>
-        </div>
 
-        <!-- Tab row -->
-        <div class="anim-up" style="animation-delay:.05s">
-            <div class="flex gap-1 p-1 bg-slate-900/80 border border-dark-border rounded-2xl">
-                <button id="tab-login"  onclick="showTab('login')"
-                    class="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all bg-white/10 text-white shadow-sm">
+            <!-- Tab Headers -->
+            <div class="text-center space-y-2">
+                <h2 class="text-3xl font-bold text-slate-800">Welcome back</h2>
+                <p class="text-slate-600">Sign in to your account to continue</p>
+            </div>
+
+            <div class="bg-slate-100 p-1 rounded-xl flex">
+                <button onclick="showTab('signin')" id="tab-signin" class="flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all bg-white text-slate-800 shadow-sm">Sign In</button>
+                <button onclick="showTab('signup')" id="tab-signup" class="flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all text-slate-600 hover:text-slate-800">Sign Up</button>
+            </div>
+
+            <!-- Sign In Form -->
+            <div id="form-signin" class="space-y-6">
+                <div class="field">
+                    <input id="signin-email" type="email" placeholder=" " autocomplete="email" class="w-full px-4 border border-slate-300 rounded-xl bg-white text-slate-800 focus:outline-none transition-all">
+                    <label for="signin-email">Email Address</label>
+                </div>
+                <div class="field">
+                    <input id="signin-password" type="password" placeholder=" " autocomplete="current-password" class="w-full px-4 border border-slate-300 rounded-xl bg-white text-slate-800 focus:outline-none transition-all">
+                    <label for="signin-password">Password</label>
+                </div>
+                
+                <div class="flex items-center justify-between text-sm">
+                    <a href="/forgot-password" class="text-brand-600 hover:text-brand-700 font-medium">Forgot password?</a>
+                </div>
+                
+                <button onclick="handleSignin()" id="signin-btn" class="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5">
                     Sign In
                 </button>
-                <button id="tab-signup" onclick="showTab('signup')"
-                    class="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-500">
-                    Create Account
+                
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-slate-300"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-4 bg-slate-50 text-slate-500">or continue with</span>
+                    </div>
+                </div>
+                
+                <button onclick="window.location='/auth/google'" class="w-full py-3.5 bg-white border border-slate-300 text-slate-700 rounded-xl font-semibold hover:bg-slate-50 transition-all flex items-center justify-center gap-3 shadow-sm">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Google
                 </button>
             </div>
+
+            <!-- Sign Up Form -->
+            <div id="form-signup" class="space-y-6 hidden">
+                <div class="field">
+                    <input id="signup-name" type="text" placeholder=" " autocomplete="name" class="w-full px-4 border border-slate-300 rounded-xl bg-white text-slate-800 focus:outline-none transition-all">
+                    <label for="signup-name">Full Name</label>
+                </div>
+                <div class="field">
+                    <input id="signup-email" type="email" placeholder=" " autocomplete="email" class="w-full px-4 border border-slate-300 rounded-xl bg-white text-slate-800 focus:outline-none transition-all">
+                    <label for="signup-email">Email Address</label>
+                </div>
+                <div class="field">
+                    <input id="signup-password" type="password" placeholder=" " autocomplete="new-password" class="w-full px-4 border border-slate-300 rounded-xl bg-white text-slate-800 focus:outline-none transition-all">
+                    <label for="signup-password">Password</label>
+                </div>
+                
+                <button onclick="handleSignup()" id="signup-btn" class="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5">
+                    Create Account
+                </button>
+                
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-slate-300"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-4 bg-slate-50 text-slate-500">or continue with</span>
+                    </div>
+                </div>
+                
+                <button onclick="window.location='/auth/google'" class="w-full py-3.5 bg-white border border-slate-300 text-slate-700 rounded-xl font-semibold hover:bg-slate-50 transition-all flex items-center justify-center gap-3 shadow-sm">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Google
+                </button>
+                
+                <p class="text-xs text-slate-500 leading-relaxed">
+                    By creating an account, you agree to our Terms of Service and Privacy Policy.
+                </p>
+            </div>
+
+            <!-- Error Message -->
+            <div id="error-msg" class="hidden p-4 bg-red-50 border border-red-200 rounded-xl">
+                <div class="flex items-center gap-2 text-red-700 text-sm font-medium">
+                    <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                    <span id="error-text"></span>
+                </div>
+            </div>
         </div>
-
-        <!-- Login form -->
-        <form id="form-login" onsubmit="handleLogin(event)" class="form-pane space-y-5" style="animation-delay:.1s">
-            <div class="space-y-1">
-                <h2 class="text-2xl font-bold text-white">Welcome back</h2>
-                <p class="text-slate-500 text-sm">Sign in to your financial OS</p>
-            </div>
-
-            <div class="space-y-3">
-                <div class="field">
-                    <input type="email" name="email" id="l-email" required placeholder=" "
-                        class="w-full px-4 py-3 bg-slate-900/80 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none transition-all">
-                    <label for="l-email">Email address</label>
-                </div>
-                <div class="field">
-                    <input type="password" name="password" id="l-pass" required placeholder=" "
-                        class="w-full px-4 py-3 bg-slate-900/80 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none transition-all">
-                    <label for="l-pass">Password</label>
-                </div>
-            </div>
-
-            <p id="login-error" class="text-rose-400 text-sm px-1 hidden"></p>
-
-            <button type="submit" id="login-btn"
-                class="w-full py-3.5 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white rounded-2xl font-semibold text-sm shadow-xl shadow-brand-900/50 hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2">
-                <span>Sign In</span>
-                <i data-lucide="arrow-right" class="w-4 h-4"></i>
-            </button>
-
-            <a href="/auth/google"
-                class="w-full py-3 border border-slate-700 hover:border-slate-600 text-slate-300 hover:text-white rounded-2xl text-sm font-semibold transition-all flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10">
-                <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-                Continue with Google
-            </a>
-
-            <div class="flex items-center gap-3">
-                <div class="flex-1 h-px bg-slate-800"></div>
-                <span class="text-xs text-slate-600">demo credentials</span>
-                <div class="flex-1 h-px bg-slate-800"></div>
-            </div>
-            <button type="button" onclick="fillDemo()"
-                class="w-full py-2.5 border border-slate-800 hover:border-slate-700 text-slate-500 hover:text-slate-300 rounded-2xl text-xs font-medium transition-all">
-                nazeer@wealthsync.app &nbsp;/&nbsp; changeme
-            </button>
-        </form>
-
-        <!-- Signup form -->
-        <form id="form-signup" onsubmit="handleSignup(event)" class="form-pane space-y-5 hidden" style="animation-delay:.1s">
-            <div class="space-y-1">
-                <h2 class="text-2xl font-bold text-white">Get started free</h2>
-                <p class="text-slate-500 text-sm">Create your financial operating system</p>
-            </div>
-
-            <div class="space-y-3">
-                <div class="field">
-                    <input type="text" name="name" id="s-name" required placeholder=" "
-                        class="w-full px-4 py-3 bg-slate-900/80 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none transition-all">
-                    <label for="s-name">Full name</label>
-                </div>
-                <div class="field">
-                    <input type="email" name="email" id="s-email" required placeholder=" "
-                        class="w-full px-4 py-3 bg-slate-900/80 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none transition-all">
-                    <label for="s-email">Email address</label>
-                </div>
-
-                <!-- Password with show/hide + strength -->
-                <div>
-                    <div class="field relative">
-                        <input type="password" name="password" id="s-pass" required placeholder=" " oninput="updateStrength()"
-                            class="w-full px-4 pr-11 py-3 bg-slate-900/80 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none transition-all">
-                        <label for="s-pass">Password</label>
-                        <button type="button" onclick="togglePass('s-pass','eye-s1')" tabindex="-1"
-                            class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors">
-                            <i id="eye-s1" data-lucide="eye" class="w-4 h-4"></i>
-                        </button>
-                    </div>
-                    <!-- Strength bar -->
-                    <div class="mt-2 space-y-1" id="strength-area">
-                        <div class="flex gap-1">
-                            <div id="sb1" class="h-1 flex-1 rounded-full bg-slate-800 transition-all duration-300"></div>
-                            <div id="sb2" class="h-1 flex-1 rounded-full bg-slate-800 transition-all duration-300"></div>
-                            <div id="sb3" class="h-1 flex-1 rounded-full bg-slate-800 transition-all duration-300"></div>
-                        </div>
-                        <p id="strength-label" class="text-xs text-slate-600"></p>
-                        <ul id="req-list" class="text-xs space-y-0.5 text-slate-600">
-                            <li id="req-len">  <span class="mr-1">·</span>At least 8 characters</li>
-                            <li id="req-upper"><span class="mr-1">·</span>At least 1 uppercase letter</li>
-                            <li id="req-num">  <span class="mr-1">·</span>At least 1 number</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Confirm password -->
-                <div class="field relative">
-                    <input type="password" name="confirm_password" id="s-confirm" required placeholder=" " oninput="checkMatch()"
-                        class="w-full px-4 pr-11 py-3 bg-slate-900/80 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none transition-all">
-                    <label for="s-confirm">Confirm password</label>
-                    <button type="button" onclick="togglePass('s-confirm','eye-s2')" tabindex="-1"
-                        class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors">
-                        <i id="eye-s2" data-lucide="eye" class="w-4 h-4"></i>
-                    </button>
-                </div>
-                <p id="match-msg" class="text-xs px-1 hidden"></p>
-            </div>
-
-            <p id="signup-error" class="text-rose-400 text-sm px-1 hidden"></p>
-
-            <button type="submit" id="signup-btn"
-                class="w-full py-3.5 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white rounded-2xl font-semibold text-sm shadow-xl shadow-brand-900/50 hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2">
-                <span>Create Account</span>
-                <i data-lucide="arrow-right" class="w-4 h-4"></i>
-            </button>
-
-            <a href="/auth/google"
-                class="w-full py-3 border border-slate-700 hover:border-slate-600 text-slate-300 hover:text-white rounded-2xl text-sm font-semibold transition-all flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10">
-                <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-                Continue with Google
-            </a>
-
-            <p class="text-center text-xs text-slate-600">By signing up you agree to our terms of service.</p>
-        </form>
-
     </div>
-</div>
 
-<script>
-    lucide.createIcons();
+    <script>
+        lucide.createIcons();
 
-    function showTab(tab) {
-        const isLogin = tab === 'login';
-        const loginForm  = document.getElementById('form-login');
-        const signupForm = document.getElementById('form-signup');
+        function showTab(tab) {
+            const signinForm = document.getElementById('form-signin');
+            const signupForm = document.getElementById('form-signup');
+            const signinTab = document.getElementById('tab-signin');
+            const signupTab = document.getElementById('tab-signup');
+            const header = document.querySelector('.text-center h2');
+            const subtext = document.querySelector('.text-center p');
 
-        // Swap forms with re-trigger animation
-        loginForm.classList.toggle('hidden', !isLogin);
-        signupForm.classList.toggle('hidden', isLogin);
-        void (isLogin ? loginForm : signupForm).offsetWidth; // reflow to retrigger anim
-        (isLogin ? loginForm : signupForm).style.animation = 'none';
-        requestAnimationFrame(() => {
-            (isLogin ? loginForm : signupForm).style.animation = '';
-        });
+            if (tab === 'signin') {
+                signinForm.classList.remove('hidden');
+                signupForm.classList.add('hidden');
+                signinTab.className = 'flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all bg-white text-slate-800 shadow-sm';
+                signupTab.className = 'flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all text-slate-600 hover:text-slate-800';
+                header.textContent = 'Welcome back';
+                subtext.textContent = 'Sign in to your account to continue';
+            } else {
+                signinForm.classList.add('hidden');
+                signupForm.classList.remove('hidden');
+                signinTab.className = 'flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all text-slate-600 hover:text-slate-800';
+                signupTab.className = 'flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all bg-white text-slate-800 shadow-sm';
+                header.textContent = 'Create account';
+                subtext.textContent = 'Start your financial journey today';
+            }
+            hideError();
+        }
 
-        const active   = 'bg-white/10 text-white shadow-sm';
-        const inactive = 'text-slate-500';
-        document.getElementById('tab-login').className  = `flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${isLogin  ? active : inactive}`;
-        document.getElementById('tab-signup').className = `flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${!isLogin ? active : inactive}`;
-    }
+        function showError(message) {
+            document.getElementById('error-text').textContent = message;
+            document.getElementById('error-msg').classList.remove('hidden');
+            lucide.createIcons();
+        }
 
-    function fillDemo() {
-        document.getElementById('l-email').value = 'nazeer@wealthsync.app';
-        document.getElementById('l-pass').value  = 'changeme';
-        // trigger floating labels
-        ['l-email','l-pass'].forEach(id => document.getElementById(id).dispatchEvent(new Event('input')));
-    }
+        function hideError() {
+            document.getElementById('error-msg').classList.add('hidden');
+        }
 
-    async function handleLogin(e) {
-        e.preventDefault();
-        const btn   = document.getElementById('login-btn');
-        const errEl = document.getElementById('login-error');
-        const fd    = new FormData(e.target);
-        btn.disabled = true;
-        btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="60" stroke-dashoffset="30"/></svg><span>Signing in…</span>';
-        errEl.classList.add('hidden');
-        try {
-            const res  = await fetch('/api/auth/login', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: fd.get('email'), password: fd.get('password') })
-            });
-            const data = await res.json();
-            if (res.status === 403 && data.unverified) {
-                window.location.replace('/verify-pending?email=' + encodeURIComponent(data.email));
+        async function handleSignin() {
+            const btn = document.getElementById('signin-btn');
+            const email = document.getElementById('signin-email').value.trim();
+            const password = document.getElementById('signin-password').value;
+
+            if (!email || !password) {
+                showError('Please fill in all fields.');
                 return;
             }
-            if (!res.ok) throw new Error(data.error);
-            window.location.replace('/');
-        } catch (err) {
-            errEl.textContent = err.message; errEl.classList.remove('hidden');
-            btn.disabled = false;
-            btn.innerHTML = '<span>Sign In</span><i data-lucide="arrow-right" class="w-4 h-4"></i>';
-            lucide.createIcons({ nodes: [btn] });
+
+            btn.disabled = true;
+            btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="60" stroke-dashoffset="30"/></svg> Signing in...';
+            hideError();
+
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+
+                if (res.status === 403 && data.unverified) {
+                    window.location.replace('/verify-pending?email=' + encodeURIComponent(data.email));
+                    return;
+                }
+                if (!res.ok) throw new Error(data.error);
+                window.location.replace('/');
+            } catch (err) {
+                showError(err.message);
+                btn.disabled = false;
+                btn.innerHTML = 'Sign In';
+            }
         }
-    }
 
-    async function handleSignup(e) {
-        e.preventDefault();
-        const btn   = document.getElementById('signup-btn');
-        const errEl = document.getElementById('signup-error');
-        const fd    = new FormData(e.target);
+        async function handleSignup() {
+            const btn = document.getElementById('signup-btn');
+            const name = document.getElementById('signup-name').value.trim();
+            const email = document.getElementById('signup-email').value.trim();
+            const password = document.getElementById('signup-password').value;
 
-        const pass    = fd.get('password');
-        const confirm = fd.get('confirm_password');
-        if (pass !== confirm) {
-            errEl.textContent = 'Passwords do not match.';
-            errEl.classList.remove('hidden');
-            return;
+            if (!name || !email || !password) {
+                showError('Please fill in all fields.');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="60" stroke-dashoffset="30"/></svg> Creating account...';
+            hideError();
+
+            try {
+                const res = await fetch('/api/auth/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+                window.location.replace('/verify-pending?email=' + encodeURIComponent(email));
+            } catch (err) {
+                showError(err.message);
+                btn.disabled = false;
+                btn.innerHTML = 'Create Account';
+            }
         }
-
-        btn.disabled = true;
-        btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="60" stroke-dashoffset="30"/></svg><span>Creating account…</span>';
-        errEl.classList.add('hidden');
-        try {
-            const res  = await fetch('/api/auth/signup', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: fd.get('name'), email: fd.get('email'), password: pass })
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error);
-            // pending:true — go to verify pending page
-            window.location.replace('/verify-pending?email=' + encodeURIComponent(fd.get('email')));
-        } catch (err) {
-            errEl.textContent = err.message; errEl.classList.remove('hidden');
-            btn.disabled = false;
-            btn.innerHTML = '<span>Create Account</span><i data-lucide="arrow-right" class="w-4 h-4"></i>';
-            lucide.createIcons({ nodes: [btn] });
-        }
-    }
-
-    function togglePass(inputId, iconId) {
-        const inp = document.getElementById(inputId);
-        const isHidden = inp.type === 'password';
-        inp.type = isHidden ? 'text' : 'password';
-        document.getElementById(iconId).setAttribute('data-lucide', isHidden ? 'eye-off' : 'eye');
-        lucide.createIcons({ nodes: [document.getElementById(iconId).parentElement] });
-    }
-
-    function updateStrength() {
-        const v = document.getElementById('s-pass').value;
-        const hasLen   = v.length >= 8;
-        const hasUpper = /[A-Z]/.test(v);
-        const hasNum   = /[0-9]/.test(v);
-        const score    = [hasLen, hasUpper, hasNum].filter(Boolean).length;
-
-        const colors = ['', 'bg-rose-500', 'bg-amber-500', 'bg-emerald-500'];
-        const labels = ['', 'Weak', 'Medium', 'Strong'];
-        const txtCls = ['', 'text-rose-400', 'text-amber-400', 'text-emerald-400'];
-
-        for (let i = 1; i <= 3; i++) {
-            const bar = document.getElementById('sb' + i);
-            bar.className = 'h-1 flex-1 rounded-full transition-all duration-300 ' + (i <= score ? colors[score] : 'bg-slate-800');
-        }
-        const lbl = document.getElementById('strength-label');
-        lbl.textContent = v.length ? labels[score] : '';
-        lbl.className = 'text-xs ' + (v.length ? txtCls[score] : 'text-slate-600');
-
-        const reqStyle = (ok) => ok ? 'text-xs text-emerald-500' : 'text-xs text-slate-600';
-        document.getElementById('req-len').className   = reqStyle(hasLen);
-        document.getElementById('req-upper').className = reqStyle(hasUpper);
-        document.getElementById('req-num').className   = reqStyle(hasNum);
-
-        checkMatch();
-    }
-
-    function checkMatch() {
-        const p = document.getElementById('s-pass').value;
-        const c = document.getElementById('s-confirm').value;
-        const msg = document.getElementById('match-msg');
-        if (!c) { msg.classList.add('hidden'); return; }
-        msg.classList.remove('hidden');
-        if (p === c) {
-            msg.textContent = '✓ Passwords match';
-            msg.className = 'text-xs px-1 text-emerald-400';
-        } else {
-            msg.textContent = '✗ Passwords do not match';
-            msg.className = 'text-xs px-1 text-rose-400';
-        }
-    }
-</script>
+    </script>
 </body>
 </html>

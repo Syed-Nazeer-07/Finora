@@ -3,6 +3,90 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
+/* ─── Sidebar ─────────────────────────────────────────────────────────────── */
+
+.sidebar {
+    width: 260px;
+    transition: width 0.25s cubic-bezier(0.4,0,0.2,1);
+    /* mobile: hidden off-screen by default */
+    transform: translateX(-100%);
+}
+
+/* desktop: always visible */
+@media (min-width: 768px) {
+    .sidebar { transform: none; }
+}
+
+/* mobile open */
+.sidebar.mobile-open {
+    transform: translateX(0);
+}
+
+/* collapsed (desktop only) */
+@media (min-width: 768px) {
+    .sidebar.sidebar-collapsed { width: 64px; }
+}
+
+.sidebar-header {
+    height: 64px;
+    padding: 0 12px;
+    gap: 8px;
+}
+
+/* hide text/full-logo in collapsed state */
+.sidebar.sidebar-collapsed .sidebar-text,
+.sidebar.sidebar-collapsed .sidebar-section-label,
+.sidebar.sidebar-collapsed .sidebar-streak-row,
+.sidebar.sidebar-collapsed .sidebar-logo-btn {
+    display: none;
+}
+
+/* show icon-only logo when collapsed */
+.sidebar-logo-icon { display: none; }
+.sidebar.sidebar-collapsed .sidebar-logo-icon {
+    display: flex;
+    margin: 0 auto;
+}
+
+.sidebar.sidebar-collapsed .sidebar-header {
+    justify-content: center;
+    padding: 0 8px;
+}
+
+/* nav buttons */
+.nav-btn { position: relative; }
+.sidebar.sidebar-collapsed .nav-btn {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+}
+.sidebar.sidebar-collapsed .nav-icon { margin: 0; }
+
+/* footer */
+.sidebar-footer { padding: 8px 0 12px; }
+.sidebar.sidebar-collapsed .sidebar-footer {
+    padding: 8px 4px 12px;
+}
+.sidebar.sidebar-collapsed .sidebar-footer .flex.items-center.gap-2 {
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 0;
+}
+.sidebar.sidebar-collapsed .sidebar-footer .w-8 { display: none; }
+
+/* Floating chevron: position just outside the sidebar's right edge */
+#sidebar-chevron {
+    left: calc(260px - 12px);
+    transition: left 0.25s cubic-bezier(0.4,0,0.2,1);
+}
+.sidebar-collapsed ~ * #sidebar-chevron,
+body.sidebar-collapsed-state #sidebar-chevron {
+    left: calc(64px - 12px);
+}
+
+/* ─── Smooth Renders & Transitions ───────────────────────────────────────── */
+
 /* Smooth Renders & Transitions */
 .fade-in { animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
 .slide-up { animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
@@ -61,6 +145,10 @@ input[type=number]::-webkit-outer-spin-button {
     -webkit-appearance: none; 
     margin: 0; 
 }
+
+/* Hide scrollbar while preserving scroll functionality */
+.hide-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.hide-scrollbar::-webkit-scrollbar { display: none; }
 
 /* Range Slider Styling */
 input[type=range] {

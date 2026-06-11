@@ -1,9 +1,15 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WealthSync - Premium Financial OS</title>
+    <title>WealthSync - Personal Financial OS</title>
+    <script>
+        // Apply theme before paint to avoid flash
+        if (localStorage.getItem('theme') !== 'light') {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
     
     <!-- Tailwind CSS with Custom Config -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -60,85 +66,68 @@
 <body class="bg-slate-50 text-slate-800 dark:bg-dark-bg dark:text-slate-200 transition-colors duration-300 antialiased min-h-screen flex overflow-hidden selection:bg-brand-500 selection:text-white">
 
     <!-- Sidebar Navigation -->
-    <aside id="sidebar" class="-translate-x-full md:translate-x-0 transition-transform duration-300 fixed md:static inset-y-0 left-0 w-72 bg-white dark:bg-dark-card border-r border-slate-200 dark:border-dark-border z-40 flex flex-col h-screen">
-        <!-- Logo -->
-        <div class="h-20 flex items-center px-8 border-b border-slate-100 dark:border-dark-border/50 shrink-0">
-            <div class="flex items-center gap-3">
-                <!-- Professional SVG Logo -->
-                <div class="p-2 bg-gradient-to-br from-brand-500 to-indigo-600 rounded-xl shadow-lg shadow-brand-500/30 text-white flex items-center justify-center">
-                    <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                    </svg>
+    <aside id="sidebar" class="sidebar fixed md:static inset-y-0 left-0 z-40 flex flex-col h-screen bg-white dark:bg-dark-card border-r border-slate-200 dark:border-dark-border overflow-hidden">
+
+        <!-- Header: Logo -->
+        <div class="sidebar-header flex items-center border-b border-slate-100 dark:border-dark-border/50 shrink-0">
+            <button onclick="App.setActiveTab('dashboard')" class="sidebar-logo-btn flex items-center gap-3 min-w-0 flex-1 hover:opacity-80 transition-opacity" title="Dashboard">
+                <div class="shrink-0 w-11 h-11 rounded-xl overflow-hidden flex items-center justify-center bg-white">
+                    <img src="/static/logo.png" alt="WealthSync" class="w-full h-full object-cover">
                 </div>
-                <span class="font-bold text-2xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400">WealthSync</span>
-            </div>
+                <span class="sidebar-text font-bold text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400">WealthSync</span>
+            </button>
+            <!-- Collapsed-state icon-only logo -->
+            <button onclick="App.setActiveTab('dashboard')" class="sidebar-logo-icon hidden shrink-0 w-11 h-11 rounded-xl overflow-hidden hover:opacity-80 transition-opacity" title="Dashboard">
+                <img src="/static/logo.png" alt="WealthSync" class="w-full h-full object-cover">
+            </button>
         </div>
-        
+
         <!-- Navigation -->
-        <div class="px-4 py-6 flex-1 overflow-y-auto">
-            <p class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4 px-4">Overview</p>
-            <nav id="nav-menu" class="space-y-1">
-                <!-- Navigation Items Injected via JS -->
-            </nav>
-
-            <p class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-8 mb-4 px-4">Insights</p>
-            <nav id="nav-insights" class="space-y-1">
-                <button onclick="App.setActiveTab('ai-coach')" id="nav-ai-coach" class="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all font-medium text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white group">
-                    <div class="flex items-center gap-3">
-                        <i data-lucide="sparkles" class="w-5 h-5 text-purple-500 group-hover:animate-pulse"></i>
-                        Smart Coach
-                    </div>
-                    <span class="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 text-[10px] px-2 py-0.5 rounded-full font-bold">V2</span>
-                </button>
+        <div class="flex-1 overflow-y-auto overflow-x-hidden py-4">
+            <p class="sidebar-section-label px-3 mb-2 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Overview</p>
+            <nav id="nav-menu" class="space-y-0.5 px-2">
+                <!-- injected by JS -->
             </nav>
         </div>
-        
-        <!-- User Profile & Gamification -->
-        <div class="p-4 border-t border-slate-100 dark:border-dark-border/50 shrink-0 bg-slate-50/50 dark:bg-dark-card/50">
-            <!-- Streak -->
-            <div class="mb-4 flex items-center justify-between px-4 py-2 bg-orange-50 dark:bg-orange-900/10 rounded-xl border border-orange-100 dark:border-orange-900/30">
-                <div class="flex items-center gap-2">
-                    <span class="text-orange-500">🔥</span>
-                    <span class="text-sm font-semibold text-orange-700 dark:text-orange-400">12 Day Streak</span>
-                </div>
-                <div class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
-            </div>
 
-            <!-- Profile -->
-            <div class="flex items-center justify-between px-2">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-300 shadow-sm ring-2 ring-white dark:ring-dark-bg">
-                        <i data-lucide="user" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <p id="sidebar-username" class="text-sm font-bold text-slate-900 dark:text-white">…</p>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                            <i data-lucide="shield-check" class="w-3 h-3 text-brand-500"></i> Pro Member
-                        </p>
-                    </div>
+        <!-- Footer: User -->
+        <div class="sidebar-footer border-t border-slate-100 dark:border-dark-border/50 shrink-0">
+            <!-- User row -->
+            <div class="flex items-center gap-2 p-3">
+                <div class="shrink-0 w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-300 ring-2 ring-white dark:ring-dark-bg">
+                    <i data-lucide="user" class="w-4 h-4"></i>
                 </div>
-                <button onclick="App.toggleTheme()" class="p-2 text-slate-400 hover:text-brand-500 dark:hover:text-brand-400 transition-colors bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-100 dark:border-slate-700">
-                    <i data-lucide="moon" id="theme-icon" class="w-5 h-5"></i>
-                </button>
-                <button onclick="App.logout()" class="p-2 text-slate-400 hover:text-rose-500 transition-colors bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-100 dark:border-slate-700" title="Sign out">
-                    <i data-lucide="log-out" class="w-5 h-5"></i>
-                </button>
+                <div class="sidebar-text flex-1 min-w-0">
+                    <p id="sidebar-username" class="text-sm font-bold text-slate-900 dark:text-white truncate">…</p>
+                    <p id="sidebar-verified-status" class="text-xs text-slate-500 dark:text-slate-400">…</p>
+                </div>
+                <div class="sidebar-text flex items-center gap-1 shrink-0">
+                    <button onclick="App.toggleTheme()" class="p-1.5 text-slate-400 hover:text-brand-500 dark:hover:text-brand-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Toggle theme">
+                        <i data-lucide="moon" id="theme-icon" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="App.logout()" class="p-1.5 text-slate-400 hover:text-rose-500 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Sign out">
+                        <i data-lucide="log-out" class="w-4 h-4"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </aside>
 
-    <!-- Overlay for mobile -->
-    <div id="sidebar-overlay" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-30 hidden md:hidden transition-opacity" onclick="App.toggleMobileMenu()"></div>
+    <!-- Floating sidebar toggle (desktop only) -->
+    <button id="sidebar-chevron" onclick="App.toggleSidebar()" class="hidden md:flex fixed z-50 items-center justify-center w-6 h-6 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-md text-slate-500 dark:text-slate-400 hover:text-brand-500 dark:hover:text-brand-400 hover:border-brand-400 transition-all" style="top: 32px;" title="Toggle sidebar">
+        <i data-lucide="chevron-left" id="sidebar-chevron-icon" class="w-3.5 h-3.5 transition-transform"></i>
+    </button>
+
+    <!-- Mobile overlay -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-30 hidden transition-opacity" onclick="App.closeMobileSidebar()"></div>
 
     <!-- Main Content Area -->
     <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
         <!-- Mobile Header -->
         <header class="md:hidden glass z-20 px-4 py-4 flex justify-between items-center sticky top-0 border-b border-slate-200 dark:border-dark-border">
             <div class="flex items-center gap-2">
-                <div class="p-1.5 bg-gradient-to-br from-brand-500 to-indigo-600 rounded-lg text-white">
-                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                    </svg>
+                <div class="w-8 h-8 rounded-lg overflow-hidden shadow">
+                    <img src="/static/logo.png" alt="WealthSync" class="w-full h-full object-contain">
                 </div>
                 <span class="font-bold text-lg dark:text-white">WealthSync</span>
             </div>
