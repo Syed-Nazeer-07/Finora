@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WealthSync – Setup</title>
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon-180x180.png') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -69,7 +71,6 @@
         <div class="flex items-center justify-between mb-8">
             
             <div class="flex items-center gap-2.5">
-                <img src="/static/logo.png" alt="WealthSync" class="w-10 h-10 rounded-lg">
                 <span class="font-bold text-lg text-slate-900">WealthSync</span>
             </div>
 
@@ -179,27 +180,27 @@
 
                 <div id="goal-cards" class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-5">
                     <div class="goal-card p-4 bg-slate-50 border border-slate-200 rounded-2xl text-center" data-value="Study Abroad">
-                        <div class="text-2xl mb-2">✈️</div>
+                        <i data-lucide="plane" class="w-6 h-6 mx-auto mb-2 text-brand-500"></i>
                         <p class="text-sm font-semibold text-slate-900">Study Abroad</p>
                     </div>
                     <div class="goal-card p-4 bg-slate-50 border border-slate-200 rounded-2xl text-center" data-value="Emergency Fund">
-                        <div class="text-2xl mb-2">🛡️</div>
+                        <i data-lucide="shield" class="w-6 h-6 mx-auto mb-2 text-brand-500"></i>
                         <p class="text-sm font-semibold text-slate-900">Emergency Fund</p>
                     </div>
                     <div class="goal-card p-4 bg-slate-50 border border-slate-200 rounded-2xl text-center" data-value="New Car">
-                        <div class="text-2xl mb-2">🚗</div>
+                        <i data-lucide="car" class="w-6 h-6 mx-auto mb-2 text-brand-500"></i>
                         <p class="text-sm font-semibold text-slate-900">New Car</p>
                     </div>
                     <div class="goal-card p-4 bg-slate-50 border border-slate-200 rounded-2xl text-center" data-value="Buy a House">
-                        <div class="text-2xl mb-2">🏠</div>
+                        <i data-lucide="home" class="w-6 h-6 mx-auto mb-2 text-brand-500"></i>
                         <p class="text-sm font-semibold text-slate-900">Buy a House</p>
                     </div>
                     <div class="goal-card p-4 bg-slate-50 border border-slate-200 rounded-2xl text-center" data-value="Financial Freedom">
-                        <div class="text-2xl mb-2">🚀</div>
+                        <i data-lucide="zap" class="w-6 h-6 mx-auto mb-2 text-brand-500"></i>
                         <p class="text-sm font-semibold text-slate-900">Financial Freedom</p>
                     </div>
                     <div class="goal-card p-4 bg-slate-50 border border-slate-200 rounded-2xl text-center" data-value="__custom__">
-                        <div class="text-2xl mb-2">✏️</div>
+                        <i data-lucide="edit" class="w-6 h-6 mx-auto mb-2 text-brand-500"></i>
                         <p class="text-sm font-semibold text-slate-900">Custom Goal</p>
                     </div>
                 </div>

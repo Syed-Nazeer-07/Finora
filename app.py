@@ -787,26 +787,23 @@ def delete_investment(inv_id):
 
 
 _EMAIL_HEADER = """
-<div style="font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;max-width:580px;margin:0 auto;background:#0f172a;border-radius:16px;overflow:hidden;border:1px solid #1e293b">
+<div style="font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;max-width:580px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e2e8f0">
   <div style="background:linear-gradient(135deg,#2563eb 0%,#4f46e5 100%);padding:32px 40px">
     <a href="{base_url}" style="text-decoration:none;display:inline-flex;align-items:center;gap:10px">
-      <div style="background:rgba(255,255,255,0.15);border-radius:10px;padding:8px;display:inline-flex">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-      </div>
       <span style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.3px">WealthSync</span>
     </a>
-    <p style="margin:6px 0 0;color:rgba(255,255,255,0.65);font-size:13px">Personal Financial OS</p>
+    <p style="margin:6px 0 0;color:rgba(255,255,255,0.75);font-size:13px">Personal Financial OS</p>
   </div>
-  <div style="padding:40px 40px 32px">
+  <div style="padding:40px 40px 32px;color:#0f172a">
 """
 
 _EMAIL_FOOTER = """
   </div>
-  <div style="padding:20px 40px 28px;border-top:1px solid #1e293b;background:#0b0f19">
-    <p style="margin:0;color:#334155;font-size:12px;line-height:1.6">
+  <div style="padding:20px 40px 28px;border-top:1px solid #e2e8f0;background:#f8fafc">
+    <p style="margin:0;color:#64748b;font-size:12px;line-height:1.6">
       This email was sent to you because an action was performed on your WealthSync account.<br>
       If you didn't request this, you can safely ignore this email — your account remains secure.<br><br>
-      &copy; 2026 WealthSync &nbsp;·&nbsp; <a href="{base_url}" style="color:#3b82f6;text-decoration:none">Visit WealthSync</a>
+      &copy; 2026 WealthSync &nbsp;·&nbsp; <a href="{base_url}" style="color:#2563eb;text-decoration:none">Visit WealthSync</a>
     </p>
   </div>
 </div>
@@ -831,21 +828,21 @@ def _send_email(to, subject, body_html):
 def _send_verification_email(user, token):
     verify_url = url_for("verify_email", token=token, _external=True)
     body = f"""
-    <h2 style="margin:0 0 6px;color:#f1f5f9;font-size:22px;font-weight:700">Hi {user.name},</h2>
-    <p style="color:#94a3b8;margin:0 0 28px;line-height:1.7;font-size:15px">
+    <h2 style="margin:0 0 6px;color:#0f172a;font-size:22px;font-weight:700">Hi {user.name},</h2>
+    <p style="color:#64748b;margin:0 0 28px;line-height:1.7;font-size:15px">
       Thanks for signing up. Click the button below to verify your email address and activate your WealthSync account.
     </p>
     <a href="{verify_url}" style="display:inline-block;background:linear-gradient(135deg,#2563eb,#4f46e5);color:#fff;text-decoration:none;padding:14px 32px;border-radius:12px;font-weight:600;font-size:15px;margin-bottom:32px">
       Verify Email Address
     </a>
-    <div style="background:#1e293b;border-radius:10px;padding:16px 20px;margin-bottom:24px">
+    <div style="background:#f1f5f9;border-radius:10px;padding:16px 20px;margin-bottom:24px">
       <p style="margin:0 0 4px;color:#64748b;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Or paste this link in your browser</p>
-      <p style="margin:0;word-break:break-all;color:#60a5fa;font-size:12px">{verify_url}</p>
+      <p style="margin:0;word-break:break-all;color:#2563eb;font-size:12px">{verify_url}</p>
     </div>
-    <div style="background:#1e3a1e;border:1px solid #166534;border-radius:10px;padding:14px 18px;margin-bottom:24px">
-      <p style="margin:0;color:#86efac;font-size:13px">🔒 <strong>Account security:</strong> This link expires in <strong>24 hours</strong> and can only be used once.</p>
+    <div style="background:#dbeafe;border:1px solid #93c5fd;border-radius:10px;padding:14px 18px;margin-bottom:24px">
+      <p style="margin:0;color:#1e3a8a;font-size:13px">🔒 <strong>Account security:</strong> This link expires in <strong>24 hours</strong> and can only be used once.</p>
     </div>
-    <p style="color:#475569;font-size:13px;margin:0">If you didn't create a WealthSync account, you can safely ignore this email. No account will be activated without verification.</p>
+    <p style="color:#64748b;font-size:13px;margin:0">If you didn't create a WealthSync account, you can safely ignore this email. No account will be activated without verification.</p>
     """
     _send_email(user.email, "Verify your WealthSync account", body)
 
@@ -853,21 +850,21 @@ def _send_verification_email(user, token):
 def _send_password_reset_email(user, token):
     reset_url = url_for("reset_password_page", token=token, _external=True)
     body = f"""
-    <h2 style="margin:0 0 6px;color:#f1f5f9;font-size:22px;font-weight:700">Hi {user.name},</h2>
-    <p style="color:#94a3b8;margin:0 0 28px;line-height:1.7;font-size:15px">
+    <h2 style="margin:0 0 6px;color:#0f172a;font-size:22px;font-weight:700">Hi {user.name},</h2>
+    <p style="color:#64748b;margin:0 0 28px;line-height:1.7;font-size:15px">
       We received a request to reset the password for your WealthSync account. Click the button below to choose a new password.
     </p>
     <a href="{reset_url}" style="display:inline-block;background:linear-gradient(135deg,#2563eb,#4f46e5);color:#fff;text-decoration:none;padding:14px 32px;border-radius:12px;font-weight:600;font-size:15px;margin-bottom:32px">
       Reset Password
     </a>
-    <div style="background:#1e293b;border-radius:10px;padding:16px 20px;margin-bottom:24px">
+    <div style="background:#f1f5f9;border-radius:10px;padding:16px 20px;margin-bottom:24px">
       <p style="margin:0 0 4px;color:#64748b;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Or paste this link in your browser</p>
-      <p style="margin:0;word-break:break-all;color:#60a5fa;font-size:12px">{reset_url}</p>
+      <p style="margin:0;word-break:break-all;color:#2563eb;font-size:12px">{reset_url}</p>
     </div>
-    <div style="background:#3b1a1a;border:1px solid #7f1d1d;border-radius:10px;padding:14px 18px;margin-bottom:24px">
-      <p style="margin:0;color:#fca5a5;font-size:13px">⏰ <strong>This link expires in 1 hour</strong> and can only be used once. After that you'll need to request a new one.</p>
+    <div style="background:#fee2e2;border:1px solid #fca5a5;border-radius:10px;padding:14px 18px;margin-bottom:24px">
+      <p style="margin:0;color:#7f1d1d;font-size:13px">⏰ <strong>This link expires in 1 hour</strong> and can only be used once. After that you'll need to request a new one.</p>
     </div>
-    <p style="color:#475569;font-size:13px;margin:0">If you didn't request a password reset, you can safely ignore this email. Your password will not be changed.</p>
+    <p style="color:#64748b;font-size:13px;margin:0">If you didn't request a password reset, you can safely ignore this email. Your password will not be changed.</p>
     """
     _send_email(user.email, "Reset your WealthSync password", body)
 
