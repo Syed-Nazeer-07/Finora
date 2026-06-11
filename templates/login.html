@@ -146,8 +146,8 @@
                     <a href="/forgot-password" class="text-brand-600 hover:text-brand-700 font-medium">Forgot password?</a>
                 </div>
                 
-                <button onclick="handleSignin()" id="signin-btn" class="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5">
-                    Sign In
+                <button onclick="handleSignin()" id="signin-btn" class="w-full h-[52px] bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 flex items-center justify-center">
+                    <span>Sign In</span>
                 </button>
                 
                 <div class="relative">
@@ -193,8 +193,8 @@
                     <p id="strength-text" class="text-xs text-slate-600"></p>
                 </div>
                 
-                <button onclick="handleSignup()" id="signup-btn" class="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5">
-                    Create Account
+                <button onclick="handleSignup()" id="signup-btn" class="w-full h-[52px] bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 flex items-center justify-center">
+                    <span>Create Account</span>
                 </button>
                 
                 <div class="relative">
@@ -318,7 +318,7 @@
             }
 
             btn.disabled = true;
-            btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="60" stroke-dashoffset="30"/></svg> Signing in...';
+            btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="60" stroke-dashoffset="30"/></svg><span class="ml-2">Signing in...</span>';
             hideError();
 
             try {
@@ -338,7 +338,7 @@
             } catch (err) {
                 showError(err.message);
                 btn.disabled = false;
-                btn.innerHTML = 'Sign In';
+                btn.innerHTML = '<span>Sign In</span>';
             }
         }
 
@@ -354,7 +354,7 @@
             }
 
             btn.disabled = true;
-            btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="60" stroke-dashoffset="30"/></svg> Creating account...';
+            btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="60" stroke-dashoffset="30"/></svg><span class="ml-2">Creating account...</span>';
             hideError();
 
             try {
@@ -369,7 +369,7 @@
             } catch (err) {
                 showError(err.message);
                 btn.disabled = false;
-                btn.innerHTML = 'Create Account';
+                btn.innerHTML = '<span>Create Account</span>';
             }
         }
     </script>

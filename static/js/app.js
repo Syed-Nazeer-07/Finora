@@ -187,6 +187,10 @@ const App = {
         const cat = this.state.categories.find(c => c.name === name);
         return cat ? cat.emoji : '📦';
     },
+    getCategoryColor(name) {
+        const cat = this.state.categories.find(c => c.name === name);
+        return cat ? cat.color : '#3b82f6';
+    },
     _getSeparators() {
         if (this._sepCache) return this._sepCache;
         const parts = new Intl.NumberFormat(this.getCurrencyLocale()).formatToParts(1234567.89);
@@ -245,8 +249,9 @@ const App = {
         const totalSavings         = p.current_savings     ?? 0;
         const profileIncome        = p.monthly_income      ?? 0;
         const profileExpenses      = p.monthly_expenses    ?? 0;
-        const totalInvestmentValue = this.state.investments.length
-            ? this.state.investments.reduce((acc, inv) => acc + (inv.shares * inv.currentPrice), 0)
+        const validInvestments = this.state.investments.filter(inv => inv.shares > 0 && inv.avgCost > 0 && inv.currentPrice > 0);
+        const totalInvestmentValue = validInvestments.length
+            ? validInvestments.reduce((acc, inv) => acc + (inv.shares * inv.currentPrice), 0)
             : (p.current_investments ?? 0);
         const totalIncome   = txIncome   || profileIncome;
         const totalExpenses = txExpenses || profileExpenses;
@@ -267,8 +272,8 @@ const App = {
         } else if (netThisMonth > 0) {
             netWorthGrowth = 100;
         }
-        const totalInvestmentCost = this.state.investments.length
-            ? this.state.investments.reduce((acc, curr) => acc + (curr.shares * curr.avgCost), 0)
+        const totalInvestmentCost = validInvestments.length
+            ? validInvestments.reduce((acc, curr) => acc + (curr.shares * curr.avgCost), 0)
             : totalInvestmentValue * 0.85;
         const investmentProfit = totalInvestmentValue - totalInvestmentCost;
         const budgetProgress = this.state.budgets.map(budget => {
@@ -1251,6 +1256,19 @@ const App = {
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Emoji</label>
                             <input type="text" id="cat-emoji" autocomplete="off" value="${cat ? cat.emoji : '📦'}" required maxlength="10" placeholder="📦" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white" />
                         </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Color</label>
+                            <div class="grid grid-cols-8 gap-2 mb-3">
+                                ${['#ef4444', '#f97316', '#f59e0b', '#84cc16', '#10b981', '#06b6d4', '#3b82f6', '#6366f1', '#8b5cf6', '#ec4899', '#64748b', '#000000'].map(color => `
+                                    <button type="button" onclick="App.selectCategoryColor('${color}')" class="w-full aspect-square rounded-lg hover:scale-110 transition-transform border-2 ${(cat?.color || '#3b82f6') === color ? 'border-slate-900 dark:border-white' : 'border-transparent'}" style="background-color: ${color}" data-color="${color}"></button>
+                                `).join('')}
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <input type="color" id="cat-color-picker" value="${cat ? cat.color : '#3b82f6'}" onchange="App.selectCategoryColor(this.value)" class="w-12 h-12 rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer" />
+                                <input type="text" id="cat-color" value="${cat ? cat.color : '#3b82f6'}" pattern="^#[0-9A-Fa-f]{6}$" maxlength="7" placeholder="#3b82f6" oninput="App.updateColorPreview(this.value)" class="flex-1 px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white font-mono" />
+                                <div id="cat-color-preview" class="w-12 h-12 rounded-lg border-2 border-slate-200 dark:border-slate-700 shrink-0" style="background-color: ${cat ? cat.color : '#3b82f6'}"></div>
+                            </div>
+                        </div>
                         <p id="cat-error" class="text-rose-500 text-sm hidden"></p>
                         <div class="flex gap-4 pt-2">
                             <button type="button" onclick="App.closeModal()" class="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl font-semibold text-sm">Cancel</button>
@@ -1262,17 +1280,35 @@ const App = {
         `;
         lucide.createIcons();
     },
+    selectCategoryColor(color) {
+        document.getElementById('cat-color').value = color;
+        document.getElementById('cat-color-picker').value = color;
+        document.getElementById('cat-color-preview').style.backgroundColor = color;
+        // Update border on preset buttons
+        document.querySelectorAll('[data-color]').forEach(btn => {
+            btn.classList.toggle('border-slate-900', btn.dataset.color === color);
+            btn.classList.toggle('dark:border-white', btn.dataset.color === color);
+            btn.classList.toggle('border-transparent', btn.dataset.color !== color);
+        });
+    },
+    updateColorPreview(value) {
+        if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
+            document.getElementById('cat-color-preview').style.backgroundColor = value;
+            document.getElementById('cat-color-picker').value = value;
+        }
+    },
     async saveCategory(e, catId) {
         e.preventDefault();
         const name = document.getElementById('cat-name').value.trim();
         const emoji = document.getElementById('cat-emoji').value.trim();
+        const color = document.getElementById('cat-color').value.trim();
         const err = document.getElementById('cat-error');
         const method = catId ? 'PUT' : 'POST';
         const url = catId ? `/api/categories/${catId}` : '/api/categories';
         const res = await fetch(url, {
             method,
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, emoji })
+            body: JSON.stringify({ name, emoji, color })
         });
         const data = await res.json();
         if (!res.ok) {

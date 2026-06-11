@@ -154,7 +154,7 @@ class UserSettings(db.Model):
     __tablename__ = "user_settings"
     id                    = db.Column(db.Integer, primary_key=True)
     user_id               = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, unique=True)
-    theme                 = db.Column(db.String(10),  default="dark")
+    theme                 = db.Column(db.String(10),  default="light")
     currency              = db.Column(db.String(10),  default="INR")
     currency_symbol       = db.Column(db.String(5),   default="₹")
     currency_locale       = db.Column(db.String(10),  default="en-IN")
@@ -171,6 +171,7 @@ class Category(db.Model):
     user_id     = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     name        = db.Column(db.String(50), nullable=False)
     emoji       = db.Column(db.String(10), nullable=False, default="📦")
+    color       = db.Column(db.String(7), nullable=False, default="#3b82f6")
     is_default  = db.Column(db.Boolean, default=False, nullable=False)
     created_at  = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -199,8 +200,11 @@ with app.app_context():
             ("Subscriptions", "📺"), ("Education", "📚"), ("Healthcare", "🏥"),
             ("Insurance", "🛡️"), ("Travel", "✈️"), ("Gifts & Donations", "🎁"),
             ("Investments", "📈"), ("Savings", "💰"), ("Debt Payments", "💳"),
-            ("Salary", "💵"), ("Freelance Income", "🚀"), ("Pocket Money", "💸"),
-            ("Other", "📦")
+            ("Salary", "💵"), ("Pocket Money", "💸"), ("Freelance", "🚀"),
+            ("Business Income", "💼"), ("Scholarship", "🎓"), ("Allowance", "👛"),
+            ("Internship", "🧑‍💼"), ("Gift Received", "🎁"), ("Interest Income", "🏦"),
+            ("Investment Returns", "📊"), ("Refund", "↩️"), ("Bonus", "🎉"),
+            ("Side Hustle", "⚡"), ("Other", "📦")
         ]
         for name, emoji in default_cats:
             db.session.add(Category(user_id=demo.id, name=name, emoji=emoji, is_default=True))
@@ -296,8 +300,11 @@ def signup():
             ("Subscriptions", "📺"), ("Education", "📚"), ("Healthcare", "🏥"),
             ("Insurance", "🛡️"), ("Travel", "✈️"), ("Gifts & Donations", "🎁"),
             ("Investments", "📈"), ("Savings", "💰"), ("Debt Payments", "💳"),
-            ("Salary", "💵"), ("Freelance Income", "🚀"), ("Pocket Money", "💸"),
-            ("Other", "📦")
+            ("Salary", "💵"), ("Pocket Money", "💸"), ("Freelance", "🚀"),
+            ("Business Income", "💼"), ("Scholarship", "🎓"), ("Allowance", "👛"),
+            ("Internship", "🧑‍💼"), ("Gift Received", "🎁"), ("Interest Income", "🏦"),
+            ("Investment Returns", "📊"), ("Refund", "↩️"), ("Bonus", "🎉"),
+            ("Side Hustle", "⚡"), ("Other", "📦")
         ]
         for cat_name, cat_emoji in default_cats:
             db.session.add(Category(user_id=user.id, name=cat_name, emoji=cat_emoji, is_default=True))
@@ -363,7 +370,8 @@ def me():
 def health_check():
     """Health check endpoint for Render monitoring"""
     try:
-        db.session.execute("SELECT 1")
+        from sqlalchemy import text
+        db.session.execute(text("SELECT 1"))
         return jsonify({"status": "healthy", "database": "connected"}), 200
     except Exception as e:
         app.logger.error(f"Health check failed: {e}")
@@ -1078,7 +1086,7 @@ def delete_roadmap_item(item_id):
 
 
 def _category_dict(c):
-    return {"id": c.id, "name": c.name, "emoji": c.emoji, "is_default": c.is_default}
+    return {"id": c.id, "name": c.name, "emoji": c.emoji, "color": c.color, "is_default": c.is_default}
 
 @app.route("/api/categories", methods=["GET"])
 def get_categories():
@@ -1101,7 +1109,8 @@ def create_category():
         return jsonify({"error": "Category already exists"}), 400
     
     emoji = (data.get("emoji") or "📦").strip()[:10]
-    cat = Category(user_id=session["user_id"], name=name, emoji=emoji, is_default=False)
+    color = (data.get("color") or "#3b82f6").strip()[:7]
+    cat = Category(user_id=session["user_id"], name=name, emoji=emoji, color=color, is_default=False)
     db.session.add(cat)
     db.session.commit()
     return jsonify(_category_dict(cat)), 201
@@ -1126,6 +1135,8 @@ def update_category(cat_id):
         cat.name = name
     if "emoji" in data:
         cat.emoji = (data["emoji"] or "📦").strip()[:10]
+    if "color" in data:
+        cat.color = (data["color"] or "#3b82f6").strip()[:7]
     db.session.commit()
     return jsonify(_category_dict(cat))
 

@@ -71,6 +71,7 @@ const AppViews = {
         }
         return filtered.map(tx => {
             const catEmoji = this.getCategoryEmoji(tx.category);
+            const catColor = this.getCategoryColor(tx.category);
             return `
             <tr class="group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-dark-border last:border-0">
                 <td class="px-6 py-4">
@@ -79,12 +80,12 @@ const AppViews = {
                 <td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400 whitespace-nowrap">${this.formatDate(tx.date)}</td>
                 <td class="px-6 py-4">
                     <div class="flex items-center gap-4">
-                        <div class="p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm text-lg flex items-center justify-center w-10 h-10 shrink-0">${catEmoji}</div>
+                        <div class="p-2 rounded-xl border-2 shadow-sm text-lg flex items-center justify-center w-10 h-10 shrink-0" style="border-color: ${catColor}; background-color: ${catColor}15">${catEmoji}</div>
                         <span class="font-semibold text-slate-900 dark:text-white">${tx.description}</span>
                     </div>
                 </td>
                 <td class="px-6 py-4">
-                    <span class="text-xs font-medium px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-lg whitespace-nowrap border border-slate-200 dark:border-slate-700">${tx.category}</span>
+                    <span class="text-xs font-medium px-2.5 py-1 rounded-lg whitespace-nowrap" style="background-color: ${catColor}20; color: ${catColor}">${tx.category}</span>
                 </td>
                 <td class="px-6 py-4 font-bold text-right whitespace-nowrap ${tx.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white'}">
                     ${tx.type === 'income' ? '+' : '-'}${this.formatCurrency(tx.amount)}
@@ -106,14 +107,17 @@ const AppViews = {
             const remaining = b.limit - b.spent;
             const runRate = b.spent * 2;
             const forecastClass = runRate > b.limit ? 'text-rose-500' : 'text-emerald-500';
+            const catColor = this.getCategoryColor(b.category);
             return `
-                <div class="bg-white dark:bg-dark-card p-6 rounded-3xl border border-slate-200 dark:border-dark-border shadow-sm relative group hover-card flex flex-col">
+                <div class="bg-white dark:bg-dark-card p-6 rounded-3xl border-2 shadow-sm relative group hover-card flex flex-col" style="border-color: ${catColor}40">
                     <div class="absolute top-4 right-4 flex opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity gap-1">
                         <button onclick="App.openModal('budget', ${b.id})" class="p-2 text-slate-400 hover:text-brand-500 rounded-lg hover:bg-brand-50 dark:hover:bg-brand-500/10" title="Edit"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
                         <button onclick="App.deleteItem('budget', ${b.id})" class="p-2 text-slate-400 hover:text-rose-500 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-500/10" title="Delete"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </div>
                     <div class="flex items-center gap-4 mb-6">
-                        <div class="p-3 bg-slate-100 dark:bg-slate-800 rounded-2xl"><i data-lucide="pie-chart" class="w-6 h-6 text-slate-600 dark:text-slate-300"></i></div>
+                        <div class="p-3 rounded-2xl" style="background-color: ${catColor}20">
+                            <span class="text-2xl">${this.getCategoryEmoji(b.category)}</span>
+                        </div>
                         <div>
                             <h3 class="font-bold text-lg text-slate-900 dark:text-white leading-tight">${b.category}</h3>
                             <span class="text-xs font-bold uppercase tracking-wider ${isOver ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}">
@@ -284,27 +288,44 @@ const AppViews = {
         const calc = this.getCalculations();
         let riskProfile = "Balanced";
         let rowsHtml = this.state.investments.map(inv => {
-            const currentTotal = inv.shares * inv.currentPrice;
-            const costTotal = inv.shares * inv.avgCost;
-            const profit = currentTotal - costTotal;
-            const profitPercent = costTotal > 0 ? (profit / costTotal) * 100 : 0;
-            const isPositive = profit >= 0;
+            const hasValidData = inv.shares > 0 && inv.avgCost > 0 && inv.currentPrice > 0;
+            
+            let returnDisplay;
+            if (!hasValidData) {
+                returnDisplay = `
+                    <div class="text-sm font-medium text-slate-500 dark:text-slate-400">
+                        <i data-lucide="clock" class="w-3.5 h-3.5 inline mr-1"></i>
+                        Awaiting Price Data
+                    </div>
+                    <div class="text-xs text-slate-400 mt-0.5">Update holdings & prices</div>
+                `;
+            } else {
+                const currentTotal = inv.shares * inv.currentPrice;
+                const costTotal = inv.shares * inv.avgCost;
+                const profit = currentTotal - costTotal;
+                const profitPercent = (profit / costTotal) * 100;
+                const isPositive = profit >= 0;
+                returnDisplay = `
+                    <div class="font-bold ${isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}">
+                        ${isPositive ? '+' : ''}${this.formatCurrency(profit)}
+                    </div>
+                    <div class="text-xs font-semibold mt-0.5 ${isPositive ? 'text-emerald-500' : 'text-rose-500'}">
+                        ${isPositive ? '+' : ''}${profitPercent.toFixed(2)}%
+                    </div>
+                `;
+            }
+            
             return `
                 <tr class="group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-dark-border last:border-0">
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="font-bold text-slate-900 dark:text-white">${inv.symbol}</div>
                         <div class="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">${inv.type}</div>
                     </td>
-                    <td class="px-6 py-4 font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">${inv.shares}</td>
-                    <td class="px-6 py-4 text-slate-600 dark:text-slate-400 whitespace-nowrap">${this.formatCurrency(inv.avgCost)}</td>
-                    <td class="px-6 py-4 font-semibold text-slate-900 dark:text-white whitespace-nowrap">${this.formatCurrency(inv.currentPrice)}</td>
+                    <td class="px-6 py-4 font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">${inv.shares > 0 ? inv.shares : '—'}</td>
+                    <td class="px-6 py-4 text-slate-600 dark:text-slate-400 whitespace-nowrap">${inv.avgCost > 0 ? this.formatCurrency(inv.avgCost) : '—'}</td>
+                    <td class="px-6 py-4 font-semibold text-slate-900 dark:text-white whitespace-nowrap">${inv.currentPrice > 0 ? this.formatCurrency(inv.currentPrice) : '—'}</td>
                     <td class="px-6 py-4 text-right whitespace-nowrap">
-                        <div class="font-bold ${isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}">
-                            ${isPositive ? '+' : ''}${this.formatCurrency(profit)}
-                        </div>
-                        <div class="text-xs font-semibold mt-0.5 ${isPositive ? 'text-emerald-500' : 'text-rose-500'}">
-                            ${isPositive ? '+' : ''}${profitPercent.toFixed(2)}%
-                        </div>
+                        ${returnDisplay}
                     </td>
                     <td class="px-6 py-4 text-right whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
                         <div class="flex items-center justify-end gap-1">
@@ -602,9 +623,11 @@ const AppViews = {
                     </div>
                     <div id="categories-list" class="space-y-2 max-h-64 overflow-y-auto">
                         ${this.state.categories.map(cat => `
-                            <div class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                            <div class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border-2" style="border-color: ${cat.color}40">
                                 <div class="flex items-center gap-3 min-w-0">
-                                    <span class="text-lg shrink-0">${cat.emoji}</span>
+                                    <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style="background-color: ${cat.color}20; border: 2px solid ${cat.color}">
+                                        <span class="text-base">${cat.emoji}</span>
+                                    </div>
                                     <span class="text-sm font-medium text-slate-900 dark:text-white truncate">${cat.name}</span>
                                     ${cat.is_default ? '<span class="text-[10px] px-2 py-0.5 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 rounded-full font-semibold">Default</span>' : ''}
                                 </div>

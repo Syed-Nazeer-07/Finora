@@ -123,7 +123,7 @@
                 <p id="step2-desc" class="text-slate-600 mb-8 text-base">Your monthly income helps us calculate your savings potential and financial health score.</p>
                 <div class="relative">
                     <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 font-semibold text-lg">₹</span>
-                    <input id="monthly_income" type="text" inputmode="numeric" placeholder="1,50,000"
+                    <input id="monthly_income" type="text" inputmode="numeric" placeholder="1,50,000" autocomplete="off"
                         oninput="fmtInput(this)"
                         class="w-full pl-10 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 text-lg font-semibold placeholder-slate-700 focus:outline-none transition-all">
                 </div>
@@ -137,7 +137,7 @@
                 <p id="step3-desc" class="text-slate-600 mb-8 text-base">Your current savings balance across all accounts — FDs, liquid funds, savings accounts.</p>
                 <div class="relative">
                     <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 font-semibold text-lg">₹</span>
-                    <input id="current_savings" type="text" inputmode="numeric" placeholder="2,50,000"
+                    <input id="current_savings" type="text" inputmode="numeric" placeholder="2,50,000" autocomplete="off"
                         oninput="fmtInput(this)"
                         class="w-full pl-10 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 text-lg font-semibold placeholder-slate-700 focus:outline-none transition-all">
                 </div>
@@ -225,7 +225,7 @@
                 <div id="summary-cards" class="grid grid-cols-2 gap-3 mb-8 text-left pop" style="animation-delay:.3s"></div>
 
                 <button onclick="enterDashboard()" id="enter-btn"
-                    class="w-full py-4 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-slate-900 rounded-2xl font-bold text-base shadow-xl shadow-brand-900/60 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 pop" style="animation-delay:.4s">
+                    class="w-full py-4 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white rounded-2xl font-bold text-base shadow-xl shadow-brand-900/60 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 pop" style="animation-delay:.4s">
                     Enter WealthSync
                     <i data-lucide="arrow-right" class="w-5 h-5"></i>
                 </button>
@@ -508,18 +508,24 @@
 
         // Summary cards
         const items = [
-            { label:'Monthly Income',  value: fmt(data.monthly_income),      icon:'trending-up',  color:'text-emerald-400' },
-            { label:'Current Savings', value: fmt(data.current_savings),      icon:'piggy-bank',   color:'text-brand-400'   },
-            { label:'Investments',     value: fmt(data.current_investments),  icon:'bar-chart-2',  color:'text-purple-400'  },
-            { label:'Monthly Goal',    value: data.financial_goal,            icon:'target',       color:'text-amber-400'   },
+            { label:'Monthly Income',  value: fmt(data.monthly_income),      icon:'trending-up',  color:'text-emerald-400', field:'monthly_income' },
+            { label:'Current Savings', value: fmt(data.current_savings),      icon:'piggy-bank',   color:'text-brand-400',   field:'current_savings' },
+            { label:'Investments',     value: fmt(data.current_investments),  icon:'bar-chart-2',  color:'text-purple-400',  field:'current_investments' },
+            { label:'Monthly Goal',    value: data.financial_goal || 'Not Set', icon:'target',    color:'text-amber-400',   field:'financial_goal' },
         ];
         document.getElementById('summary-cards').innerHTML = items.map(it => `
-            <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
-                <div class="flex items-center gap-2 mb-2">
-                    <i data-lucide="${it.icon}" class="w-4 h-4 ${it.color}"></i>
-                    <span class="text-xs text-slate-600 font-medium">${it.label}</span>
+            <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl relative group">
+                <div class="flex items-center justify-between gap-2 mb-2">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="${it.icon}" class="w-4 h-4 ${it.color}"></i>
+                        <span class="text-xs text-slate-600 font-medium">${it.label}</span>
+                    </div>
+                    <button onclick="editField('${it.field}')" class="opacity-0 group-hover:opacity-100 transition-opacity text-brand-600 hover:text-brand-700">
+                        <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+                    </button>
                 </div>
-                <p class="font-bold text-slate-900 text-sm leading-tight">${it.value}</p>
+                <p id="display-${it.field}" class="font-bold text-slate-900 text-sm leading-tight">${it.value}</p>
+                <input id="edit-${it.field}" type="text" ${it.field !== 'financial_goal' ? 'inputmode="numeric"' : ''} class="hidden w-full px-3 py-2 border border-brand-500 rounded-lg text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500" />
             </div>
         `).join('');
 
@@ -532,6 +538,68 @@
         console.log("REDIRECTING TO DASHBOARD");
         console.log("WINDOW LOCATION", window.location.href);
         window.location.replace('/');
+    }
+
+    function editField(field) {
+        const display = document.getElementById(`display-${field}`);
+        const input = document.getElementById(`edit-${field}`);
+        
+        // Set input value
+        if (field === 'financial_goal') {
+            input.value = data[field] || '';
+        } else {
+            input.value = data[field] ? new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(data[field]) : '0';
+        }
+        
+        display.classList.add('hidden');
+        input.classList.remove('hidden');
+        input.focus();
+        
+        // Handle save on blur or enter
+        const saveEdit = async () => {
+            let newVal = input.value.trim();
+            
+            if (field === 'financial_goal') {
+                data[field] = newVal;
+                display.textContent = newVal || 'Not Set';
+            } else {
+                const numVal = parseFloat(newVal.replace(/,/g, ''));
+                if (!isNaN(numVal) && numVal >= 0) {
+                    data[field] = numVal;
+                    display.textContent = fmt(numVal);
+                }
+            }
+            
+            // Save to backend
+            await fetch('/api/profile', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ [field]: data[field] }),
+            });
+            
+            input.classList.add('hidden');
+            display.classList.remove('hidden');
+        };
+        
+        input.addEventListener('blur', saveEdit, { once: true });
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                input.blur();
+            }
+        }, { once: true });
+        
+        if (field !== 'financial_goal') {
+            input.addEventListener('input', (e) => {
+                const raw = e.target.value.replace(/,/g, '');
+                if (raw && !isNaN(raw)) {
+                    const pos = e.target.selectionStart;
+                    const charsAfter = e.target.value.length - pos;
+                    e.target.value = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(raw);
+                    const newPos = Math.max(0, e.target.value.length - charsAfter);
+                    e.target.setSelectionRange(newPos, newPos);
+                }
+            });
+        }
     }
 
     document.addEventListener('keydown', e => {

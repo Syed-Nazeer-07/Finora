@@ -159,17 +159,22 @@ const AppDashboard = {
             if (!txList.length) return '';
             return `<div class="mb-3">
                 <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">${label}</p>
-                ${txList.map(tx => `
+                ${txList.map(tx => {
+                    const catColor = this.getCategoryColor(tx.category);
+                    return `
                 <div class="flex items-center gap-3 py-2 border-b border-slate-50 dark:border-dark-border/50 last:border-0">
-                    <span class="text-lg shrink-0">${this.getCategoryEmoji(tx.category)}</span>
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style="background-color: ${catColor}20; border: 2px solid ${catColor}">
+                        <span class="text-base">${this.getCategoryEmoji(tx.category)}</span>
+                    </div>
                     <div class="flex-1 min-w-0">
                         <p class="text-sm font-medium text-slate-900 dark:text-white truncate">${tx.description}</p>
-                        <p class="text-xs text-slate-400 dark:text-slate-500">${tx.category}</p>
+                        <p class="text-xs font-medium" style="color: ${catColor}">${tx.category}</p>
                     </div>
                     <span class="text-sm font-bold shrink-0 ${tx.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white'}">
                         ${tx.type === 'income' ? '+' : '-'}${this.formatCurrency(tx.amount)}
                     </span>
-                </div>`).join('')}
+                </div>`;
+                }).join('')}
             </div>`;
         };
         const hasActivity = activity.today.length + activity.yesterday.length + activity.earlier.length > 0;
@@ -294,16 +299,21 @@ const AppDashboard = {
                     </div>
                     ${calc.budgetProgress.length > 0 ? calc.budgetProgress.slice(0, 4).map(b => {
                         const pct = b.limit > 0 ? (b.spent / b.limit) * 100 : 0;
-                        const color = pct >= 90 ? 'bg-red-500' : pct >= 75 ? 'bg-amber-500' : 'bg-brand-500';
+                        const catColor = this.getCategoryColor(b.category);
                         const textColor = pct >= 90 ? 'text-red-600 dark:text-red-400' : pct >= 75 ? 'text-amber-600 dark:text-amber-400' : 'text-slate-600 dark:text-slate-400';
                         return `
                         <div class="mb-4 last:mb-0">
                             <div class="flex items-center justify-between mb-1.5">
-                                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">${b.category}</span>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-6 h-6 rounded-md flex items-center justify-center text-xs" style="background-color: ${catColor}30; border: 1.5px solid ${catColor}">
+                                        ${this.getCategoryEmoji(b.category)}
+                                    </div>
+                                    <span class="text-sm font-medium text-slate-700 dark:text-slate-300">${b.category}</span>
+                                </div>
                                 <span class="text-xs font-bold ${textColor}">${Math.round(pct)}%</span>
                             </div>
                             <div class="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                <div class="${color} h-full rounded-full transition-all" style="width: ${Math.min(100, pct)}%"></div>
+                                <div class="h-full rounded-full transition-all" style="width: ${Math.min(100, pct)}%; background-color: ${catColor}"></div>
                             </div>
                             <div class="flex justify-between mt-1">
                                 <span class="text-xs text-slate-500">${this.formatCurrency(b.spent)}</span>
@@ -324,17 +334,22 @@ const AppDashboard = {
                         <button onclick="App.setActiveTab('transactions')" class="text-xs text-brand-500 hover:text-brand-600 font-semibold">View All →</button>
                     </div>
                     <div class="space-y-3 max-h-64 overflow-y-auto">
-                        ${activity.today.concat(activity.yesterday, activity.earlier).slice(0, 7).map(tx => `
+                        ${activity.today.concat(activity.yesterday, activity.earlier).slice(0, 7).map(tx => {
+                            const catColor = this.getCategoryColor(tx.category);
+                            return `
                         <div class="flex items-center gap-3 py-2 border-b border-slate-50 dark:border-dark-border/50 last:border-0">
-                            <span class="text-xl shrink-0">${this.getCategoryEmoji(tx.category)}</span>
+                            <div class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style="background-color: ${catColor}20; border: 2px solid ${catColor}">
+                                <span class="text-base">${this.getCategoryEmoji(tx.category)}</span>
+                            </div>
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm font-medium text-slate-900 dark:text-white truncate">${tx.description}</p>
-                                <p class="text-xs text-slate-400">${tx.category}</p>
+                                <p class="text-xs font-medium" style="color: ${catColor}">${tx.category}</p>
                             </div>
                             <span class="text-sm font-bold shrink-0 ${tx.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white'}">
                                 ${tx.type === 'income' ? '+' : '-'}${this.formatCurrency(tx.amount)}
                             </span>
-                        </div>`).join('') || '<div class="flex flex-col items-center justify-center py-8 text-slate-400 dark:text-slate-500"><i data-lucide="receipt" class="w-8 h-8 mb-2 opacity-40"></i><p class="text-sm">No recent transactions</p></div>'}
+                        </div>`;
+                        }).join('') || '<div class="flex flex-col items-center justify-center py-8 text-slate-400 dark:text-slate-500"><i data-lucide="receipt" class="w-8 h-8 mb-2 opacity-40"></i><p class="text-sm">No recent transactions</p></div>'}
                     </div>
                 </div>
                 <!-- Goal Progress -->
