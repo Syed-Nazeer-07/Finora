@@ -330,8 +330,20 @@ def signup():
         email_sent = _send_verification_email(user, token)
         if not email_sent:
             app.logger.warning(f"Account created for {email} but verification email failed to send")
+            return jsonify({
+                "success": True,
+                "pending": True,
+                "email": email,
+                "verification_email_sent": False,
+                "message": "Account created. Verification email could not be sent."
+            }), 201
 
-        return jsonify({"pending": True, "email": email}), 201
+        return jsonify({
+            "success": True,
+            "pending": True,
+            "email": email,
+            "verification_email_sent": True
+        }), 201
     except Exception as e:
         db.session.rollback()
         app.logger.error(f"Signup error: {e}")
@@ -852,14 +864,27 @@ def _send_email(to, subject, body_html):
     """Send email with timeout handling. Returns True on success, False on failure."""
     html = _EMAIL_HEADER.format(base_url=_base_url()) + body_html + _EMAIL_FOOTER.format(base_url=_base_url())
     try:
-        app.logger.info(f"Sending email to {to} via SMTP {app.config.get('MAIL_SERVER')}:{app.config.get('MAIL_PORT')}")
+        app.logger.info(f"Attempting to send email to {to} via SMTP {app.config.get('MAIL_SERVER')}:{app.config.get('MAIL_PORT')}")
         msg = Message(subject=subject, recipients=[to], html=html)
-        mail.send(msg)
-        app.logger.info(f"Email sent successfully to {to}")
-        return True
+        
+        # Set timeout for SMTP operations to prevent worker death
+        import socket
+        old_timeout = socket.getdefaulttimeout()
+        socket.setdefaulttimeout(10)  # 10 second timeout
+        
+        try:
+            mail.send(msg)
+            app.logger.info(f"Email sent successfully to {to}")
+            return True
+        finally:
+            socket.setdefaulttimeout(old_timeout)
+            
+    except socket.timeout:
+        app.logger.error(f"SMTP timeout sending to {to} - connection timed out after 10s")
+        return False
     except Exception as e:
-        app.logger.error(f"Mail send failed to {to}: {e}")
-        app.logger.error(f"MAIL_SERVER: {app.config.get('MAIL_SERVER')}, MAIL_PORT: {app.config.get('MAIL_PORT')}")
+        app.logger.error(f"Mail send failed to {to}: {type(e).__name__}: {e}")
+        app.logger.error(f"SMTP Config - Server: {app.config.get('MAIL_SERVER')}, Port: {app.config.get('MAIL_PORT')}, TLS: {app.config.get('MAIL_USE_TLS')}")
         return False
 
 
