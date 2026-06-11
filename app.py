@@ -93,6 +93,7 @@ class Profile(db.Model):
     financial_goal       = db.Column(db.String(200), default="")
     account_mode         = db.Column(db.String(20), default="income", nullable=False)
     onboarding_completed = db.Column(db.Boolean, default=False)
+    tutorial_completed   = db.Column(db.Boolean, default=False)
 
     user = db.relationship("User", back_populates="profile")
 
@@ -416,6 +417,7 @@ def get_profile():
         "financial_goal":      p.financial_goal,
         "account_mode":        p.account_mode,
         "onboarding_completed": p.onboarding_completed,
+        "tutorial_completed":  p.tutorial_completed,
     })
 
 
@@ -469,6 +471,7 @@ def update_profile():
         if mode in ("income", "cashflow"):
             p.account_mode = mode
     if "onboarding_completed" in data: p.onboarding_completed = bool(data["onboarding_completed"])
+    if "tutorial_completed" in data: p.tutorial_completed = bool(data["tutorial_completed"])
     db.session.commit()
     return jsonify({"success": True})
 

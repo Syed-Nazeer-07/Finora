@@ -3,7 +3,7 @@ const App = {
         activeTab: 'dashboard',
         isMobileMenuOpen: false,
         sidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true',
-        darkMode: localStorage.getItem('theme') !== 'light',
+        darkMode: localStorage.getItem('theme') === 'dark',
         modal: { isOpen: false, type: null, entityId: null },
         txFormType: 'expense',
         charts: {},
@@ -1408,6 +1408,51 @@ const App = {
 Object.assign(App, AppDashboard);
 Object.assign(App, AppViews);
 Object.assign(App, AppCharts);
+
+const tutorialSteps = [
+    { title: "Dashboard", content: "View your financial overview, net worth, and goals at a glance." },
+    { title: "Transactions", content: "Track all your income and expenses with categories and dates." },
+    { title: "Budgets", content: "Set spending limits for different categories and monitor progress." },
+    { title: "Goals", content: "Create financial goals and see forecasts for when you'll reach them." },
+    { title: "Investments", content: "Track your investment portfolio and asset allocation." },
+];
+let tutorialStep = 0;
+
+function showTutorialIfNeeded() {
+    fetch('/api/profile').then(r => r.json()).then(profile => {
+        if (profile.tutorial_completed === false) {
+            document.getElementById('tutorial-modal').classList.remove('hidden');
+        }
+    }).catch(() => {});
+}
+
+function nextTutorial() {
+    tutorialStep++;
+    if (tutorialStep < tutorialSteps.length) {
+        const step = tutorialSteps[tutorialStep];
+        document.getElementById('tutorial-title').textContent = step.title;
+        document.getElementById('tutorial-content').textContent = step.content;
+        document.getElementById('tutorial-btn').textContent = tutorialStep === tutorialSteps.length - 1 ? 'Finish' : 'Next';
+    } else {
+        completeTutorial();
+    }
+}
+
+function skipTutorial() {
+    completeTutorial();
+}
+
+function completeTutorial() {
+    fetch('/api/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tutorial_completed: true })
+    }).then(() => {
+        document.getElementById('tutorial-modal').classList.add('hidden');
+    }).catch(() => {});
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     App.init();
+    setTimeout(showTutorialIfNeeded, 500);
 });
