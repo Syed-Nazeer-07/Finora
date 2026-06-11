@@ -180,7 +180,10 @@ const App = {
             maximumFractionDigits: 0
         }).format(amount);
     },
-    getCategoryNames() {
+    getCategoryNames(type = null) {
+        if (type) {
+            return this.state.categories.filter(c => c.category_type === type).map(c => c.name);
+        }
         return this.state.categories.map(c => c.name);
     },
     getCategoryEmoji(name) {
@@ -1051,7 +1054,8 @@ const App = {
         if (type === 'roadmap') modalTitle = 'Customize Roadmap';
         let formHtml = '';
         if (type === 'transaction') {
-            const catOptions = this.getCategoryNames().map(cat => `<option value="${cat}" ${item && item.category === cat ? 'selected' : ''}>${cat}</option>`).join('');
+            const txType = this.state.txFormType || (item ? item.type : 'expense');
+            const catOptions = this.getCategoryNames(txType).map(cat => `<option value="${cat}" ${item && item.category === cat ? 'selected' : ''}>${cat}</option>`).join('');
             const sym = this.getCurrencySymbol();
             formHtml = `
                 <div class="grid grid-cols-2 gap-4">

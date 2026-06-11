@@ -172,6 +172,7 @@ class Category(db.Model):
     name        = db.Column(db.String(50), nullable=False)
     emoji       = db.Column(db.String(10), nullable=False, default="📦")
     color       = db.Column(db.String(7), nullable=False, default="#3b82f6")
+    category_type = db.Column(db.String(10), nullable=False, default="expense")
     is_default  = db.Column(db.Boolean, default=False, nullable=False)
     created_at  = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -193,21 +194,28 @@ with app.app_context():
 
         db.session.add(Profile(user_id=demo.id))
 
-        default_cats = [
+        # Expense categories
+        expense_cats = [
             ("Food & Dining", "🍔"), ("Groceries", "🛒"), ("Transportation", "🚗"),
-            ("Fuel", "⛽"), ("Housing", "🏠"), ("Utilities", "💡"),
+            ("Fuel", "⛽"), ("Housing", "🏠"), ("Rent", "🏘️"), ("Utilities", "💡"),
             ("Internet & Mobile", "📱"), ("Shopping", "🛍️"), ("Entertainment", "🍿"),
-            ("Subscriptions", "📺"), ("Education", "📚"), ("Healthcare", "🏥"),
-            ("Insurance", "🛡️"), ("Travel", "✈️"), ("Gifts & Donations", "🎁"),
-            ("Investments", "📈"), ("Savings", "💰"), ("Debt Payments", "💳"),
+            ("Healthcare", "🏥"), ("Education", "📚"), ("Insurance", "🛡️"),
+            ("Debt Payments", "💳"), ("Subscriptions", "📺"), ("Gifts & Donations", "🎁"),
+            ("Travel", "✈️"), ("Other Expense", "📦")
+        ]
+        for name, emoji in expense_cats:
+            db.session.add(Category(user_id=demo.id, name=name, emoji=emoji, category_type="expense", is_default=True))
+        
+        # Income categories
+        income_cats = [
             ("Salary", "💵"), ("Pocket Money", "💸"), ("Freelance", "🚀"),
             ("Business Income", "💼"), ("Scholarship", "🎓"), ("Allowance", "👛"),
             ("Internship", "🧑‍💼"), ("Gift Received", "🎁"), ("Interest Income", "🏦"),
             ("Investment Returns", "📊"), ("Refund", "↩️"), ("Bonus", "🎉"),
-            ("Side Hustle", "⚡"), ("Other", "📦")
+            ("Side Hustle", "⚡"), ("Other Income", "📦")
         ]
-        for name, emoji in default_cats:
-            db.session.add(Category(user_id=demo.id, name=name, emoji=emoji, is_default=True))
+        for name, emoji in income_cats:
+            db.session.add(Category(user_id=demo.id, name=name, emoji=emoji, category_type="income", is_default=True))
 
         if Transaction.query.count() == 0:
             db.session.add_all([
@@ -293,21 +301,28 @@ def signup():
         db.session.flush()
         db.session.add(Profile(user_id=user.id))
         
-        default_cats = [
+        # Expense categories
+        expense_cats = [
             ("Food & Dining", "🍔"), ("Groceries", "🛒"), ("Transportation", "🚗"),
-            ("Fuel", "⛽"), ("Housing", "🏠"), ("Utilities", "💡"),
+            ("Fuel", "⛽"), ("Housing", "🏠"), ("Rent", "🏘️"), ("Utilities", "💡"),
             ("Internet & Mobile", "📱"), ("Shopping", "🛍️"), ("Entertainment", "🍿"),
-            ("Subscriptions", "📺"), ("Education", "📚"), ("Healthcare", "🏥"),
-            ("Insurance", "🛡️"), ("Travel", "✈️"), ("Gifts & Donations", "🎁"),
-            ("Investments", "📈"), ("Savings", "💰"), ("Debt Payments", "💳"),
+            ("Healthcare", "🏥"), ("Education", "📚"), ("Insurance", "🛡️"),
+            ("Debt Payments", "💳"), ("Subscriptions", "📺"), ("Gifts & Donations", "🎁"),
+            ("Travel", "✈️"), ("Other", "📦")
+        ]
+        for cat_name, cat_emoji in expense_cats:
+            db.session.add(Category(user_id=user.id, name=cat_name, emoji=cat_emoji, category_type="expense", is_default=True))
+        
+        # Income categories
+        income_cats = [
             ("Salary", "💵"), ("Pocket Money", "💸"), ("Freelance", "🚀"),
             ("Business Income", "💼"), ("Scholarship", "🎓"), ("Allowance", "👛"),
             ("Internship", "🧑‍💼"), ("Gift Received", "🎁"), ("Interest Income", "🏦"),
             ("Investment Returns", "📊"), ("Refund", "↩️"), ("Bonus", "🎉"),
             ("Side Hustle", "⚡"), ("Other", "📦")
         ]
-        for cat_name, cat_emoji in default_cats:
-            db.session.add(Category(user_id=user.id, name=cat_name, emoji=cat_emoji, is_default=True))
+        for cat_name, cat_emoji in income_cats:
+            db.session.add(Category(user_id=user.id, name=cat_name, emoji=cat_emoji, category_type="income", is_default=True))
         
         db.session.commit()
 
@@ -1086,7 +1101,7 @@ def delete_roadmap_item(item_id):
 
 
 def _category_dict(c):
-    return {"id": c.id, "name": c.name, "emoji": c.emoji, "color": c.color, "is_default": c.is_default}
+    return {"id": c.id, "name": c.name, "emoji": c.emoji, "color": c.color, "category_type": c.category_type, "is_default": c.is_default}
 
 @app.route("/api/categories", methods=["GET"])
 def get_categories():
@@ -1110,7 +1125,10 @@ def create_category():
     
     emoji = (data.get("emoji") or "📦").strip()[:10]
     color = (data.get("color") or "#3b82f6").strip()[:7]
-    cat = Category(user_id=session["user_id"], name=name, emoji=emoji, color=color, is_default=False)
+    category_type = (data.get("category_type") or "expense").strip()
+    if category_type not in ("income", "expense"):
+        return jsonify({"error": "category_type must be 'income' or 'expense'"}), 400
+    cat = Category(user_id=session["user_id"], name=name, emoji=emoji, color=color, category_type=category_type, is_default=False)
     db.session.add(cat)
     db.session.commit()
     return jsonify(_category_dict(cat)), 201
@@ -1137,6 +1155,10 @@ def update_category(cat_id):
         cat.emoji = (data["emoji"] or "📦").strip()[:10]
     if "color" in data:
         cat.color = (data["color"] or "#3b82f6").strip()[:7]
+    if "category_type" in data:
+        category_type = (data["category_type"] or "expense").strip()
+        if category_type in ("income", "expense"):
+            cat.category_type = category_type
     db.session.commit()
     return jsonify(_category_dict(cat))
 
@@ -1592,18 +1614,28 @@ def google_callback():
             db.session.flush()
             db.session.add(Profile(user_id=user.id))
             
-            default_cats = [
+            # Expense categories
+            expense_cats = [
                 ("Food & Dining", "🍔"), ("Groceries", "🛒"), ("Transportation", "🚗"),
-                ("Fuel", "⛽"), ("Housing", "🏠"), ("Utilities", "💡"),
+                ("Fuel", "⛽"), ("Housing", "🏠"), ("Rent", "🏘️"), ("Utilities", "💡"),
                 ("Internet & Mobile", "📱"), ("Shopping", "🛍️"), ("Entertainment", "🍿"),
-                ("Subscriptions", "📺"), ("Education", "📚"), ("Healthcare", "🏥"),
-                ("Insurance", "🛡️"), ("Travel", "✈️"), ("Gifts & Donations", "🎁"),
-                ("Investments", "📈"), ("Savings", "💰"), ("Debt Payments", "💳"),
-                ("Salary", "💵"), ("Freelance Income", "🚀"), ("Pocket Money", "💸"),
-                ("Other", "📦")
+                ("Healthcare", "🏥"), ("Education", "📚"), ("Insurance", "🛡️"),
+                ("Debt Payments", "💳"), ("Subscriptions", "📺"), ("Gifts & Donations", "🎁"),
+                ("Travel", "✈️"), ("Other", "📦")
             ]
-            for cat_name, cat_emoji in default_cats:
-                db.session.add(Category(user_id=user.id, name=cat_name, emoji=cat_emoji, is_default=True))
+            for cat_name, cat_emoji in expense_cats:
+                db.session.add(Category(user_id=user.id, name=cat_name, emoji=cat_emoji, category_type="expense", is_default=True))
+            
+            # Income categories
+            income_cats = [
+                ("Salary", "💵"), ("Pocket Money", "💸"), ("Freelance", "🚀"),
+                ("Business Income", "💼"), ("Scholarship", "🎓"), ("Allowance", "👛"),
+                ("Internship", "🧑‍💼"), ("Gift Received", "🎁"), ("Interest Income", "🏦"),
+                ("Investment Returns", "📊"), ("Refund", "↩️"), ("Bonus", "🎉"),
+                ("Side Hustle", "⚡"), ("Other", "📦")
+            ]
+            for cat_name, cat_emoji in income_cats:
+                db.session.add(Category(user_id=user.id, name=cat_name, emoji=cat_emoji, category_type="income", is_default=True))
             
             is_new = True
         db.session.commit()
