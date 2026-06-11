@@ -413,6 +413,12 @@ def health_check():
         app.logger.error(f"Health check failed: {e}")
         return jsonify({"status": "unhealthy", "database": "disconnected", "error": str(e)}), 503
 
+@app.route("/favicon.ico")
+def favicon():
+    """Serve favicon from static folder"""
+    from flask import send_from_directory
+    return send_from_directory('static', 'favicon.ico', mimetype='image/x-icon')
+
 @app.before_request
 def log_request():
     """Log incoming requests in production"""
