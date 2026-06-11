@@ -38,6 +38,15 @@ if not app.debug:
     file_handler.setLevel(logging.INFO)
     app.logger.addHandler(file_handler)
     app.logger.setLevel(logging.INFO)
+    
+    # Log database configuration on startup
+    db_uri = app.config["SQLALCHEMY_DATABASE_URI"]
+    if db_uri.startswith("postgresql://"):
+        app.logger.info(f"✓ Using PostgreSQL: {db_uri.split('@')[1] if '@' in db_uri else 'configured'}")
+    elif db_uri.startswith("sqlite:///"):
+        app.logger.warning(f"⚠ Using SQLite: {db_uri} - DATA WILL BE LOST ON DEPLOYMENT!")
+    else:
+        app.logger.info(f"Using database: {db_uri.split(':')[0]}")
     app.logger.info("WealthSync startup")
 
 app.config["MAIL_SERVER"]   = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
