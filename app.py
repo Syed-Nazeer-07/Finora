@@ -11,15 +11,14 @@ load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 
 app = Flask(__name__)
 
-# Database configuration - auto-detect PostgreSQL, fallback to SQLite
 database_url = os.environ.get("DATABASE_URL")
 if database_url and database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 app.config["SQLALCHEMY_DATABASE_URI"] = database_url or "sqlite:///wealthsync.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-    "pool_pre_ping": True,  # Verify connections before using (PostgreSQL)
-    "pool_recycle": 3600,   # Recycle connections every hour
+    "pool_pre_ping": True,
+    "pool_recycle": 3600,
     "echo": False
 }
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-change-in-production")
@@ -29,7 +28,6 @@ app.config["SESSION_COOKIE_SECURE"]   = os.environ.get("PREFERRED_URL_SCHEME", "
 app.config["PREFERRED_URL_SCHEME"]    = os.environ.get("PREFERRED_URL_SCHEME", "http")
 app.config["PROPAGATE_EXCEPTIONS"] = True
 
-# Production logging
 import logging
 from logging.handlers import RotatingFileHandler
 if not app.debug:
@@ -61,11 +59,12 @@ google = oauth.register(
     client_id=os.environ.get("GOOGLE_CLIENT_ID"),
     client_secret=os.environ.get("GOOGLE_CLIENT_SECRET"),
     server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
+    authorize_url="https://accounts.google.com/o/oauth2/v2/auth",
+    token_url="https://oauth2.googleapis.com/token",
     client_kwargs={"scope": "openid email profile"},
 )
 
 
-# ─── Models ───────────────────────────────────────────────────────────────────
 
 class User(db.Model):
     id            = db.Column(db.Integer, primary_key=True)
@@ -92,7 +91,7 @@ class Profile(db.Model):
     current_investments  = db.Column(db.Float, default=0)
     monthly_expenses     = db.Column(db.Float, default=0)
     financial_goal       = db.Column(db.String(200), default="")
-    account_mode         = db.Column(db.String(20), default="income", nullable=False)  # "income" or "cashflow"
+    account_mode         = db.Column(db.String(20), default="income", nullable=False)
     onboarding_completed = db.Column(db.Boolean, default=False)
 
     user = db.relationship("User", back_populates="profile")
@@ -154,13 +153,13 @@ class UserSettings(db.Model):
     __tablename__ = "user_settings"
     id                    = db.Column(db.Integer, primary_key=True)
     user_id               = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, unique=True)
-    theme                 = db.Column(db.String(10),  default="dark")    # "dark" | "light"
-    currency              = db.Column(db.String(10),  default="INR")     # ISO 4217
+    theme                 = db.Column(db.String(10),  default="dark")
+    currency              = db.Column(db.String(10),  default="INR")
     currency_symbol       = db.Column(db.String(5),   default="₹")
     currency_locale       = db.Column(db.String(10),  default="en-IN")
     show_greeting         = db.Column(db.Boolean,     default=True)
     sidebar_collapsed     = db.Column(db.Boolean,     default=False)
-    timezone              = db.Column(db.String(50),  default="UTC")     # IANA timezone
+    timezone              = db.Column(db.String(50),  default="UTC")
 
     user = db.relationship("User", backref=db.backref("settings", uselist=False))
 
@@ -177,7 +176,6 @@ class Category(db.Model):
     __table_args__ = (db.UniqueConstraint('user_id', 'name', name='_user_category_uc'),)
 
 
-# ─── Seed ─────────────────────────────────────────────────────────────────────
 
 with app.app_context():
     db.create_all()
@@ -193,7 +191,6 @@ with app.app_context():
 
         db.session.add(Profile(user_id=demo.id))
 
-        # Default categories
         default_cats = [
             ("Food & Dining", "🍔"), ("Groceries", "🛒"), ("Transportation", "🚗"),
             ("Fuel", "⛽"), ("Housing", "🏠"), ("Utilities", "💡"),
@@ -222,7 +219,6 @@ with app.app_context():
         db.session.commit()
 
 
-# ─── Helpers ──────────────────────────────────────────────────────────────────
 
 def current_user():
     uid = session.get("user_id")
@@ -251,7 +247,6 @@ def _validate_tx(data):
         return None, (jsonify({"error": "amount must be a number"}), 400)
 
 
-# ─── Auth routes ──────────────────────────────────────────────────────────────
 
 @app.route("/login")
 def login_page():
@@ -292,7 +287,6 @@ def signup():
     db.session.flush()
     db.session.add(Profile(user_id=user.id))
     
-    # Add default categories
     default_cats = [
         ("Food & Dining", "🍔"), ("Groceries", "🛒"), ("Transportation", "🚗"),
         ("Fuel", "⛽"), ("Housing", "🏠"), ("Utilities", "💡"),
@@ -355,7 +349,6 @@ def me():
     })
 
 
-# ─── Health & Monitoring ──────────────────────────────────────────────────
 
 @app.route("/health", methods=["GET"])
 def health_check():
@@ -373,7 +366,25 @@ def log_request():
     if not app.debug and app.logger.level <= logging.INFO:
         app.logger.info(f"{request.method} {request.path}")
 
-# ─── App routes ───────────────────────────────────────────────────────────────
+
+@app.route("/debug/oauth", methods=["GET"])
+def debug_oauth():
+    client_id = os.environ.get("GOOGLE_CLIENT_ID")
+    client_secret = os.environ.get("GOOGLE_CLIENT_SECRET")
+    if not client_id or not client_secret:
+        return jsonify({"error": "OAuth credentials missing"}), 400
+    return jsonify({
+        "client_id_loaded": bool(client_id),
+        "client_id_length": len(client_id) if client_id else 0,
+        "client_secret_loaded": bool(client_secret),
+        "client_secret_length": len(client_secret) if client_secret else 0,
+        "redirect_uri_template": url_for("google_callback", _external=True),
+        "app_url_scheme": os.environ.get("PREFERRED_URL_SCHEME", "http"),
+        "google_client_config": {
+            "client_id_starts_with": client_id[:20] if client_id else None,
+            "client_secret_starts_with": client_secret[:10] if client_secret else None
+        }
+    })
 
 @app.route("/")
 def index():
@@ -389,7 +400,6 @@ def onboarding_page():
     return render_template("onboarding.html")
 
 
-# ─── Profile API ─────────────────────────────────────────────────────────────
 
 @app.route("/api/profile", methods=["GET"])
 def get_profile():
@@ -418,13 +428,12 @@ def update_profile():
         return jsonify({"error": "Profile not found"}), 404
     data = request.get_json(silent=True) or {}
     
-    # Validate inputs
     try:
         if "monthly_income" in data:
             val = float(data["monthly_income"] or 0)
             if val < 0:
                 return jsonify({"error": "monthly_income cannot be negative"}), 400
-            if val > 1e10:  # Sanity check: max 10 billion
+            if val > 1e10:
                 return jsonify({"error": "monthly_income exceeds reasonable limit"}), 400
             p.monthly_income = val
         
@@ -637,7 +646,6 @@ def forecast_goals():
     goals = Goal.query.filter_by(user_id=uid).all()
     txs = Transaction.query.filter_by(user_id=uid).all()
     
-    # Calculate avg monthly savings from last 3 months
     now = datetime.utcnow()
     three_months_ago = datetime(now.year, now.month - 2 if now.month > 2 else now.month + 10, 1)
     recent_txs = [t for t in txs if datetime.strptime(t.date, "%Y-%m-%d") >= three_months_ago]
@@ -672,7 +680,6 @@ def forecast_goals():
             })
             continue
         
-        # Scenarios
         months_current = remaining / contribution
         months_accel = remaining / (contribution * 1.1)
         months_aggr = remaining / (contribution * 1.25)
@@ -681,7 +688,6 @@ def forecast_goals():
         accel_date = (now + timedelta(days=months_accel * 30)).strftime("%Y-%m-%d")
         aggr_date = (now + timedelta(days=months_aggr * 30)).strftime("%Y-%m-%d")
         
-        # Health status
         health = "on_track"
         if g.target_date:
             target_dt = datetime.strptime(g.target_date, "%Y-%m-%d")
@@ -692,7 +698,6 @@ def forecast_goals():
             elif days_diff > 30:
                 health = "behind"
         
-        # Insights
         insights = []
         if health == "on_track":
             insights.append(f"You're on track to reach this goal by {current_date}.")
@@ -777,7 +782,6 @@ def delete_investment(inv_id):
     return jsonify({"success": True})
 
 
-# ─── Email helpers ────────────────────────────────────────────────────────────
 
 _EMAIL_HEADER = """
 <div style="font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;max-width:580px;margin:0 auto;background:#0f172a;border-radius:16px;overflow:hidden;border:1px solid #1e293b">
@@ -865,7 +869,6 @@ def _send_password_reset_email(user, token):
     _send_email(user.email, "Reset your WealthSync password", body)
 
 
-# ─── Verification routes ───────────────────────────────────────────────────────
 
 @app.route("/verify-email/<token>")
 def verify_email(token):
@@ -887,7 +890,6 @@ def verify_pending():
     return render_template("verify_pending.html", email=email)
 
 
-# ─── Forgot / Reset password routes ──────────────────────────────────────────
 
 @app.route("/forgot-password")
 def forgot_password_page():
@@ -900,14 +902,12 @@ def forgot_password():
     email = (data.get("email") or "").strip().lower()
 
     user = User.query.filter_by(email=email).first()
-    # Only send reset for password-based accounts that are verified
     if user and user.password_hash and user.email_verified:
         user.password_reset_token   = secrets.token_urlsafe(32)
         user.password_reset_expires = datetime.utcnow() + timedelta(hours=1)
         db.session.commit()
         _send_password_reset_email(user, user.password_reset_token)
 
-    # Always identical response — no user enumeration
     return jsonify({"message": "If an account exists, a password reset email has been sent."})
 
 
@@ -948,7 +948,6 @@ def resend_verification():
 
     user = User.query.filter_by(email=email).first()
     if user and not user.email_verified and user.password_hash:
-        # Rate limit: only allow resend if token is older than 60 seconds
         can_resend = (
             not user.email_verification_expires or
             datetime.utcnow() > user.email_verification_expires - timedelta(hours=23, minutes=59)
@@ -1012,7 +1011,6 @@ def delete_roadmap_item(item_id):
     return jsonify({"success": True})
 
 
-# ─── Category API ─────────────────────────────────────────────────────────────
 
 def _category_dict(c):
     return {"id": c.id, "name": c.name, "emoji": c.emoji, "is_default": c.is_default}
@@ -1033,7 +1031,6 @@ def create_category():
     if not name or len(name) > 50:
         return jsonify({"error": "Category name must be 1-50 characters"}), 400
     
-    # Check for duplicates
     existing = Category.query.filter_by(user_id=session["user_id"], name=name).first()
     if existing:
         return jsonify({"error": "Category already exists"}), 400
@@ -1058,7 +1055,6 @@ def update_category(cat_id):
         name = (data["name"] or "").strip()
         if not name or len(name) > 50:
             return jsonify({"error": "Name must be 1-50 characters"}), 400
-        # Check duplicate
         dup = Category.query.filter_by(user_id=session["user_id"], name=name).filter(Category.id != cat_id).first()
         if dup:
             return jsonify({"error": "Category name already exists"}), 400
@@ -1077,7 +1073,6 @@ def delete_category(cat_id):
     if cat.is_default:
         return jsonify({"error": "Cannot delete default categories"}), 400
     
-    # Check if category is in use
     in_use = Transaction.query.filter_by(user_id=session["user_id"], category=cat.name).first()
     if in_use:
         return jsonify({"error": "Category is in use by transactions. Reassign them first."}), 400
@@ -1087,7 +1082,6 @@ def delete_category(cat_id):
     return jsonify({"success": True})
 
 
-# ─── Settings API ─────────────────────────────────────────────────────────────
 
 def _get_or_create_settings(uid):
     s = UserSettings.query.filter_by(user_id=uid).first()
@@ -1126,7 +1120,6 @@ def update_settings():
     if "sidebar_collapsed" in data: s.sidebar_collapsed = bool(data["sidebar_collapsed"])
     if "timezone"          in data:
         tz = str(data["timezone"])[:50]
-        # Validate it's a known IANA zone via simple allowlist check
         VALID_ZONES = {
             "UTC","Asia/Kolkata","America/New_York","America/Chicago","America/Los_Angeles",
             "America/Toronto","Europe/London","Europe/Paris","Europe/Berlin","Asia/Dubai",
@@ -1194,7 +1187,6 @@ def resend_verification_settings():
     _send_verification_email(user, user.email_verification_token)
     return jsonify({"success": True})
 
-# ─── Export API ───────────────────────────────────────────────────────────────
 
 import csv, io, json as _json
 
@@ -1249,45 +1241,37 @@ def get_financial_health():
     uid = session["user_id"]
     
     def calc_health(txs, profile, budgets, goals, investments):
-        # Transaction-based
         income = sum(t.amount for t in txs if t.type == 'income')
         expenses = sum(t.amount for t in txs if t.type == 'expense')
         
-        # Profile data
         savings = profile.current_savings if profile else 0
         inv_value = profile.current_investments if profile else 0
         monthly_exp = profile.monthly_expenses if profile else (expenses / max(1, len({t.date[:7] for t in txs})))
         monthly_inc = profile.monthly_income if profile else (income / max(1, len({t.date[:7] for t in txs})))
         
-        # 1. Savings Rate (0-20 pts)
         savings_rate = (savings / (monthly_inc * 12)) if monthly_inc > 0 else 0
         savings_rate_score = min(20, savings_rate * 100)
         
-        # 2. Emergency Fund (0-20 pts)
         emergency_months = (savings / monthly_exp) if monthly_exp > 0 else 0
         emergency_fund_score = min(20, (emergency_months / 6) * 20)
         
-        # 3. Budget Discipline (0-15 pts)
         budget_score = 0
         if budgets:
             met = sum(1 for b in budgets if sum(t.amount for t in txs if t.type=='expense' and t.category==b.category) <= b.limit_amount)
             budget_score = (met / len(budgets)) * 15
         else:
-            budget_score = 10  # default if no budgets set
+            budget_score = 10
         
-        # 4. Goal Progress (0-15 pts)
         goal_score = 0
         if goals:
             avg_progress = sum(min(100, (g.current_amount / g.target_amount) * 100 if g.target_amount > 0 else 0) for g in goals) / len(goals)
             goal_score = (avg_progress / 100) * 15
         else:
-            goal_score = 5  # default
+            goal_score = 5
         
-        # 5. Investment Activity (0-15 pts)
         inv_ratio = (inv_value / savings) if savings > 0 else (1 if inv_value > 0 else 0)
         investment_score = min(15, inv_ratio * 15)
         
-        # 6. Spending Stability (0-10 pts)
         if len(txs) >= 2:
             monthly_expenses = {}
             for t in txs:
@@ -1306,7 +1290,6 @@ def get_financial_health():
         else:
             stability_score = 5
         
-        # 7. Net Worth Growth (0-5 pts)
         net_worth = income - expenses + savings + inv_value
         growth_score = 5 if net_worth > 0 else 2
         
@@ -1333,12 +1316,11 @@ def get_financial_health():
             }
         }
     
-    # Current month
     now = datetime.utcnow()
     this_ym = f"{now.year}-{now.month:02d}"
     txs_this = Transaction.query.filter_by(user_id=uid).filter(Transaction.date.startswith(this_ym)).all()
     if not txs_this:
-        txs_this = Transaction.query.filter_by(user_id=uid).all()  # fallback to all
+        txs_this = Transaction.query.filter_by(user_id=uid).all()
     
     profile = Profile.query.filter_by(user_id=uid).first()
     budgets = Budget.query.filter_by(user_id=uid).all()
@@ -1347,7 +1329,6 @@ def get_financial_health():
     
     current_health = calc_health(txs_this, profile, budgets, goals, investments)
     
-    # Last month
     last_month = now.month - 1 if now.month > 1 else 12
     last_year = now.year if now.month > 1 else now.year - 1
     last_ym = f"{last_year}-{last_month:02d}"
@@ -1356,9 +1337,8 @@ def get_financial_health():
     if txs_last:
         last_health = calc_health(txs_last, profile, budgets, goals, investments)
     else:
-        last_health = current_health  # no previous data
+        last_health = current_health
     
-    # Recommendations
     recommendations = []
     details = current_health["details"]
     comps = current_health["components"]
@@ -1389,7 +1369,6 @@ def get_financial_health():
     if not recommendations:
         recommendations.append("Excellent! Maintain your current financial habits.")
     
-    # Changes
     changes = []
     for key in current_health["components"]:
         curr = current_health["components"][key]
@@ -1411,7 +1390,6 @@ def get_financial_health():
     })
 
 
-# ─── Danger Zone API ──────────────────────────────────────────────────────────
 
 @app.route("/api/danger/clear-transactions", methods=["DELETE"])
 def clear_transactions():
@@ -1464,20 +1442,17 @@ def net_worth_history():
     txs = Transaction.query.filter_by(user_id=uid).all()
 
     from collections import defaultdict
-    # Base balance-sheet values from profile
     base_savings     = p.current_savings     if p else 0
     base_investments = p.current_investments if p else 0
 
-    # Build monthly income/expense totals
     monthly = defaultdict(lambda: {"income": 0, "expense": 0})
     for t in txs:
         try:
-            ym = t.date[:7]  # "YYYY-MM"
+            ym = t.date[:7]
             monthly[ym][t.type] += t.amount
         except Exception:
             pass
 
-    # Generate last 6 month keys
     today = datetime.utcnow()
     months = []
     for i in range(5, -1, -1):
@@ -1533,7 +1508,7 @@ def google_callback():
     if not user:
         user = User.query.filter_by(email=email).first()
         if user:
-            user.google_id = google_id  # link existing account
+            user.google_id = google_id
             user.email_verified = True
         else:
             user = User(name=name, email=email, google_id=google_id, email_verified=True)
@@ -1541,7 +1516,6 @@ def google_callback():
             db.session.flush()
             db.session.add(Profile(user_id=user.id))
             
-            # Add default categories
             default_cats = [
                 ("Food & Dining", "🍔"), ("Groceries", "🛒"), ("Transportation", "🚗"),
                 ("Fuel", "⛽"), ("Housing", "🏠"), ("Utilities", "💡"),
