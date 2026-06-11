@@ -304,7 +304,10 @@ def signup():
         
         db.session.commit()
 
-        _send_verification_email(user, token)
+        # Send verification email (non-blocking, account creation succeeds even if email fails)
+        email_sent = _send_verification_email(user, token)
+        if not email_sent:
+            app.logger.warning(f"Account created for {email} but verification email failed to send")
 
         return jsonify({"pending": True, "email": email}), 201
     except Exception as e:
@@ -823,14 +826,62 @@ def _base_url():
 
 
 def _send_email(to, subject, body_html):
+    """Send email with timeout handling. Returns True on success, False on failure."""
     html = _EMAIL_HEADER.format(base_url=_base_url()) + body_html + _EMAIL_FOOTER.format(base_url=_base_url())
     try:
-        mail.send(Message(subject=subject, recipients=[to], html=html))
+        app.logger.info(f"Sending email to {to} via SMTP {app.config.get('MAIL_SERVER')}:{app.config.get('MAIL_PORT')}")
+        msg = Message(subject=subject, recipients=[to], html=html)
+        mail.send(msg)
+        app.logger.info(f"Email sent successfully to {to}")
+        return True
     except Exception as e:
-        app.logger.error("Mail send failed to %s: %s", to, e)
+        app.logger.error(f"Mail send failed to {to}: {e}")
+        app.logger.error(f"MAIL_SERVER: {app.config.get('MAIL_SERVER')}, MAIL_PORT: {app.config.get('MAIL_PORT')}")
+        return False
 
 
 def _send_verification_email(user, token):
+    verify_url = url_for("verify_email", token=token, _external=True)
+    body = f"""
+    <h2 style="margin:0 0 6px;color:#0f172a;font-size:22px;font-weight:700">Hi {user.name},</h2>
+    <p style="color:#64748b;margin:0 0 28px;line-height:1.7;font-size:15px">
+      Thanks for signing up. Click the button below to verify your email address and activate your WealthSync account.
+    </p>
+    <a href="{verify_url}" style="display:inline-block;background:linear-gradient(135deg,#2563eb,#4f46e5);color:#fff;text-decoration:none;padding:14px 32px;border-radius:12px;font-weight:600;font-size:15px;margin-bottom:32px">
+      Verify Email Address
+    </a>
+    <div style="background:#f1f5f9;border-radius:10px;padding:16px 20px;margin-bottom:24px">
+      <p style="margin:0 0 4px;color:#64748b;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Or paste this link in your browser</p>
+      <p style="margin:0;word-break:break-all;color:#2563eb;font-size:12px">{verify_url}</p>
+    </div>
+    <div style="background:#dbeafe;border:1px solid #93c5fd;border-radius:10px;padding:14px 18px;margin-bottom:24px">
+      <p style="margin:0;color:#1e3a8a;font-size:13px">🔒 <strong>Account security:</strong> This link expires in <strong>24 hours</strong> and can only be used once.</p>
+    </div>
+    <p style="color:#64748b;font-size:13px;margin:0">If you didn't create a WealthSync account, you can safely ignore this email. No account will be activated without verification.</p>
+    """
+    return _send_email(user.email, "Verify your WealthSync account", body)
+
+
+def _send_password_reset_email(user, token):
+    reset_url = url_for("reset_password_page", token=token, _external=True)
+    body = f"""
+    <h2 style="margin:0 0 6px;color:#0f172a;font-size:22px;font-weight:700">Hi {user.name},</h2>
+    <p style="color:#64748b;margin:0 0 28px;line-height:1.7;font-size:15px">
+      We received a request to reset the password for your WealthSync account. Click the button below to choose a new password.
+    </p>
+    <a href="{reset_url}" style="display:inline-block;background:linear-gradient(135deg,#2563eb,#4f46e5);color:#fff;text-decoration:none;padding:14px 32px;border-radius:12px;font-weight:600;font-size:15px;margin-bottom:32px">
+      Reset Password
+    </a>
+    <div style="background:#f1f5f9;border-radius:10px;padding:16px 20px;margin-bottom:24px">
+      <p style="margin:0 0 4px;color:#64748b;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Or paste this link in your browser</p>
+      <p style="margin:0;word-break:break-all;color:#2563eb;font-size:12px">{reset_url}</p>
+    </div>
+    <div style="background:#fee2e2;border:1px solid #fca5a5;border-radius:10px;padding:14px 18px;margin-bottom:24px">
+      <p style="margin:0;color:#7f1d1d;font-size:13px">⏰ <strong>This link expires in 1 hour</strong> and can only be used once. After that you'll need to request a new one.</p>
+    </div>
+    <p style="color:#64748b;font-size:13px;margin:0">If you didn't request a password reset, you can safely ignore this email. Your password will not be changed.</p>
+    """
+    return _send_email(user.email, "Reset your WealthSync password", body)
     verify_url = url_for("verify_email", token=token, _external=True)
     body = f"""
     <h2 style="margin:0 0 6px;color:#0f172a;font-size:22px;font-weight:700">Hi {user.name},</h2>
@@ -912,7 +963,11 @@ def forgot_password():
             user.password_reset_token   = secrets.token_urlsafe(32)
             user.password_reset_expires = datetime.utcnow() + timedelta(hours=1)
             db.session.commit()
-            _send_password_reset_email(user, user.password_reset_token)
+            
+            # Send reset email (non-blocking)
+            email_sent = _send_password_reset_email(user, user.password_reset_token)
+            if not email_sent:
+                app.logger.warning(f"Password reset requested for {email} but email failed to send")
 
         return jsonify({"message": "If an account exists, a password reset email has been sent."})
     except Exception as e:
