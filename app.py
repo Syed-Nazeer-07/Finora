@@ -258,54 +258,59 @@ def login_page():
 
 @app.route("/api/auth/signup", methods=["POST"])
 def signup():
-    data = request.get_json(silent=True) or {}
-    name     = (data.get("name") or "").strip()
-    email    = (data.get("email") or "").strip().lower()
-    password = data.get("password") or ""
+    try:
+        data = request.get_json(silent=True) or {}
+        name     = (data.get("name") or "").strip()
+        email    = (data.get("email") or "").strip().lower()
+        password = data.get("password") or ""
 
-    if not name or not email or not password:
-        return jsonify({"error": "Name, email and password are required"}), 400
-    if len(password) < 8:
-        return jsonify({"error": "Password must be at least 8 characters"}), 400
-    if not any(c.isupper() for c in password):
-        return jsonify({"error": "Password must contain at least one uppercase letter"}), 400
-    if not any(c.isdigit() for c in password):
-        return jsonify({"error": "Password must contain at least one number"}), 400
-    if User.query.filter_by(email=email).first():
-        return jsonify({"error": "An account with that email already exists"}), 409
+        if not name or not email or not password:
+            return jsonify({"error": "Name, email and password are required"}), 400
+        if len(password) < 8:
+            return jsonify({"error": "Password must be at least 8 characters"}), 400
+        if not any(c.isupper() for c in password):
+            return jsonify({"error": "Password must contain at least one uppercase letter"}), 400
+        if not any(c.isdigit() for c in password):
+            return jsonify({"error": "Password must contain at least one number"}), 400
+        if User.query.filter_by(email=email).first():
+            return jsonify({"error": "An account with that email already exists"}), 409
 
-    token   = secrets.token_urlsafe(32)
-    expires = datetime.utcnow() + timedelta(hours=24)
+        token   = secrets.token_urlsafe(32)
+        expires = datetime.utcnow() + timedelta(hours=24)
 
-    user = User(
-        name=name, email=email,
-        password_hash=generate_password_hash(password),
-        email_verified=False,
-        email_verification_token=token,
-        email_verification_expires=expires,
-    )
-    db.session.add(user)
-    db.session.flush()
-    db.session.add(Profile(user_id=user.id))
-    
-    default_cats = [
-        ("Food & Dining", "🍔"), ("Groceries", "🛒"), ("Transportation", "🚗"),
-        ("Fuel", "⛽"), ("Housing", "🏠"), ("Utilities", "💡"),
-        ("Internet & Mobile", "📱"), ("Shopping", "🛍️"), ("Entertainment", "🍿"),
-        ("Subscriptions", "📺"), ("Education", "📚"), ("Healthcare", "🏥"),
-        ("Insurance", "🛡️"), ("Travel", "✈️"), ("Gifts & Donations", "🎁"),
-        ("Investments", "📈"), ("Savings", "💰"), ("Debt Payments", "💳"),
-        ("Salary", "💵"), ("Freelance Income", "🚀"), ("Pocket Money", "💸"),
-        ("Other", "📦")
-    ]
-    for cat_name, cat_emoji in default_cats:
-        db.session.add(Category(user_id=user.id, name=cat_name, emoji=cat_emoji, is_default=True))
-    
-    db.session.commit()
+        user = User(
+            name=name, email=email,
+            password_hash=generate_password_hash(password),
+            email_verified=False,
+            email_verification_token=token,
+            email_verification_expires=expires,
+        )
+        db.session.add(user)
+        db.session.flush()
+        db.session.add(Profile(user_id=user.id))
+        
+        default_cats = [
+            ("Food & Dining", "🍔"), ("Groceries", "🛒"), ("Transportation", "🚗"),
+            ("Fuel", "⛽"), ("Housing", "🏠"), ("Utilities", "💡"),
+            ("Internet & Mobile", "📱"), ("Shopping", "🛍️"), ("Entertainment", "🍿"),
+            ("Subscriptions", "📺"), ("Education", "📚"), ("Healthcare", "🏥"),
+            ("Insurance", "🛡️"), ("Travel", "✈️"), ("Gifts & Donations", "🎁"),
+            ("Investments", "📈"), ("Savings", "💰"), ("Debt Payments", "💳"),
+            ("Salary", "💵"), ("Freelance Income", "🚀"), ("Pocket Money", "💸"),
+            ("Other", "📦")
+        ]
+        for cat_name, cat_emoji in default_cats:
+            db.session.add(Category(user_id=user.id, name=cat_name, emoji=cat_emoji, is_default=True))
+        
+        db.session.commit()
 
-    _send_verification_email(user, token)
+        _send_verification_email(user, token)
 
-    return jsonify({"pending": True, "email": email}), 201
+        return jsonify({"pending": True, "email": email}), 201
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Signup error: {e}")
+        return jsonify({"error": "An error occurred during signup. Please try again."}), 500
 
 
 @app.route("/api/auth/login", methods=["POST"])
@@ -898,17 +903,22 @@ def forgot_password_page():
 
 @app.route("/api/auth/forgot-password", methods=["POST"])
 def forgot_password():
-    data  = request.get_json(silent=True) or {}
-    email = (data.get("email") or "").strip().lower()
+    try:
+        data  = request.get_json(silent=True) or {}
+        email = (data.get("email") or "").strip().lower()
 
-    user = User.query.filter_by(email=email).first()
-    if user and user.password_hash and user.email_verified:
-        user.password_reset_token   = secrets.token_urlsafe(32)
-        user.password_reset_expires = datetime.utcnow() + timedelta(hours=1)
-        db.session.commit()
-        _send_password_reset_email(user, user.password_reset_token)
+        user = User.query.filter_by(email=email).first()
+        if user and user.password_hash and user.email_verified:
+            user.password_reset_token   = secrets.token_urlsafe(32)
+            user.password_reset_expires = datetime.utcnow() + timedelta(hours=1)
+            db.session.commit()
+            _send_password_reset_email(user, user.password_reset_token)
 
-    return jsonify({"message": "If an account exists, a password reset email has been sent."})
+        return jsonify({"message": "If an account exists, a password reset email has been sent."})
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Forgot password error: {e}")
+        return jsonify({"error": "An error occurred. Please try again."}), 500
 
 
 @app.route("/reset-password/<token>")

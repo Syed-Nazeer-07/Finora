@@ -181,8 +181,16 @@
                     <label for="signup-email">Email Address</label>
                 </div>
                 <div class="field">
-                    <input id="signup-password" type="password" placeholder=" " autocomplete="new-password" class="w-full px-4 border border-slate-300 rounded-xl bg-white text-slate-800 focus:outline-none transition-all">
+                    <input id="signup-password" type="password" placeholder=" " autocomplete="new-password" oninput="checkPasswordStrength()" class="w-full px-4 border border-slate-300 rounded-xl bg-white text-slate-800 focus:outline-none transition-all">
                     <label for="signup-password">Password</label>
+                </div>
+                <div id="strength-meter" class="mt-2 hidden">
+                    <div class="flex gap-1 mb-1">
+                        <div id="str1" class="h-1 flex-1 rounded-full bg-slate-200"></div>
+                        <div id="str2" class="h-1 flex-1 rounded-full bg-slate-200"></div>
+                        <div id="str3" class="h-1 flex-1 rounded-full bg-slate-200"></div>
+                    </div>
+                    <p id="strength-text" class="text-xs text-slate-600"></p>
                 </div>
                 
                 <button onclick="handleSignup()" id="signup-btn" class="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5">
@@ -260,6 +268,43 @@
 
         function hideError() {
             document.getElementById('error-msg').classList.add('hidden');
+        }
+
+        function checkPasswordStrength() {
+            const pwd = document.getElementById('signup-password').value;
+            const meter = document.getElementById('strength-meter');
+            const text = document.getElementById('strength-text');
+            const bars = [document.getElementById('str1'), document.getElementById('str2'), document.getElementById('str3')];
+            
+            if (!pwd) {
+                meter.classList.add('hidden');
+                return;
+            }
+            meter.classList.remove('hidden');
+            
+            let strength = 0;
+            if (pwd.length >= 8) strength++;
+            if (/[A-Z]/.test(pwd) && /[a-z]/.test(pwd)) strength++;
+            if (/[0-9]/.test(pwd) && /[^A-Za-z0-9]/.test(pwd)) strength++;
+            
+            bars.forEach(b => { b.className = 'h-1 flex-1 rounded-full bg-slate-200'; });
+            
+            if (strength === 1) {
+                bars[0].classList.add('bg-red-500');
+                text.textContent = 'Weak password';
+                text.className = 'text-xs text-red-600';
+            } else if (strength === 2) {
+                bars[0].classList.add('bg-yellow-500');
+                bars[1].classList.add('bg-yellow-500');
+                text.textContent = 'Medium password';
+                text.className = 'text-xs text-yellow-600';
+            } else if (strength === 3) {
+                bars[0].classList.add('bg-green-500');
+                bars[1].classList.add('bg-green-500');
+                bars[2].classList.add('bg-green-500');
+                text.textContent = 'Strong password';
+                text.className = 'text-xs text-green-600';
+            }
         }
 
         async function handleSignin() {
