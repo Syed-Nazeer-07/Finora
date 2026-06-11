@@ -329,6 +329,7 @@ const AppViews = {
                     </td>
                     <td class="px-6 py-4 text-right whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
                         <div class="flex items-center justify-end gap-1">
+                            <button onclick="App.sellInvestment(${inv.id})" class="text-slate-400 hover:text-emerald-500 transition-colors p-2" title="Sell Stock"><i data-lucide="dollar-sign" class="w-4 h-4"></i></button>
                             <button onclick="App.openModal('investment', ${inv.id})" class="text-slate-400 hover:text-brand-500 transition-colors p-2" title="Edit"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
                             <button onclick="App.deleteItem('investment', ${inv.id})" class="text-slate-400 hover:text-rose-500 transition-colors p-2" title="Delete"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                         </div>

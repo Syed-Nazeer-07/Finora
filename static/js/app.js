@@ -1105,8 +1105,9 @@ const App = {
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Category</label>
-                    <select name="category" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white transition-all">
+                    <select name="category" id="tx-category-select" onchange="App.handleCategoryChange(this)" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white transition-all">
                         ${catOptions}
+                        <option value="__new__">+ Add New Category</option>
                     </select>
                 </div>
             `;
@@ -1116,8 +1117,9 @@ const App = {
             formHtml = `
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Category</label>
-                    <select name="category" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white transition-all">
+                    <select name="category" id="budget-category-select" onchange="App.handleCategoryChange(this)" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white transition-all">
                         ${catOptions}
+                        <option value="__new__">+ Add New Category</option>
                     </select>
                 </div>
                 <div>
@@ -1346,6 +1348,15 @@ const App = {
         await this.fetchCategories();
         this.closeModal();
         Toast.show(catId ? 'Category updated' : 'Category created', 'success');
+        if (this.state.pendingCategorySelect && !catId) {
+            const select = this.state.pendingCategorySelect;
+            const newOption = document.createElement('option');
+            newOption.value = name;
+            newOption.textContent = name;
+            newOption.selected = true;
+            select.insertBefore(newOption, select.lastElementChild);
+            this.state.pendingCategorySelect = null;
+        }
         this.render();
     },
     editCategory(catId) {
@@ -1398,6 +1409,51 @@ const App = {
         this.state.profile.monthly_income = amount;
         Toast.show('Available Balance updated', 'success');
         this.render();
+    },
+    async sellInvestment(id) {
+        const inv = this.state.investments.find(i => i.id === id);
+        if (!inv) return;
+        const sellPrice = prompt(`Sell ${inv.symbol}\n\nShares: ${inv.shares}\nAvg Cost: ₹${this.formatNumber(inv.avgCost)}\nCurrent Price: ₹${this.formatNumber(inv.currentPrice)}\n\nEnter sell price per share:`, inv.currentPrice);
+        if (sellPrice === null) return;
+        const price = this._parseMoney(sellPrice);
+        if (isNaN(price) || price <= 0) {
+            Toast.show('Invalid sell price', 'error');
+            return;
+        }
+        const totalSale = inv.shares * price;
+        const totalCost = inv.shares * inv.avgCost;
+        const profit = totalSale - totalCost;
+        const profitPct = ((profit / totalCost) * 100).toFixed(2);
+        const confirmMsg = `Confirm Sale\n\nSelling: ${inv.shares} shares of ${inv.symbol}\nSell Price: ₹${this.formatNumber(price)}\nTotal Sale: ₹${this.formatNumber(totalSale)}\n\nProfit/Loss: ₹${this.formatNumber(profit)} (${profit >= 0 ? '+' : ''}${profitPct}%)\n\nThis will delete the investment and create an income transaction.`;
+        if (!confirm(confirmMsg)) return;
+        const res = await fetch(`/api/investments/${id}`, { method: 'DELETE' });
+        if (!res.ok) {
+            Toast.show('Failed to sell investment', 'error');
+            return;
+        }
+        const txRes = await fetch('/api/transactions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                description: `Sold ${inv.shares} shares of ${inv.symbol}`,
+                amount: totalSale,
+                category: 'Investment Returns',
+                type: 'income',
+                date: new Date().toISOString().split('T')[0]
+            })
+        });
+        if (txRes.ok) {
+            Toast.show(`Sold ${inv.symbol} - ${profit >= 0 ? 'Profit' : 'Loss'}: ₹${Math.abs(profit).toFixed(2)}`, 'success');
+        }
+        await this.fetchInvestments();
+        await this.fetchTransactions();
+    },
+    handleCategoryChange(selectEl) {
+        if (selectEl.value === '__new__') {
+            this.state.pendingCategorySelect = selectEl;
+            this.openCategoryModal();
+            selectEl.value = selectEl.options[0].value;
+        }
     },
     selectedItems: { tx: [], budget: [], goal: [], investment: [] },
     toggleSelectAllTx() {
