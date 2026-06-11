@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WealthSync – Setup</title>
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='logo.png') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='logo.png') }}">
+    <link rel="icon" type="image/png" sizes="any" href="{{ url_for('static', filename='logo.png') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -280,7 +281,7 @@
         // Step 2: Income / Starting balance
         document.getElementById('step2-title').innerHTML = isCashFlow 
             ? 'How much money<br>do you have right now?'
-            : 'Let\\'s understand<br>your cash flow';
+            : 'Let\'s understand<br>your cash flow';
         document.getElementById('step2-desc').textContent = isCashFlow
             ? 'This is your starting point — money in wallet, bank account, or anywhere you can access.'
             : 'Your monthly income helps us calculate your savings potential and financial health score.';
@@ -294,17 +295,17 @@
             ? 'Any money saved<br>separately?'
             : 'How much have<br>you already saved?';
         document.getElementById('step3-desc').textContent = isCashFlow
-            ? 'Money you\\'ve set aside and don\\'t plan to spend soon (like in a savings account or piggy bank).'
+            ? 'Money you\'ve set aside and don\'t plan to spend soon (like in a savings account or piggy bank).'
             : 'Your current savings balance across all accounts — FDs, liquid funds, savings accounts.';
         document.getElementById('current_savings').placeholder = isCashFlow ? '1,000' : '2,50,000';
         document.getElementById('step3-hint').textContent = isCashFlow
-            ? 'Enter 0 if you don\\'t have any — that\\'s okay!'
+            ? 'Enter 0 if you don\'t have any — that\'s okay!'
             : 'Not sure? A rough estimate works fine.';
         
         // Step 3b: Investments (less relevant for cash flow)
         document.getElementById('step3b-title').textContent = isCashFlow
             ? 'Any investments?'
-            : 'What\\'s currently invested?';
+            : 'What\'s currently invested?';
         document.getElementById('step3b-desc').textContent = isCashFlow
             ? 'If you have any money in stocks, mutual funds, or other investments.'
             : 'Stocks, mutual funds, ETFs, crypto, gold — total current market value.';
@@ -319,7 +320,7 @@
             : 'Rent, food, transport, EMIs, subscriptions — your total monthly outflows.';
         document.getElementById('monthly_expenses').placeholder = isCashFlow ? '3,000' : '60,000';
         document.getElementById('step4-hint').textContent = isCashFlow
-            ? 'Don\\'t worry about being exact — a rough estimate is perfect.'
+            ? 'Don\'t worry about being exact — a rough estimate is perfect.'
             : 'Include all recurring expenses. EMIs and subscriptions count too.';
     }
 
