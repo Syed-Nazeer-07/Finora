@@ -23,8 +23,11 @@ const App = {
         investments: [],
         renderTimer: null,
         txSelected: new Set(),
+        initialized: false,
     },
     init() {
+        if (this.state.initialized) return;
+        this.state.initialized = true;
         if (this.state.darkMode) {
             document.documentElement.classList.add('dark');
         } else {
@@ -795,7 +798,7 @@ const App = {
     render() {
         // Debounce render to prevent double initialization
         clearTimeout(this.state.renderTimer);
-        this.state.renderTimer = setTimeout(() => this._doRender(), 10);
+        this.state.renderTimer = setTimeout(() => this._doRender(), 50);
     },
     _doRender() {
         if (this.state.activeTab === 'transactions' && !this.state.txLoading && !this.state.txError) {

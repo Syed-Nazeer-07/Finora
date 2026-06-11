@@ -4,10 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WealthSync – Setup</title>
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon-32x32.png') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -18,7 +14,6 @@
                         dark: { bg: '#0B0F19', card: '#111827', border: '#1F2937' },
                         brand: { 50:'#eff6ff', 400:'#60a5fa', 500:'#3b82f6', 600:'#2563eb', 900:'#1e3a8a' }
                     },
-                    animation: { 'pulse-slow': 'pulse 4s cubic-bezier(0.4,0,0.6,1) infinite' }
                 }
             }
         }
@@ -28,15 +23,6 @@
     <style>
         body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
 
-        @keyframes fadeUp   { from { opacity:0; transform:translateY(28px) } to { opacity:1; transform:translateY(0) } }
-        @keyframes fadeDown { from { opacity:0; transform:translateY(-20px)} to { opacity:1; transform:translateY(0) } }
-        @keyframes fadeIn   { from { opacity:0 } to { opacity:1 } }
-        @keyframes pop      { 0%{transform:scale(.85);opacity:0} 60%{transform:scale(1.04)} 100%{transform:scale(1);opacity:1} }
-        @keyframes confetti { 0%{transform:translateY(0) rotate(0)} 100%{transform:translateY(-80px) rotate(360deg);opacity:0} }
-
-        .step-enter { animation: fadeUp .45s cubic-bezier(.16,1,.3,1) both; }
-        .step-exit  { animation: fadeDown .3s cubic-bezier(.4,0,1,1) both; }
-        .pop        { animation: pop .5s cubic-bezier(.16,1,.3,1) both; }
 
         .goal-card { transition: all .2s cubic-bezier(.4,0,.2,1); cursor: pointer; }
         .goal-card:hover { transform: translateY(-2px); }
@@ -57,14 +43,13 @@
         input:focus { border-color: #3b82f6 !important; box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
 
         .dot { transition: all .3s cubic-bezier(.4,0,.2,1); }
-        .confetti-piece { position: absolute; width: 8px; height: 8px; border-radius: 2px; animation: confetti 1s ease-out both; }
     </style>
 </head>
 <body class="bg-white text-slate-600 min-h-screen flex items-center justify-center p-4 sm:p-8 relative overflow-hidden">
 
     
     <div class="fixed -top-40 -left-40 w-[600px] h-[600px] bg-brand-600/10 rounded-full blur-[140px] pointer-events-none animate-pulse-slow"></div>
-    <div class="fixed -bottom-40 -right-40 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none animate-pulse-slow" style="animation-delay:2s"></div>
+    <div class="fixed -bottom-40 -right-40 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none animate-pulse-slow" ></div>
 
     <div class="relative w-full max-w-xl" id="wizard">
 
@@ -216,17 +201,17 @@
             <div id="step-7" class="hidden text-center">
                 <div class="relative flex justify-center mb-6">
                     <div id="confetti-container" class="absolute inset-0 pointer-events-none overflow-hidden rounded-full"></div>
-                    <div class="w-24 h-24 rounded-full bg-gradient-to-br from-brand-500 to-indigo-600 flex items-center justify-center shadow-2xl shadow-brand-500/40 pop">
+                    <div class="w-24 h-24 rounded-full bg-gradient-to-br from-brand-500 to-indigo-600 flex items-center justify-center shadow-2xl shadow-brand-500/40">
                         <i data-lucide="check" class="w-12 h-12 text-white"></i>
                     </div>
                 </div>
-                <h2 class="text-3xl font-extrabold text-slate-900 mb-2 pop" style="animation-delay:.15s">Your financial operating<br>system is ready.</h2>
-                <p class="text-slate-600 mb-8 pop" style="animation-delay:.25s">Here's a summary of what we've set up for you.</p>
+                <h2 class="text-3xl font-extrabold text-slate-900 mb-2" >Your financial operating<br>system is ready.</h2>
+                <p class="text-slate-600 mb-8" >Here's a summary of what we've set up for you.</p>
 
-                <div id="summary-cards" class="grid grid-cols-2 gap-3 mb-8 text-left pop" style="animation-delay:.3s"></div>
+                <div id="summary-cards" class="grid grid-cols-2 gap-3 mb-8 text-left" ></div>
 
                 <button onclick="enterDashboard()" id="enter-btn"
-                    class="w-full py-4 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white rounded-2xl font-bold text-base shadow-xl shadow-brand-900/60 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 pop" style="animation-delay:.4s">
+                    class="w-full py-4 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white rounded-2xl font-bold text-base shadow-xl shadow-brand-900/60 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2" >
                     Enter WealthSync
                     <i data-lucide="arrow-right" class="w-5 h-5"></i>
                 </button>
