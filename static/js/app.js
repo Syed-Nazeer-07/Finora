@@ -1168,10 +1168,19 @@ const App = {
                 </div>
             `;
         } else if (type === 'investment') {
-            const invTypes = ['Stock', 'ETF', 'Crypto', 'Mutual Fund', 'Bonds'];
-            const typeOptions = invTypes.map(t => `<option value="${t}" ${item && item.type === t ? 'selected' : ''}>${t}</option>`).join('');
+            const invTypes = ['Stock', 'ETF', 'Crypto', 'Mutual Fund', 'Bonds', 'Gold', 'Silver'];
+            const typeIcons = { 'Stock': '📈', 'ETF': '📊', 'Crypto': '₿', 'Mutual Fund': '💼', 'Bonds': '📝', 'Gold': '🏆', 'Silver': '⭐' };
+            const typeOptions = invTypes.map(t => `<option value="${t}" ${item && item.type === t ? 'selected' : ''}>${typeIcons[t]} ${t}</option>`).join('');
             const sym = this.getCurrencySymbol();
+            const selectedType = item?.type || 'Stock';
+            const assetBoxEmoji = typeIcons[selectedType] || '📦';
             formHtml = `
+                <div class="p-4 rounded-xl bg-gradient-to-br from-brand-50 to-blue-50 dark:from-brand-500/10 dark:to-blue-500/10 border border-brand-200 dark:border-brand-500/30 flex items-center justify-center">
+                    <div class="text-center">
+                        <div class="text-5xl mb-2">${assetBoxEmoji}</div>
+                        <p id="asset-type-display" class="text-sm font-semibold text-slate-700 dark:text-slate-300">${selectedType}</p>
+                    </div>
+                </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Symbol/Name</label>
@@ -1179,7 +1188,7 @@ const App = {
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Asset Type</label>
-                        <select name="invType" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white transition-all">
+                        <select name="invType" onchange="App.updateAssetBox(this.value)" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white transition-all">
                             ${typeOptions}
                         </select>
                     </div>
@@ -1244,38 +1253,52 @@ const App = {
                 </div>
             `;
         } else if (type === 'confirm_sell') {
-            const { inv, totalSale, profit, profitPct } = this.state.pendingSellInvestment;
+            const { inv, sellQuantity, sellPrice, sellDate, totalSale, totalCost, profit, profitPct } = this.state.pendingSellInvestment;
             const sym = this.getCurrencySymbol();
             container.innerHTML = `
                 <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
                     <div class="bg-white dark:bg-dark-card rounded-[2rem] shadow-2xl max-w-md w-full">
                         <div class="px-8 py-6 border-b border-slate-100 dark:border-slate-800">
                             <h2 class="text-xl font-bold text-slate-900 dark:text-white">Confirm Sale</h2>
-                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Sell ${inv.shares} shares of ${inv.symbol}</p>
+                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Sell ${sellQuantity} shares of ${inv.symbol}</p>
                         </div>
                         <div class="p-8 space-y-4">
                             <div class="bg-slate-50 dark:bg-slate-800 rounded-xl p-4 space-y-3">
                                 <div class="flex justify-between">
-                                    <span class="text-slate-600 dark:text-slate-300">Shares</span>
-                                    <span class="font-semibold dark:text-white">${inv.shares}</span>
+                                    <span class="text-slate-600 dark:text-slate-300">Quantity</span>
+                                    <span class="font-semibold dark:text-white">${sellQuantity}</span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-slate-600 dark:text-slate-300">Sell Price</span>
-                                    <span class="font-semibold dark:text-white">${sym}${this.formatNumber(this.state.pendingSellInvestment.price)}</span>
+                                    <span class="text-slate-600 dark:text-slate-300">Price per Share</span>
+                                    <span class="font-semibold dark:text-white">${sym}${this.formatNumber(sellPrice)}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-600 dark:text-slate-300">Total Cost</span>
+                                    <span class="font-semibold dark:text-white">${sym}${this.formatNumber(totalCost)}</span>
                                 </div>
                                 <div class="flex justify-between border-t border-slate-200 dark:border-slate-700 pt-3">
-                                    <span class="font-semibold text-slate-900 dark:text-white">Total Sale</span>
+                                    <span class="font-semibold text-slate-900 dark:text-white">Sale Proceeds</span>
                                     <span class="font-bold text-lg dark:text-white">${sym}${this.formatNumber(totalSale)}</span>
                                 </div>
                                 <div class="flex justify-between ${profit >= 0 ? 'text-emerald-600' : 'text-rose-600'}">
-                                    <span class="font-semibold">Profit/Loss</span>
-                                    <span class="font-bold">${profit >= 0 ? '+' : ''}${sym}${this.formatNumber(Math.abs(profit))} (${profitPct}%)</span>
+                                    <span class="font-semibold">Realized Return</span>
+                                    <span class="font-bold text-lg">${profit >= 0 ? '+' : ''}${sym}${this.formatNumber(Math.abs(profit))}</span>
+                                </div>
+                                <div class="flex justify-between text-sm text-slate-500 dark:text-slate-400">
+                                    <span>Return %</span>
+                                    <span class="${profit >= 0 ? 'text-emerald-600' : 'text-rose-600'} font-semibold">${profit >= 0 ? '+' : ''}${profitPct}%</span>
+                                </div>
+                                <div class="flex justify-between pt-2 text-xs border-t border-slate-200 dark:border-slate-700">
+                                    <span class="text-slate-500 dark:text-slate-400">Sale Date</span>
+                                    <span class="font-mono dark:text-white">${sellDate}</span>
                                 </div>
                             </div>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 text-center">This will delete the investment and create an income transaction.</p>
+                            <div class="p-3 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-lg text-xs text-blue-800 dark:text-blue-300">
+                                This will create an income transaction for ${sym}${this.formatNumber(totalSale)}.
+                            </div>
                             <div class="flex gap-3 pt-4">
                                 <button onclick="App.closeModal()" class="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl font-semibold text-sm transition-colors">Cancel</button>
-                                <button onclick="App.confirmSellInvestment()" class="flex-1 px-4 py-3 !bg-rose-600 hover:!bg-rose-700 !text-white rounded-xl font-semibold text-sm shadow-lg transition-colors">Confirm Sale</button>
+                                <button onclick="App.confirmSellInvestment()" class="flex-1 px-4 py-3 !bg-rose-600 hover:!bg-rose-700 !text-white rounded-xl font-semibold text-sm shadow-lg transition-colors">Confirm & Sell</button>
                             </div>
                         </div>
                     </div>
@@ -1447,54 +1470,137 @@ const App = {
         Toast.show('Available Balance updated', 'success');
         this.render();
     },
-    async sellInvestment(id) {
+    sellInvestment(id) {
         const inv = this.state.investments.find(i => i.id === id);
         if (!inv) return;
-        const sellPrice = prompt(`Sell ${inv.symbol}\n\nShares: ${inv.shares}\nAvg Cost: ₹${this.formatNumber(inv.avgCost)}\nCurrent Price: ₹${this.formatNumber(inv.currentPrice)}\n\nEnter sell price per share:`, inv.currentPrice);
-        if (sellPrice === null) return;
-        const price = this._parseMoney(sellPrice);
-        if (isNaN(price) || price <= 0) {
+        const today = new Date().toISOString().split('T')[0];
+        const sym = this.getCurrencySymbol();
+        const container = document.getElementById('modal-container');
+        container.innerHTML = `
+            <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+                <div class="bg-white dark:bg-dark-card rounded-[2rem] shadow-2xl max-w-md w-full">
+                    <div class="px-8 py-6 border-b border-slate-100 dark:border-slate-800">
+                        <h2 class="text-xl font-bold text-slate-900 dark:text-white">Sell ${inv.symbol}</h2>
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">You own ${inv.shares} shares</p>
+                    </div>
+                    <form onsubmit="App.processSellInvestment(event, ${id})" class="p-8 space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Quantity to Sell</label>
+                            <input type="number" name="sellQuantity" step="0.0001" min="0.0001" max="${inv.shares}" value="${inv.shares}" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white" />
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Max: ${inv.shares}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Sell Price Per Share</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">${sym}</span>
+                                <input type="text" inputmode="numeric" name="sellPrice" oninput="App.handleMoneyInput(event)" value="${this.formatMoneyInput(inv.currentPrice)}" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white" />
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Sell Date</label>
+                            <input type="date" name="sellDate" value="${today}" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white" />
+                        </div>
+                        <div class="pt-4 space-y-2">
+                            <div class="text-sm text-slate-600 dark:text-slate-300">
+                                <p>Buy Price: ${sym}${this.formatNumber(inv.avgCost)} × ${inv.shares}</p>
+                                <p>Avg Cost: <span class="font-semibold">${sym}${this.formatNumber(inv.shares * inv.avgCost)}</span></p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 pt-4">
+                            <button type="button" onclick="App.closeModal()" class="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl font-semibold text-sm transition-colors">Cancel</button>
+                            <button type="submit" class="flex-1 px-4 py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold text-sm shadow-lg transition-colors">Next</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+    },
+    processSellInvestment(e, id) {
+        e.preventDefault();
+        const form = e.target;
+        const inv = this.state.investments.find(i => i.id === id);
+        if (!inv) return;
+        
+        const sellQuantity = parseFloat(form.sellQuantity.value) || 0;
+        const sellPrice = this._parseMoney(form.sellPrice.value) || 0;
+        const sellDate = form.sellDate.value;
+        
+        if (sellQuantity <= 0 || sellQuantity > inv.shares) {
+            Toast.show('Invalid quantity', 'error');
+            return;
+        }
+        if (sellPrice <= 0) {
             Toast.show('Invalid sell price', 'error');
             return;
         }
-        const totalSale = inv.shares * price;
-        const totalCost = inv.shares * inv.avgCost;
+        
+        const totalSale = sellQuantity * sellPrice;
+        const totalCost = sellQuantity * inv.avgCost;
         const profit = totalSale - totalCost;
-        const profitPct = ((profit / totalCost) * 100).toFixed(2);
-        this.state.pendingSellInvestment = { id, inv, price, totalSale, profit, profitPct };
+        const profitPct = totalCost > 0 ? ((profit / totalCost) * 100).toFixed(2) : 0;
+        
+        this.state.pendingSellInvestment = { id, inv, sellQuantity, sellPrice, sellDate, totalSale, totalCost, profit, profitPct };
         this.renderModal('confirm_sell');
-        return;
     },
     async confirmSellInvestment() {
-        const { id, inv, price, totalSale, profit } = this.state.pendingSellInvestment;
+        const { id, inv, sellQuantity, sellPrice, sellDate, totalSale, totalCost, profit, profitPct } = this.state.pendingSellInvestment;
         this.closeModal();
-        const res = await fetch(`/api/investments/${id}`, { method: 'DELETE' });
-        if (!res.ok) {
-            Toast.show('Failed to sell investment', 'error');
-            return;
+        
+        try {
+            // If selling partial quantity, update investment; otherwise delete it
+            const remainingQuantity = inv.shares - sellQuantity;
+            
+            if (remainingQuantity > 0) {
+                // Update investment with reduced quantity
+                const updateRes = await fetch(`/api/investments/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ shares: remainingQuantity })
+                });
+                if (!updateRes.ok) throw new Error('Failed to update investment');
+            } else {
+                // Delete investment if all shares sold
+                const deleteRes = await fetch(`/api/investments/${id}`, { method: 'DELETE' });
+                if (!deleteRes.ok) throw new Error('Failed to delete investment');
+            }
+            
+            // Create income transaction for sale proceeds
+            const txRes = await fetch('/api/transactions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    description: `Sold ${sellQuantity} ${inv.symbol} @ ${this.getCurrencySymbol()}${this.formatNumber(sellPrice)} - Realized ${profit >= 0 ? 'Gain' : 'Loss'}: ${this.getCurrencySymbol()}${this.formatNumber(Math.abs(profit))}`,
+                    amount: totalSale,
+                    category: 'Investment Returns',
+                    type: 'income',
+                    date: sellDate
+                })
+            });
+            if (!txRes.ok) throw new Error('Failed to create transaction');
+            
+            Toast.show(`Sold ${sellQuantity} ${inv.symbol} - Realized ${profit >= 0 ? 'Gain' : 'Loss'}: ${this.getCurrencySymbol()}${this.formatNumber(Math.abs(profit))} (${profitPct}%)`, 'success');
+            await this.fetchInvestments();
+            await this.fetchTransactions();
+        } catch (err) {
+            Toast.show('Error: ' + err.message, 'error');
         }
-        const txRes = await fetch('/api/transactions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                description: `Sold ${inv.shares} shares of ${inv.symbol}`,
-                amount: totalSale,
-                category: 'Investment Returns',
-                type: 'income',
-                date: new Date().toISOString().split('T')[0]
-            })
-        });
-        if (txRes.ok) {
-            Toast.show(`Sold ${inv.symbol} - ${profit >= 0 ? 'Profit' : 'Loss'}: ₹${Math.abs(profit).toFixed(2)}`, 'success');
-        }
-        await this.fetchInvestments();
-        await this.fetchTransactions();
     },
     handleCategoryChange(selectEl) {
         if (selectEl.value === '__new__') {
             this.state.pendingCategorySelect = selectEl;
             this.openCategoryModal();
             selectEl.value = selectEl.options[0].value;
+        }
+    },
+    updateAssetBox(assetType) {
+        const typeIcons = { 'Stock': '📈', 'ETF': '📊', 'Crypto': '₿', 'Mutual Fund': '💼', 'Bonds': '📝', 'Gold': '🏆', 'Silver': '⭐' };
+        const displayEl = document.getElementById('asset-type-display');
+        if (displayEl) {
+            displayEl.textContent = assetType;
+        }
+        const emojiEl = document.querySelector('[data-lucide="target"]');
+        if (emojiEl) {
+            emojiEl.parentElement.innerHTML = `<div class="text-5xl mb-2">${typeIcons[assetType] || '📦'}</div>`;
         }
     },
     selectedItems: { tx: [], budget: [], goal: [], investment: [] },
