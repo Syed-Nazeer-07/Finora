@@ -7,6 +7,7 @@ const App = {
         modal: { isOpen: false, type: null, entityId: null },
         txFormType: 'expense',
         charts: {},
+        chartsInitializing: false,
         txSearchQuery: '',
         txFilterCategory: '',
         roadmap: [],
@@ -858,8 +859,15 @@ const App = {
         content.innerHTML = html;
         lucide.createIcons();
         setTimeout(async () => {
-            if (this.state.activeTab === 'dashboard') await this.initDashboardCharts();
-            if (this.state.activeTab === 'investments') this.initInvestmentCharts();
+            if (!this.state.chartsInitializing) {
+                this.state.chartsInitializing = true;
+                try {
+                    if (this.state.activeTab === 'dashboard') await this.initDashboardCharts();
+                    if (this.state.activeTab === 'investments') this.initInvestmentCharts();
+                } finally {
+                    this.state.chartsInitializing = false;
+                }
+            }
         }, 50);
     },
     openModal(type, id = null) {

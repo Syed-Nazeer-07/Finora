@@ -6,6 +6,10 @@ const AppCharts = {
         const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
         const nwCtx = document.getElementById('netWorthChart');
         if (nwCtx) {
+            // Destroy existing chart before creating new one
+            const existingNwChart = Chart.getChart(nwCtx);
+            if (existingNwChart) existingNwChart.destroy();
+            
             let nwLabels = ['Jan','Feb','Mar','Apr','May','Jun'];
             let nwData   = [0,0,0,0,0,0];
             try {
@@ -52,6 +56,10 @@ const AppCharts = {
         }
         const expCtx = document.getElementById('expenseChart');
         if (expCtx) {
+            // Destroy existing chart before creating new one
+            const existingExpChart = Chart.getChart(expCtx);
+            if (existingExpChart) existingExpChart.destroy();
+            
             const expenses = this.state.transactions.filter(t => t.type === 'expense');
             const categoryTotals = {};
             expenses.forEach(e => { categoryTotals[e.category] = (categoryTotals[e.category] || 0) + e.amount; });
@@ -81,6 +89,11 @@ const AppCharts = {
     initInvestmentCharts() {
         const ctx = document.getElementById('allocationChart');
         if (!ctx) return;
+        
+        // Destroy existing chart before creating new one
+        const existingChart = Chart.getChart(ctx);
+        if (existingChart) existingChart.destroy();
+        
         const allocTotals = {};
         this.state.investments.forEach(inv => {
             const value = inv.shares * inv.currentPrice;
