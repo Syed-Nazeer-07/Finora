@@ -5,7 +5,7 @@ const AppViews = {
             <div class="space-y-6 slide-up pb-10">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
-                        <h2 class="text-2xl font-bold text-slate-900">Transaction Ledger</h2>
+                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white dark:text-white">Transaction Ledger</h2>
                         <p class="text-slate-500 dark:text-slate-400 text-sm">Advanced search and filtering.</p>
                     </div>
                     <button onclick="App.openModal('transaction')" class="w-full sm:w-auto bg-brand-600 hover:bg-brand-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold flex justify-center items-center gap-2 transition-colors shadow-lg focus:ring-2 focus:ring-brand-500 focus:outline-none">
@@ -86,7 +86,7 @@ const AppViews = {
                 <td class="px-6 py-4">
                     <div class="flex items-center gap-4">
                         <div class="p-2 rounded-xl border-2 shadow-sm text-lg flex items-center justify-center w-10 h-10 shrink-0" style="border-color: ${catColor}; background-color: ${catColor}15">${catEmoji}</div>
-                        <span class="font-semibold text-slate-900">${tx.description}</span>
+                        <span class="font-semibold text-slate-900 dark:text-white">${tx.description}</span>
                     </div>
                 </td>
                 <td class="px-6 py-4">
@@ -155,7 +155,7 @@ const AppViews = {
             <div class="space-y-6 slide-up pb-10">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
                     <div>
-                        <h2 class="text-2xl font-bold text-slate-900">Budgets & Predictors</h2>
+                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white dark:text-white">Budgets & Predictors</h2>
                         <p class="text-slate-500 dark:text-slate-400 text-sm">Control spending with end-of-month (EOM) forecasts.</p>
                     </div>
                     <button onclick="App.openModal('budget')" class="w-full sm:w-auto bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-5 py-2.5 rounded-xl text-sm font-semibold flex justify-center items-center gap-2 hover:scale-105 transition-all shadow-lg">
@@ -201,7 +201,7 @@ const AppViews = {
                     <div class="grid grid-cols-3 gap-2 text-xs">
                         <div class="text-center p-2 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
                             <p class="text-slate-400 font-semibold mb-1">Current</p>
-                            <p class="font-bold text-slate-900">${forecast.currentPace?.months ? forecast.currentPace.months + ' mo' : 'N/A'}</p>
+                            <p class="font-bold text-slate-900 dark:text-white">${forecast.currentPace?.months ? forecast.currentPace.months + ' mo' : 'N/A'}</p>
                         </div>
                         <div class="text-center p-2 bg-brand-50 dark:bg-brand-500/10 rounded-lg border border-brand-200 dark:border-brand-500/20">
                             <p class="text-brand-600 dark:text-brand-400 font-semibold mb-1">+10%</p>
@@ -246,7 +246,7 @@ const AppViews = {
                         <div class="w-full space-y-4">
                             <div>
                                 <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-0.5">Current Saved</p>
-                                <p class="text-xl font-bold text-slate-900">${this.formatCurrency(goal.current)}</p>
+                                <p class="text-xl font-bold text-slate-900 dark:text-white dark:text-white">${this.formatCurrency(goal.current)}</p>
                             </div>
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
@@ -272,7 +272,7 @@ const AppViews = {
             <div class="space-y-6 slide-up pb-10">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
                     <div>
-                        <h2 class="text-2xl font-bold text-slate-900">Goal Forecasting</h2>
+                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white dark:text-white">Goal Forecasting</h2>
                         <p class="text-slate-500 dark:text-slate-400 text-sm">Track progress with enhanced forecasts, scenarios, and insights.</p>
                     </div>
                     <button onclick="App.openModal('saving')" class="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-sm font-semibold flex justify-center items-center gap-2 transition-colors shadow-lg">
@@ -299,7 +299,7 @@ const AppViews = {
             <div class="space-y-6 slide-up pb-10">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
                     <div>
-                        <h2 class="text-2xl font-bold text-slate-900">Investment Portfolio</h2>
+                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white dark:text-white">Investment Portfolio</h2>
                         <p class="text-slate-500 dark:text-slate-400 text-sm">Simple personal finance tracking.</p>
                     </div>
                     <div class="flex gap-2 w-full sm:w-auto">
@@ -316,11 +316,11 @@ const AppViews = {
                 <div class="grid grid-cols-3 gap-4">
                     <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200 dark:border-slate-700">
                         <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold mb-1">Total Invested</p>
-                        <h3 class="text-2xl font-bold text-slate-900">${this.formatCurrency(totalInvested)}</h3>
+                        <h3 class="text-2xl font-bold text-slate-900 dark:text-white dark:text-white">${this.formatCurrency(totalInvested)}</h3>
                     </div>
                     <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200 dark:border-slate-700">
                         <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold mb-1">Total Returned</p>
-                        <h3 class="text-2xl font-bold text-slate-900">${this.formatCurrency(totalReturned)}</h3>
+                        <h3 class="text-2xl font-bold text-slate-900 dark:text-white dark:text-white">${this.formatCurrency(totalReturned)}</h3>
                     </div>
                     <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200 dark:border-slate-700">
                         <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold mb-1">Net Profit/Loss</p>
@@ -331,17 +331,17 @@ const AppViews = {
                 <!-- Active Assets -->
                 ${activeAssets.length > 0 ? `
                 <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-700">
-                    <h3 class="font-bold text-slate-900 mb-4">Current Active Assets</h3>
+                    <h3 class="font-bold text-slate-900 dark:text-white mb-4">Current Active Assets</h3>
                     <div class="space-y-3">
                         ${activeAssets.map(inv => `
                             <div class="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
                                 <div>
-                                    <p class="font-semibold text-slate-900">${inv.symbol}</p>
+                                    <p class="font-semibold text-slate-900 dark:text-white">${inv.symbol}</p>
                                     <p class="text-sm text-slate-600 dark:text-slate-400">${inv.shares} Units</p>
                                 </div>
                                 <div class="text-right">
                                     <p class="text-sm text-slate-600 dark:text-slate-400">Invested</p>
-                                    <p class="font-semibold text-slate-900">${this.formatCurrency(inv.shares * inv.avgCost)}</p>
+                                    <p class="font-semibold text-slate-900 dark:text-white">${this.formatCurrency(inv.shares * inv.avgCost)}</p>
                                 </div>
                             </div>
                         `).join('')}
@@ -351,13 +351,13 @@ const AppViews = {
                 
                 <!-- Investment History -->
                 <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-700">
-                    <h3 class="font-bold text-slate-900 mb-4">Investment Activity</h3>
+                    <h3 class="font-bold text-slate-900 dark:text-white mb-4">Investment Activity</h3>
                     ${sortedTransactions.length > 0 ? `
                     <div class="space-y-3">
                         ${sortedTransactions.slice(0, 10).map(t => `
                             <div class="flex justify-between items-start py-2 px-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
                                 <div class="flex-1">
-                                    <p class="font-semibold text-slate-900 text-sm">${t.description}</p>
+                                    <p class="font-semibold text-slate-900 dark:text-white text-sm">${t.description}</p>
                                     <p class="text-xs text-slate-500 dark:text-slate-400">${this.formatDate(t.date)}</p>
                                 </div>
                                 <div class="text-right">
@@ -401,7 +401,7 @@ const AppViews = {
         return `
         <div class="space-y-6 slide-up pb-10 max-w-2xl mx-auto">
             <div>
-                <h2 class="text-2xl font-bold text-slate-900">Settings</h2>
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-white dark:text-white">Settings</h2>
                 <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Manage your account, preferences and data.</p>
             </div>
             <!-- Profile -->
@@ -409,7 +409,7 @@ const AppViews = {
                 <div class="flex items-center gap-4 pb-4 border-b border-slate-100 dark:border-slate-700">
                     <div class="w-16 h-16 rounded-full bg-gradient-to-br from-brand-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xl shrink-0">${initials}</div>
                     <div class="flex-1">
-                        <p class="font-bold text-slate-900 text-xl">${u.name || 'User'}</p>
+                        <p class="font-bold text-slate-900 dark:text-white text-xl">${u.name || 'User'}</p>
                         <p class="text-sm text-slate-500 dark:text-slate-400 truncate">${u.email || ''}</p>
                         <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">${verified ? '✓ Verified' : '⚠ Unverified'}</p>
                     </div>
@@ -493,7 +493,7 @@ const AppViews = {
                                 <div class="flex items-start gap-3">
                                     <div class="text-xl">💼</div>
                                     <div>
-                                        <h4 class="font-semibold text-slate-900">Income Mode</h4>
+                                        <h4 class="font-semibold text-slate-900 dark:text-white">Income Mode</h4>
                                         <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Best for salary earners and structured financial planning</p>
                                     </div>
                                 </div>
@@ -502,7 +502,7 @@ const AppViews = {
                                 <div class="flex items-start gap-3">
                                     <div class="text-xl">💰</div>
                                     <div>
-                                        <h4 class="font-semibold text-slate-900">Cash Flow Mode</h4>
+                                        <h4 class="font-semibold text-slate-900 dark:text-white">Cash Flow Mode</h4>
                                         <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Best for students, allowance users, and irregular income</p>
                                     </div>
                                 </div>
@@ -517,11 +517,11 @@ const AppViews = {
                 <div class="space-y-3">
                     <div class="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
                         <span class="text-sm text-slate-600 dark:text-slate-400">Cash & Savings</span>
-                        <span class="font-semibold text-slate-900">${this.formatCurrency(this.state.profile?.current_savings || 0)}</span>
+                        <span class="font-semibold text-slate-900 dark:text-white">${this.formatCurrency(this.state.profile?.current_savings || 0)}</span>
                     </div>
                     <div class="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
                         <span class="text-sm text-slate-600 dark:text-slate-400">Investments</span>
-                        <span class="font-semibold text-slate-900">${this.formatCurrency(this.state.profile?.current_investments || 0)}</span>
+                        <span class="font-semibold text-slate-900 dark:text-white">${this.formatCurrency(this.state.profile?.current_investments || 0)}</span>
                     </div>
                     <p class="text-xs text-slate-500 dark:text-slate-400">These amounts are tracked through transactions. Add or edit investment holdings in the Portfolio section.</p>
                 </div>

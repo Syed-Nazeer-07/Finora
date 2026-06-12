@@ -142,7 +142,7 @@ const AppDashboard = {
                 return `
                 <div class="py-3 border-b border-slate-100 dark:border-slate-700 last:border-0">
                     <div class="flex justify-between items-start mb-1.5">
-                        <span class="text-sm font-semibold text-slate-900 dark:text-white truncate mr-2">${goal.name}</span>
+                        <span class="text-sm font-semibold text-slate-900 dark:text-white dark:text-white truncate mr-2">${goal.name}</span>
                         <div class="flex items-center gap-2 shrink-0">
                             ${healthBadge}
                             <span class="text-xs font-bold ${isComplete ? 'text-emerald-500' : 'text-slate-500 dark:text-slate-400'}">${pct.toFixed(0)}%</span>
@@ -169,10 +169,10 @@ const AppDashboard = {
                         <span class="text-base">${this.getCategoryEmoji(tx.category)}</span>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium text-slate-900 dark:text-white truncate">${tx.description}</p>
+                        <p class="text-sm font-medium text-slate-900 dark:text-white dark:text-white truncate">${tx.description}</p>
                         <p class="text-xs font-medium" style="color: ${catColor}">${tx.category}</p>
                     </div>
-                    <span class="text-sm font-bold shrink-0 ${tx.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white'}">
+                    <span class="text-sm font-bold shrink-0 ${tx.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white dark:text-white'}">
                         ${tx.type === 'income' ? '+' : '-'}${this.formatCurrency(tx.amount)}
                     </span>
                 </div>`;
@@ -203,11 +203,11 @@ const AppDashboard = {
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 slide-up">
                 ${showGreeting
                     ? `<div>
-                        <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-1">Good ${timeOfDay}, ${this.state.currentUser?.name ?? ''} 👋</h1>
+                        <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white dark:text-white mb-1">Good ${timeOfDay}, ${this.state.currentUser?.name ?? ''} 👋</h1>
                         <p class="text-slate-500 dark:text-slate-400 text-sm">Here's your financial snapshot.</p>
                        </div>`
                     : `<div>
-                        <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-1">Dashboard</h1>
+                        <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white dark:text-white mb-1">Dashboard</h1>
                         <p class="text-slate-500 dark:text-slate-400 text-sm">Your Personal Financial OS.</p>
                        </div>`}
                 <button onclick="App.openModal('transaction')" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold text-sm shadow-lg flex items-center gap-2 transition-colors focus:ring-2 focus:ring-brand-500 focus:outline-none">
@@ -256,7 +256,7 @@ const AppDashboard = {
                                 <path class="${calc.healthScore >= 75 ? 'text-emerald-500' : calc.healthScore >= 55 ? 'text-amber-500' : 'text-rose-500'}" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="${calc.healthScore}, 100"/>
                             </svg>
                             <div class="absolute inset-0 flex flex-col items-center justify-center">
-                                <span class="text-3xl font-extrabold text-slate-900 dark:text-white">${calc.healthScore}</span>
+                                <span class="text-3xl font-extrabold text-slate-900 dark:text-white dark:text-white">${calc.healthScore}</span>
                                 <span class="text-[10px] text-slate-400">/ 100</span>
                             </div>
                         </div>
@@ -274,7 +274,7 @@ const AppDashboard = {
                 <!-- Monthly Summary -->
                 <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm hover-card">
                     <div class="flex items-center justify-between mb-5">
-                        <h3 class="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
+                        <h3 class="font-bold text-lg text-slate-900 dark:text-white dark:text-white flex items-center gap-2">
                             <i data-lucide="calendar" class="w-5 h-5 text-brand-500"></i> This Month
                         </h3>
                         ${streak > 0 ? `<div class="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-900/30 rounded-lg"><span class="text-orange-500">🔥</span><span class="text-sm font-bold text-orange-600 dark:text-orange-400">${streak}d</span></div>` : ''}
@@ -297,7 +297,7 @@ const AppDashboard = {
                 <!-- Budget Snapshot -->
                 <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm hover-card">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
+                        <h3 class="font-bold text-lg text-slate-900 dark:text-white dark:text-white flex items-center gap-2">
                             <i data-lucide="pie-chart" class="w-5 h-5 text-brand-500"></i> Budgets
                         </h3>
                         <button onclick="App.setActiveTab('budgets')" class="text-xs text-brand-500 hover:text-brand-600 font-semibold">View All →</button>
@@ -333,7 +333,7 @@ const AppDashboard = {
                 <!-- Recent Activity -->
                 <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm hover-card">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                        <h3 class="font-bold text-sm text-slate-900 dark:text-white dark:text-white flex items-center gap-2">
                             <i data-lucide="clock" class="w-4 h-4 text-purple-500"></i> Recent Activity
                         </h3>
                         <button onclick="App.setActiveTab('transactions')" class="text-xs text-brand-500 hover:text-brand-600 font-semibold">View All →</button>
@@ -347,10 +347,10 @@ const AppDashboard = {
                                 <span class="text-base">${this.getCategoryEmoji(tx.category)}</span>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-sm font-medium text-slate-900 dark:text-white truncate">${tx.description}</p>
+                                <p class="text-sm font-medium text-slate-900 dark:text-white dark:text-white truncate">${tx.description}</p>
                                 <p class="text-xs font-medium" style="color: ${catColor}">${tx.category}</p>
                             </div>
-                            <span class="text-sm font-bold shrink-0 ${tx.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white'}">
+                            <span class="text-sm font-bold shrink-0 ${tx.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white dark:text-white'}">
                                 ${tx.type === 'income' ? '+' : '-'}${this.formatCurrency(tx.amount)}
                             </span>
                         </div>`;
@@ -360,7 +360,7 @@ const AppDashboard = {
                 <!-- Goal Progress -->
                 <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm hover-card">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                        <h3 class="font-bold text-sm text-slate-900 dark:text-white dark:text-white flex items-center gap-2">
                             <i data-lucide="target" class="w-4 h-4 text-brand-500"></i> Active Goals
                         </h3>
                         <button onclick="App.setActiveTab('savings')" class="text-xs text-brand-500 hover:text-brand-600 font-semibold">View All →</button>
@@ -369,7 +369,7 @@ const AppDashboard = {
                 </div>
                 <!-- Smart Insights -->
                 <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm hover-card">
-                    <h3 class="font-bold text-sm text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                    <h3 class="font-bold text-sm text-slate-900 dark:text-white dark:text-white mb-4 flex items-center gap-2">
                         <i data-lucide="lightbulb" class="w-4 h-4 text-amber-500"></i> Smart Insights
                     </h3>
                     <div class="space-y-2 max-h-64 overflow-y-auto">${insightsHtml || '<p class="text-xs text-slate-400">No insights available</p>'}</div>
@@ -378,11 +378,11 @@ const AppDashboard = {
             <!-- Row 3: Charts -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 slide-up delay-300">
                 <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm hover-card">
-                    <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-6">Net Worth Trend</h3>
+                    <h3 class="font-bold text-lg text-slate-900 dark:text-white dark:text-white mb-6">Net Worth Trend</h3>
                     <div class="h-56 relative w-full"><canvas id="netWorthChart"></canvas></div>
                 </div>
                 <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm hover-card">
-                    <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-6">Expense Breakdown</h3>
+                    <h3 class="font-bold text-lg text-slate-900 dark:text-white dark:text-white mb-6">Expense Breakdown</h3>
                     <div class="h-56 relative w-full flex justify-center"><canvas id="expenseChart"></canvas></div>
                 </div>
             </div>
@@ -395,7 +395,7 @@ const AppDashboard = {
             const btn = document.getElementById(`insight-tab-${p}`);
             if (!btn) return;
             btn.className = `px-2.5 py-1 rounded-md text-xs font-semibold transition-colors ${p === period
-                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white dark:text-white shadow-sm'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`;
         });
         const insightColors = {
