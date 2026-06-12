@@ -983,9 +983,9 @@ const App = {
         if (!cfg) return;
         if (cfg.needsPassword && this.state.currentUser?.has_password) {
             const overlay = document.createElement('div');
-            overlay.className = 'fixed inset-0 z-[9998] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm fade-in modal-overlay';
+            overlay.className = 'fixed inset-0 z-[9998] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm modal-overlay';
             overlay.innerHTML = `
-                <div class="bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl border border-slate-100 dark:border-slate-800 slide-up p-8 modal-standard">
+                <div class="bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl border border-slate-100 dark:border-slate-800 p-8 modal-standard">
                     <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">${cfg.title}</h3>
                     <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">${cfg.msg}</p>
                     <input id="danger-pw" type="password" placeholder="Enter your password to confirm" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 mb-4">
@@ -1708,7 +1708,7 @@ const App = {
         }
         container.innerHTML = `
             <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity fade-in modal-overlay" role="presentation">
-                <div class="bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl border border-slate-100 dark:border-slate-800 slide-up overflow-hidden modal-content modal-standard" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+                <div class="bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden modal-content modal-standard" role="dialog" aria-modal="true" aria-labelledby="modal-title">
                     <div class="px-6 sm:px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/20">
                         <h2 id="modal-title" class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white truncate">${modalTitle}</h2>
                         <button type="button" aria-label="Close dialog" onclick="App.closeModal()" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors focus:outline-2 focus:outline-brand-500 focus:outline-offset-2 flex-shrink-0">
@@ -1738,8 +1738,8 @@ const App = {
         const cat = catId ? this.state.categories.find(c => c.id === catId) : null;
         const title = cat ? 'Edit Category' : 'New Category';
         document.getElementById('modal-container').innerHTML = `
-            <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in modal-overlay" role="presentation">
-                <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl animate-scale-in modal-content modal-standard" role="dialog" aria-modal="true" aria-labelledby="cat-modal-title">
+            <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm modal-overlay" role="presentation">
+                <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl modal-content modal-standard" role="dialog" aria-modal="true" aria-labelledby="cat-modal-title">
                     <div class="px-6 py-5 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
                         <h2 id="cat-modal-title" class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white truncate">${title}</h2>
                         <button type="button" aria-label="Close dialog" onclick="App.closeModal()" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-2 focus:outline-brand-500 focus:outline-offset-2 flex-shrink-0"><i data-lucide="x" class="w-5 h-5"></i></button>
@@ -1842,8 +1842,8 @@ const App = {
         const currentBalance = this.state.profile?.monthly_income || 0;
         const sym = this.getCurrencySymbol();
         document.getElementById('modal-container').innerHTML = `
-            <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in modal-overlay">
-                <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl animate-scale-in modal-standard">
+            <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm modal-overlay">
+                <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl modal-standard">
                     <div class="px-6 py-5 border-b border-slate-100 dark:border-slate-700">
                         <h2 class="text-xl font-bold text-slate-900 dark:text-white">Edit Available Balance</h2>
                         <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Update your current cash on hand</p>
