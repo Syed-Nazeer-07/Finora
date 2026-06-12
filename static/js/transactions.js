@@ -532,7 +532,7 @@ const AppViews = {
                                     </div>
                                 </div>
                             </button>
-                            <button onclick="App.switchAccountMode('cashflow')" class="w-full p-4 rounded-xl border-2 text-left transition-all ${(this.state.profile?.account_mode || 'income') === 'cashflow' ? 'border-brand-500 bg-brand-50 dark:bg-brand-500/10 shadow-md ring-1 ring-brand-400' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'}" id="mode-cashflow-btn">>
+                            <button onclick="App.switchAccountMode('cashflow')" class="w-full p-4 rounded-xl border-2 text-left transition-all ${(this.state.profile?.account_mode || 'income') === 'cashflow' ? 'border-brand-500 bg-brand-50 dark:bg-brand-500/10 shadow-md ring-1 ring-brand-400' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'}" id="mode-cashflow-btn">
                                 <div class="flex items-start gap-3">
                                     <div class="text-xl">💰</div>
                                     <div>
