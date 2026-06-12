@@ -1,7 +1,7 @@
 {
-  "name": "WealthSync",
-  "short_name": "WealthSync",
-  "description": "Personal Financial OS",
+  "name": "Finora",
+  "short_name": "Finora",
+  "description": "Personal Finance OS",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

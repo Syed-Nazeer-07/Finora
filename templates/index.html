@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WealthSync - Personal Financial OS</title>
+    <title>Finora - Personal Finance OS</title>
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}?v=2">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}?v=2">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}?v=2">
@@ -123,13 +123,13 @@
         <div class="sidebar-header flex items-center border-b border-slate-100 dark:border-slate-700/50 shrink-0">
             <button onclick="App.setActiveTab('dashboard')" class="sidebar-logo-btn flex items-center gap-3 min-w-0 flex-1 hover:opacity-80 transition-opacity" title="Dashboard">
                 <div class="shrink-0 w-11 h-11 rounded-xl overflow-hidden flex items-center justify-center bg-white">
-                    <img src="/static/branding/logo.png" alt="WealthSync" class="w-full h-full object-cover">
+                    <img id="sidebar-logo" src="/static/branding/logo1.png" alt="Finora" class="w-full h-full object-cover">
                 </div>
-                <span class="sidebar-text font-bold text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400">WealthSync</span>
+                <span class="sidebar-text font-bold text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400">Finora</span>
             </button>
             
             <button onclick="App.setActiveTab('dashboard')" class="sidebar-logo-icon hidden shrink-0 w-11 h-11 rounded-xl overflow-hidden hover:opacity-80 transition-opacity" title="Dashboard">
-                <img src="/static/branding/logo.png" alt="WealthSync" class="w-full h-full object-cover">
+                <img id="sidebar-logo-icon" src="/static/branding/logo1.png" alt="Finora" class="w-full h-full object-cover">
             </button>
         </div>
 
@@ -177,18 +177,18 @@
         
         <header class="md:hidden glass z-20 px-4 py-4 flex justify-between items-center sticky top-0 border-b border-slate-200 dark:border-slate-700">
             <div class="flex items-center gap-2">
-                <div class="w-10 h-10 rounded-lg overflow-hidden shadow">
-                    <img src="/static/branding/logo.png" alt="WealthSync" class="w-full h-full object-contain">
-                </div>
-                <span class="font-bold text-lg dark:text-white">WealthSync</span>
-            </div>
-            <div class="flex items-center gap-2">
-                <button aria-label="Toggle dark mode" onclick="App.toggleTheme()" class="p-2 text-slate-600 dark:text-slate-300 focus:ring-2 focus:ring-brand-500 rounded-lg focus:outline-none">
-                    <i data-lucide="moon" id="theme-icon-mobile" class="w-5 h-5"></i>
-                </button>
                 <button aria-label="Open menu" onclick="App.toggleMobileMenu()" class="p-2 text-slate-600 dark:text-slate-300 focus:ring-2 focus:ring-brand-500 rounded-lg focus:outline-none">
                     <i data-lucide="menu" id="mobile-menu-icon" class="w-6 h-6"></i>
                 </button>
+                <button aria-label="Toggle dark mode" onclick="App.toggleTheme()" class="p-2 text-slate-600 dark:text-slate-300 focus:ring-2 focus:ring-brand-500 rounded-lg focus:outline-none">
+                    <i data-lucide="moon" id="theme-icon-mobile" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="font-bold text-lg dark:text-white">Finora</span>
+                <div class="w-10 h-10 rounded-lg overflow-hidden shadow">
+                    <img id="mobile-logo" src="/static/branding/logo1.png" alt="Finora" class="w-full h-full object-contain">
+                </div>
             </div>
         </header>
 
@@ -207,7 +207,7 @@
     <div id="tutorial-modal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50">
         <div class="bg-slate-900 rounded-lg max-w-md w-full mx-4 border border-slate-700">
             <div class="p-6">
-                <h2 class="text-2xl font-bold text-white mb-4" id="tutorial-title">Welcome to WealthSync</h2>
+                <h2 class="text-2xl font-bold text-white mb-4" id="tutorial-title">Welcome to Finora</h2>
                 <p class="text-slate-300 mb-6" id="tutorial-content">Track your income, expenses, and financial goals all in one place.</p>
                 <div class="flex gap-3">
                     <button onclick="skipTutorial()" class="flex-1 px-4 py-2 border border-slate-600 rounded-lg text-slate-300 hover:bg-slate-800">Skip</button>

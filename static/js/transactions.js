@@ -489,7 +489,7 @@ const AppViews = {
                     <div>
                         <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Switch between modes to adapt WealthSync for your financial lifestyle.</p>
                         <div class="space-y-3">
-                            <button onclick="App.switchAccountMode('income')" class="w-full p-4 rounded-xl border-2 text-left transition-all ${(this.state.profile?.account_mode || 'income') === 'income' ? 'border-brand-500 bg-brand-50 dark:bg-brand-500/10 shadow-md ring-1 ring-brand-400' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'}" id="mode-income-btn">
+                            <button onclick="App.switchAccountMode('income')" class="w-full p-4 rounded-xl border-2 text-left transition-all ${this.state.profile?.account_mode === 'income' ? 'border-brand-500 bg-brand-50 dark:bg-brand-500/10 shadow-md ring-1 ring-brand-400' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'}" id="mode-income-btn">
                                 <div class="flex items-start gap-3">
                                     <div class="text-xl">💼</div>
                                     <div>
@@ -498,7 +498,7 @@ const AppViews = {
                                     </div>
                                 </div>
                             </button>
-                            <button onclick="App.switchAccountMode('cashflow')" class="w-full p-4 rounded-xl border-2 text-left transition-all ${(this.state.profile?.account_mode || 'income') === 'cashflow' ? 'border-brand-500 bg-brand-50 dark:bg-brand-500/10 shadow-md ring-1 ring-brand-400' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'}" id="mode-cashflow-btn">
+                            <button onclick="App.switchAccountMode('cashflow')" class="w-full p-4 rounded-xl border-2 text-left transition-all ${this.state.profile?.account_mode === 'cashflow' ? 'border-brand-500 bg-brand-50 dark:bg-brand-500/10 shadow-md ring-1 ring-brand-400' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'}" id="mode-cashflow-btn">
                                 <div class="flex items-start gap-3">
                                     <div class="text-xl">💰</div>
                                     <div>
@@ -527,7 +527,7 @@ const AppViews = {
                 </div>
             `)}
             <!-- Monthly Income (Income Mode Only) -->
-            ${(this.state.profile?.account_mode || 'income') === 'income' ? `
+            ${this.state.profile?.account_mode === 'income' ? `
             <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                 <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center gap-2">
                     <i data-lucide="trending-up" class="w-4 h-4 text-brand-500"></i>
@@ -579,7 +579,7 @@ const AppViews = {
                         </button>
                     </div>
                     <div id="categories-list" class="space-y-2 max-h-64 overflow-y-auto">
-                        ${this.state.categories.map(cat => `
+                        ${this.getSortedCategories().map(cat => `
                             <div class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border-2" style="border-color: ${cat.color}40">
                                 <div class="flex items-center gap-3 min-w-0">
                                     <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style="background-color: ${cat.color}20; border: 2px solid ${cat.color}">

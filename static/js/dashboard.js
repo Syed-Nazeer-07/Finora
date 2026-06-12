@@ -342,7 +342,7 @@ const AppDashboard = {
                         ${activity.today.concat(activity.yesterday, activity.earlier).slice(0, 7).map(tx => {
                             const catColor = this.getCategoryColor(tx.category);
                             return `
-                        <div class="flex items-center gap-3 py-2 border-b border-slate-50 dark:border-slate-700/50 last:border-0">
+                        <div class="flex items-center gap-3 py-3 border-b border-slate-50 dark:border-slate-700/50 last:border-0">
                             <div class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style="background-color: ${catColor}20; border: 2px solid ${catColor}">
                                 <span class="text-base">${this.getCategoryEmoji(tx.category)}</span>
                             </div>
@@ -379,11 +379,17 @@ const AppDashboard = {
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 slide-up delay-300">
                 <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm hover-card">
                     <h3 class="font-bold text-lg text-slate-900 dark:text-white dark:text-white mb-6">Net Worth Trend</h3>
-                    <div class="h-56 relative w-full"><canvas id="netWorthChart"></canvas></div>
+                    <div class="h-56 relative w-full">
+                        <div class="skeleton skeleton-chart absolute inset-0" id="netWorthSkeleton"></div>
+                        <canvas id="netWorthChart" style="opacity: 0;"></canvas>
+                    </div>
                 </div>
                 <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm hover-card">
                     <h3 class="font-bold text-lg text-slate-900 dark:text-white dark:text-white mb-6">Expense Breakdown</h3>
-                    <div class="h-56 relative w-full flex justify-center"><canvas id="expenseChart"></canvas></div>
+                    <div class="h-56 relative w-full flex justify-center">
+                        <div class="skeleton skeleton-chart absolute inset-0" id="expenseSkeleton"></div>
+                        <canvas id="expenseChart" style="opacity: 0;"></canvas>
+                    </div>
                 </div>
             </div>
         </div>`;

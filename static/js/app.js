@@ -1,3 +1,95 @@
+// Data Synchronization Layer
+const DataSync = {
+    // Track which views depend on which data types
+    dependencies: {
+        transactions: ['dashboard', 'budgets', 'insights', 'health'],
+        budgets: ['dashboard', 'insights'],
+        goals: ['dashboard', 'forecasting'],
+        investments: ['dashboard', 'portfolio', 'net-worth']
+    },
+    
+    // Mutation handlers that trigger dependent re-fetches
+    async onTransactionChange() {
+        await Promise.all([
+            App.state.activeTab === 'dashboard' ? Promise.resolve() : Promise.resolve()
+        ]);
+        // Dashboard calculations use transactions directly
+        // No re-fetch needed, just re-render dependent views
+        if (App.state.activeTab === 'dashboard') {
+            App.renderDashboardOnly();
+        } else if (App.state.activeTab === 'budgets') {
+            App.renderBudgetsOnly();
+        }
+    },
+    
+    async onBudgetChange() {
+        // Re-render dashboard since it shows budget usage
+        if (App.state.activeTab === 'dashboard') {
+            App.renderDashboardOnly();
+        }
+    },
+    
+    async onGoalChange() {
+        // Re-fetch forecasts since they depend on goals
+        await App.fetchGoalForecasts();
+        if (App.state.activeTab === 'dashboard') {
+            App.renderDashboardOnly();
+        }
+    },
+    
+    async onInvestmentChange() {
+        // Dashboard calculations depend on investments
+        if (App.state.activeTab === 'dashboard') {
+            App.renderDashboardOnly();
+        }
+    },
+    
+    // Trigger full sync after critical mutations
+    async fullSync() {
+        await Promise.all([
+            App.fetchTransactions(),
+            App.fetchBudgets(),
+            App.fetchGoals(),
+            App.fetchInvestments()
+        ]);
+    }
+};
+
+const LazyLoader = {
+    skeletonTemplates: {
+        card: `<div class="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
+            <div class="skeleton skeleton-title"></div>
+            <div class="skeleton skeleton-text"></div>
+            <div class="skeleton skeleton-text" style="width: 80%;"></div>
+        </div>`,
+        chart: `<div class="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+            <div class="skeleton skeleton-title mb-4"></div>
+            <div class="skeleton skeleton-chart"></div>
+        </div>`,
+        metric: `<div class="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
+            <div class="skeleton" style="height: 0.75rem; width: 50%; margin-bottom: 0.5rem;"></div>
+            <div class="skeleton" style="height: 1.5rem; width: 70%;"></div>
+        </div>`,
+    },
+    
+    createSkeleton(type, count = 1) {
+        const template = this.skeletonTemplates[type];
+        if (!template) return '';
+        return Array(count).fill(template).join('');
+    },
+    
+    wrapWithFadeIn(html, id) {
+        return `<div id="${id}" class="fade-in-skeleton">${html}</div>`;
+    },
+    
+    fadeInElement(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.add('fade-in-complete');
+        setTimeout(() => el.classList.remove('fade-in-skeleton'), 500);
+    }
+};
+
 const App = {
     state: {
         activeTab: 'dashboard',
@@ -24,6 +116,7 @@ const App = {
         investments: [],
         renderTimer: null,
         txSelected: new Set(),
+        pendingCategorySelect: null,
         initialized: false,
     },
     init() {
@@ -35,6 +128,7 @@ const App = {
             document.documentElement.classList.remove('dark');
         }
         this.updateThemeIcons();
+        this.updateLogos();
         this._applySidebarCollapsed();
         this.renderSidebarMenu();
         this.fetchCurrentUser();
@@ -50,6 +144,18 @@ const App = {
                 const overlay = e.target.querySelector('.fixed');
                 if (overlay && e.target === overlay.parentElement) this.closeModal();
             }
+        });
+        // Handle window resize for chart responsiveness
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                if (this.state.activeTab === 'dashboard' || this.state.activeTab === 'investments') {
+                    Object.values(this.state.charts).forEach(chart => {
+                        if (chart && chart.resize) chart.resize();
+                    });
+                }
+            }, 250);
         });
     },
     toggleSidebar() {
@@ -182,6 +288,7 @@ const App = {
         localStorage.setItem('theme', newTheme);
         this.saveSetting('theme', newTheme);
         this.updateThemeIcons();
+        this.updateLogos();
         this.render(); // Re-render to recreate charts with new theme
     },
     updateThemeIcons() {
@@ -191,6 +298,15 @@ const App = {
         if (deskIcon) deskIcon.setAttribute('data-lucide', iconStr);
         if (mobIcon) mobIcon.setAttribute('data-lucide', iconStr);
         lucide.createIcons();
+    },
+    updateLogos() {
+        const logoPath = this.state.darkMode ? '/static/branding/logo2.png' : '/static/branding/logo1.png';
+        const sidebarLogo = document.getElementById('sidebar-logo');
+        const sidebarLogoIcon = document.getElementById('sidebar-logo-icon');
+        const mobileLogo = document.getElementById('mobile-logo');
+        if (sidebarLogo) sidebarLogo.src = logoPath;
+        if (sidebarLogoIcon) sidebarLogoIcon.src = logoPath;
+        if (mobileLogo) mobileLogo.src = logoPath;
     },
     getCurrencySymbol() {
         const SYMBOLS = { INR: '₹', USD: '$', EUR: '€', GBP: '£', AED: 'د.إ', SGD: 'S$' };
@@ -209,16 +325,137 @@ const App = {
         }).format(amount);
     },
     getCategoryNames(type = null) {
-        if (type) {
-            return this.state.categories.filter(c => c.category_type === type).map(c => c.name);
-        }
-        return this.state.categories.map(c => c.name);
+        return this.getSortedCategories(type).map(c => c.name);
     },
     getCategoryEmoji(name) {
         const cat = this.state.categories.find(c => c.name === name);
         return cat ? cat.emoji : '📦';
     },
     getCategoryColor(name) {
+        const cat = this.state.categories.find(c => c.name === name);
+        return cat ? cat.color : '#3b82f6';
+    },
+    getSortedCategories(type = null) {
+        let cats = type ? this.state.categories.filter(c => c.category_type === type) : this.state.categories;
+        return cats.sort((a, b) => {
+            if (a.is_default && !b.is_default) return -1;
+            if (!a.is_default && b.is_default) return 1;
+            return a.name.localeCompare(b.name);
+        });
+    },
+    getSkeletonCard() {
+        return `<div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm">
+            <div class="skeleton skeleton-title"></div>
+            <div class="skeleton skeleton-text"></div>
+            <div class="skeleton skeleton-text" style="width: 80%;"></div>
+        </div>`;
+    },
+    getSkeletonChart() {
+        return `<div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm">
+            <div class="skeleton skeleton-title"></div>
+            <div class="skeleton skeleton-chart"></div>
+        </div>`;
+    },
+    getDashboardSkeleton() {
+        return `
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+                ${Array(4).fill(this.getSkeletonCard()).join('')}
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                ${Array(2).fill(this.getSkeletonChart()).join('')}
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                ${Array(3).fill(this.getSkeletonCard()).join('')}
+            </div>
+        `;
+    },
+    validateCategoryName(name, catId = null) {
+        name = name.trim();
+        if (!name) return 'Category name cannot be empty';
+        if (name.length > 50) return 'Category name must be 50 characters or less';
+        if (/^\s+$/.test(name)) return 'Category name cannot be only whitespace';
+        const exists = this.state.categories.find(c => c.name.toLowerCase() === name.toLowerCase() && c.id !== catId);
+        if (exists) return 'Category already exists';
+        return null;
+    },
+    async categoryManager_create(name, type = 'expense', emoji = '📦', color = '#3b82f6') {
+        const validationError = this.validateCategoryName(name);
+        if (validationError) {
+            Toast.show(validationError, 'error');
+            return null;
+        }
+        const res = await fetch('/api/categories', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: name.trim(), category_type: type, emoji, color })
+        });
+        if (!res.ok) {
+            const data = await res.json();
+            Toast.show(data.error || 'Failed to create category', 'error');
+            return null;
+        }
+        const newCat = await res.json();
+        this.state.categories.push(newCat);
+        this.render();
+        return newCat;
+    },
+    async categoryManager_update(catId, updates) {
+        const cat = this.state.categories.find(c => c.id === catId);
+        if (!cat) {
+            Toast.show('Category not found', 'error');
+            return false;
+        }
+        if (cat.is_default) {
+            Toast.show('Cannot edit default categories', 'error');
+            return false;
+        }
+        if (updates.name) {
+            const validationError = this.validateCategoryName(updates.name, catId);
+            if (validationError) {
+                Toast.show(validationError, 'error');
+                return false;
+            }
+        }
+        const res = await fetch(`/api/categories/${catId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updates)
+        });
+        if (!res.ok) {
+            const data = await res.json();
+            Toast.show(data.error || 'Failed to update category', 'error');
+            return false;
+        }
+        const updated = await res.json();
+        const idx = this.state.categories.findIndex(c => c.id === catId);
+        if (idx !== -1) this.state.categories[idx] = updated;
+        this.render();
+        return true;
+    },
+    async categoryManager_delete(catId) {
+        const cat = this.state.categories.find(c => c.id === catId);
+        if (!cat) {
+            Toast.show('Category not found', 'error');
+            return false;
+        }
+        if (cat.is_default) {
+            Toast.show('Cannot delete default categories', 'error');
+            return false;
+        }
+        const inUse = this.state.transactions.some(tx => tx.category === cat.name);
+        if (inUse && !confirm(`"${cat.name}" is used in transactions. Delete anyway? (Transactions will need reassignment)`)) {
+            return false;
+        }
+        const res = await fetch(`/api/categories/${catId}`, { method: 'DELETE' });
+        if (!res.ok) {
+            const data = await res.json();
+            Toast.show(data.error || 'Failed to delete category', 'error');
+            return false;
+        }
+        this.state.categories = this.state.categories.filter(c => c.id !== catId);
+        this.render();
+        return true;
+    },
         const cat = this.state.categories.find(c => c.name === name);
         return cat ? cat.color : '#3b82f6';
     },
@@ -820,6 +1057,55 @@ const App = {
         }).join('');
         lucide.createIcons({ nodes: [document.getElementById('sidebar')] });
     },
+    renderDashboardOnly() {
+        if (this.state.activeTab !== 'dashboard') return;
+        const content = document.getElementById('main-content');
+        
+        // Show skeleton first for instant feel
+        if (!this.state.profile || !this.state.transactions.length) {
+            content.innerHTML = this.getDashboardSkeleton();
+            setTimeout(() => {
+                if (this.state.profile && this.state.transactions.length) {
+                    content.innerHTML = this.getDashboardHTML();
+                    lucide.createIcons();
+                    this.initDashboardCharts();
+                }
+            }, 100);
+            return;
+        }
+        
+        content.innerHTML = this.getDashboardHTML();
+        lucide.createIcons();
+        setTimeout(() => {
+            if (!this.state.chartsInitializing) {
+                this.state.chartsInitializing = true;
+                this.initDashboardCharts().finally(() => { this.state.chartsInitializing = false; });
+            }
+        }, 50);
+    },
+    renderTransactionsOnly() {
+        if (this.state.activeTab !== 'transactions') return;
+        this._renderTxTable();
+    },
+    renderBudgetsOnly() {
+        if (this.state.activeTab !== 'budgets') return;
+        const content = document.getElementById('main-content');
+        content.innerHTML = this.getBudgetsHTML();
+        lucide.createIcons();
+    },
+    renderSavingsOnly() {
+        if (this.state.activeTab !== 'savings') return;
+        const content = document.getElementById('main-content');
+        content.innerHTML = this.getSavingsHTML();
+        lucide.createIcons();
+    },
+    renderInvestmentsOnly() {
+        if (this.state.activeTab !== 'investments') return;
+        const content = document.getElementById('main-content');
+        content.innerHTML = this.getInvestmentsHTML();
+        lucide.createIcons();
+        setTimeout(() => this.initInvestmentCharts(), 50);
+    },
     render() {
         // Debounce render to prevent double initialization
         clearTimeout(this.state.renderTimer);
@@ -849,7 +1135,14 @@ const App = {
         }
         let html = '';
         switch (this.state.activeTab) {
-            case 'dashboard':    html = this.getDashboardHTML(); break;
+            case 'dashboard':
+                // Show skeleton while preparing dashboard
+                html = LazyLoader.wrapWithFadeIn(
+                    LazyLoader.createSkeleton('metric', 4) + 
+                    LazyLoader.createSkeleton('chart', 3),
+                    'dashboard-skeleton'
+                );
+                break;
             case 'transactions': html = this.getTransactionsHTML(); break;
             case 'budgets':      html = this.getBudgetsHTML(); break;
             case 'savings':      html = this.getSavingsHTML(); break;
@@ -858,21 +1151,64 @@ const App = {
         }
         content.innerHTML = html;
         lucide.createIcons();
-        // Force Tailwind CDN to process new classes
-        if (window.tailwind && window.tailwind.process) {
-            window.tailwind.process();
-        }
-        setTimeout(async () => {
-            if (!this.state.chartsInitializing) {
-                this.state.chartsInitializing = true;
-                try {
-                    if (this.state.activeTab === 'dashboard') await this.initDashboardCharts();
-                    if (this.state.activeTab === 'investments') this.initInvestmentCharts();
-                } finally {
-                    this.state.chartsInitializing = false;
+        
+        // Load dashboard content after skeleton displays
+        if (this.state.activeTab === 'dashboard') {
+            requestAnimationFrame(() => {
+                const dashboardHTML = this.getDashboardHTML();
+                content.innerHTML = dashboardHTML;
+                lucide.createIcons();
+                if (window.tailwind && window.tailwind.process) {
+                    window.tailwind.process();
                 }
+                this._initChartsWithLazyLoading();
+            });
+        } else {
+            // Force Tailwind CDN to process new classes
+            if (window.tailwind && window.tailwind.process) {
+                window.tailwind.process();
             }
-        }, 50);
+            setTimeout(async () => {
+                if (!this.state.chartsInitializing) {
+                    this.state.chartsInitializing = true;
+                    try {
+                        if (this.state.activeTab === 'investments') this.initInvestmentCharts();
+                    } finally {
+                        this.state.chartsInitializing = false;
+                    }
+                }
+            }, 50);
+        }
+    },
+    
+    _initChartsWithLazyLoading() {
+        if (this.state.chartsInitializing) return;
+        this.state.chartsInitializing = true;
+        
+        // Lazy load charts with slight delays for smooth rendering
+        const chartElements = document.querySelectorAll('[data-chart-type]');
+        let delay = 0;
+        
+        chartElements.forEach((el, idx) => {
+            setTimeout(() => {
+                if (el && el.offsetHeight > 0) { // Only init if visible
+                    el.classList.add('fade-in-skeleton');
+                }
+            }, delay);
+            delay += 100;
+        });
+        
+        setTimeout(async () => {
+            try {
+                if (this.state.activeTab === 'dashboard') await this.initDashboardCharts();
+            } finally {
+                this.state.chartsInitializing = false;
+                // Fade in charts
+                chartElements.forEach(el => {
+                    if (el) el.classList.add('fade-in-complete');
+                });
+            }
+        }, delay + 50);
     },
     openModal(type, id = null) {
         this.state.modal = { isOpen: true, type, entityId: id };
@@ -928,6 +1264,14 @@ const App = {
                 });
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error || 'Request failed');
+                
+                // Update state directly instead of fetching
+                if (entityId) {
+                    const idx = this.state.transactions.findIndex(t => t.id === entityId);
+                    if (idx !== -1) this.state.transactions[idx] = data;
+                } else {
+                    this.state.transactions.unshift(data);
+                }
             } catch (err) {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Save Record';
@@ -938,7 +1282,8 @@ const App = {
             }
             this.closeModal();
             Toast.show(entityId ? 'Transaction updated successfully' : 'Transaction created successfully', 'success');
-            await this.fetchTransactions();
+            // Sync dependent views
+            await DataSync.onTransactionChange();
             return;
         } else if (type === 'budget') {
             const payload = { category: fd.get('category'), limit: this._parseMoney(fd.get('limit') || '0') };
@@ -946,9 +1291,19 @@ const App = {
             const method = entityId ? 'PUT' : 'POST';
             const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
             if (!res.ok) { Toast.show('Failed to save budget', 'error'); return; }
+            const data = await res.json();
+            
+            // Update state directly
+            if (entityId) {
+                const idx = this.state.budgets.findIndex(b => b.id === entityId);
+                if (idx !== -1) this.state.budgets[idx] = data;
+            } else {
+                this.state.budgets.push(data);
+            }
+            
             this.closeModal();
             Toast.show(entityId ? 'Budget updated' : 'Budget created', 'success');
-            await this.fetchBudgets();
+            await DataSync.onBudgetChange();
             return;
         } else if (type === 'saving') {
             const _m = s => this._parseMoney(s || '0');
@@ -960,9 +1315,19 @@ const App = {
             const method = entityId ? 'PUT' : 'POST';
             const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
             if (!res.ok) { Toast.show('Failed to save goal', 'error'); return; }
+            const data = await res.json();
+            
+            // Update state directly
+            if (entityId) {
+                const idx = this.state.savings.findIndex(s => s.id === entityId);
+                if (idx !== -1) this.state.savings[idx] = data;
+            } else {
+                this.state.savings.push(data);
+            }
+            
             this.closeModal();
             Toast.show(entityId ? 'Goal updated' : 'Goal created', 'success');
-            await this.fetchGoals();
+            await DataSync.onGoalChange();
             return;
         } else if (type === 'investment') {
             const payload = { symbol: fd.get('symbol'), type: fd.get('invType'),
@@ -972,9 +1337,19 @@ const App = {
             const method = entityId ? 'PUT' : 'POST';
             const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
             if (!res.ok) { Toast.show('Failed to save investment', 'error'); return; }
+            const data = await res.json();
+            
+            // Update state directly
+            if (entityId) {
+                const idx = this.state.investments.findIndex(i => i.id === entityId);
+                if (idx !== -1) this.state.investments[idx] = data;
+            } else {
+                this.state.investments.push(data);
+            }
+            
             this.closeModal();
             Toast.show(entityId ? 'Investment updated' : 'Investment added', 'success');
-            await this.fetchInvestments();
+            await DataSync.onInvestmentChange();
             return;
         } else if (type === 'roadmap') {
             const payload = { title: fd.get('title'), icon: fd.get('icon'), status: 'pending' };
@@ -1001,8 +1376,12 @@ const App = {
                     try {
                         const res = await fetch(`/api/transactions/${id}`, { method: 'DELETE' });
                         if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
+                        
+                        // Update state directly
+                        this.state.transactions = this.state.transactions.filter(t => t.id !== id);
+                        
                         Toast.show('Transaction deleted successfully', 'success');
-                        await this.fetchTransactions();
+                        await DataSync.onTransactionChange();
                     } catch (err) {
                         Toast.show(`Failed to delete transaction: ${err.message}`, 'error');
                     }
@@ -1013,19 +1392,34 @@ const App = {
         if (type === 'budget') {
             const res = await fetch(`/api/budgets/${id}`, { method: 'DELETE' });
             if (!res.ok) { Toast.show('Failed to delete budget', 'error'); return; }
-            await this.fetchBudgets();
+            
+            // Update state directly
+            this.state.budgets = this.state.budgets.filter(b => b.id !== id);
+            
+            Toast.show('Budget deleted', 'success');
+            await DataSync.onBudgetChange();
             return;
         }
         if (type === 'saving') {
             const res = await fetch(`/api/goals/${id}`, { method: 'DELETE' });
             if (!res.ok) { Toast.show('Failed to delete goal', 'error'); return; }
-            await this.fetchGoals();
+            
+            // Update state directly
+            this.state.savings = this.state.savings.filter(s => s.id !== id);
+            
+            Toast.show('Goal deleted', 'success');
+            await DataSync.onGoalChange();
             return;
         }
         if (type === 'investment') {
             const res = await fetch(`/api/investments/${id}`, { method: 'DELETE' });
             if (!res.ok) { Toast.show('Failed to delete investment', 'error'); return; }
-            await this.fetchInvestments();
+            
+            // Update state directly
+            this.state.investments = this.state.investments.filter(i => i.id !== id);
+            
+            Toast.show('Investment deleted', 'success');
+            await DataSync.onInvestmentChange();
             return;
         }
         if (type === 'roadmap') {
@@ -1110,28 +1504,32 @@ const App = {
                 </div>
                 <div class="relative">
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="tx-desc-input">Description</label>
-                    <input type="text" id="tx-desc-input" name="description" autocomplete="off" value="${item ? item.description : ''}" required placeholder="e.g. Swiggy Order" oninput="App._descAutocomplete(event)" onblur="App._descHideDropdown()" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
+                    <input type="text" id="tx-desc-input" name="description" autocomplete="off" value="${item ? item.description : ''}" required placeholder="e.g. Swiggy Order" aria-invalid="false" aria-describedby="tx-desc-error" oninput="App._descAutocomplete(event)" onblur="App._descHideDropdown()" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-2 focus:outline-brand-500 focus:outline-offset-2 text-sm transition-all" />
                     <ul id="tx-desc-dropdown" class="hidden absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg overflow-hidden text-sm"></ul>
+                    <span id="tx-desc-error" class="hidden text-rose-500 text-xs mt-1 block"></span>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="tx-amount">Amount</label>
                         <div class="relative">
                             <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">${sym}</span>
-                            <input type="text" inputmode="numeric" id="tx-amount" name="amount" autocomplete="off" value="${item ? this.formatMoneyInput(item.amount) : ''}" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
+                            <input type="text" inputmode="numeric" id="tx-amount" name="amount" autocomplete="off" value="${item ? this.formatMoneyInput(item.amount) : ''}" required placeholder="0" aria-invalid="false" aria-describedby="tx-amount-error" oninput="App.handleMoneyInput(event)" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-2 focus:outline-brand-500 focus:outline-offset-2 text-sm transition-all" />
                         </div>
+                        <span id="tx-amount-error" class="hidden text-rose-500 text-xs mt-1 block"></span>
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="tx-date">Date</label>
-                        <input type="date" id="tx-date" name="date" required value="${item ? item.date : today}" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
+                        <input type="date" id="tx-date" name="date" required value="${item ? item.date : today}" aria-invalid="false" aria-describedby="tx-date-error" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-2 focus:outline-brand-500 focus:outline-offset-2 text-sm transition-all" />
+                        <span id="tx-date-error" class="hidden text-rose-500 text-xs mt-1 block"></span>
                     </div>
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="tx-category-select">Category</label>
-                    <select name="category" id="tx-category-select" onchange="App.handleCategoryChange(this)" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all">
+                    <select name="category" id="tx-category-select" required aria-invalid="false" aria-describedby="tx-category-error" onchange="App.handleCategoryChange(this)" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-2 focus:outline-brand-500 focus:outline-offset-2 text-sm transition-all">
                         ${catOptions}
                         <option value="__new__">+ Add New Category</option>
                     </select>
+                    <span id="tx-category-error" class="hidden text-rose-500 text-xs mt-1 block"></span>
                 </div>
             `;
         } else if (type === 'budget') {
@@ -1200,7 +1598,7 @@ const App = {
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="inv-shares">Quantity / Units</label>
-                    <input type="number" id="inv-shares" name="shares" value="${item ? item.shares : ''}" required min="0" step="0.0001" placeholder="0" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
+                    <input type="number" id="inv-shares" autocomplete="off" name="shares" value="${item ? item.shares : ''}" required min="0" step="0.0001" placeholder="0" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="inv-price">Purchase Price Per Unit</label>
@@ -1310,20 +1708,20 @@ const App = {
             return;
         }
         container.innerHTML = `
-            <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity fade-in">
-                <div class="bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl border border-slate-100 dark:border-slate-800 w-full max-w-md slide-up overflow-hidden">
-                    <div class="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/20">
-                        <h2 class="text-xl font-bold text-slate-900 dark:text-white">${modalTitle}</h2>
-                        <button type="button" aria-label="Close dialog" onclick="App.closeModal()" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors focus:ring-2 focus:ring-brand-500 focus:outline-none">
+            <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity fade-in modal-overlay" role="presentation">
+                <div class="bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl border border-slate-100 dark:border-slate-800 w-full max-w-md slide-up overflow-hidden modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+                    <div class="px-6 sm:px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/20">
+                        <h2 id="modal-title" class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white truncate">${modalTitle}</h2>
+                        <button type="button" aria-label="Close dialog" onclick="App.closeModal()" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors focus:outline-2 focus:outline-brand-500 focus:outline-offset-2 flex-shrink-0">
                             <i data-lucide="x" class="w-5 h-5"></i>
                         </button>
                     </div>
-                    <form onsubmit="App.handleFormSubmit(event)" class="p-8 space-y-6">
+                    <form onsubmit="App.handleFormSubmit(event)" class="p-6 sm:p-8 space-y-6 overflow-y-auto max-h-[calc(100vh-280px)]">
                         ${formHtml}
-                        <p id="form-error" class="text-rose-500 text-sm text-center -mb-2"></p>
-                        <div class="pt-2 flex gap-4">
-                            <button type="button" onclick="App.closeModal()" class="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl font-semibold text-sm transition-all">Cancel</button>
-                            <button type="submit" class="flex-1 px-4 py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold text-sm shadow-lg shadow-blue-600/30 hover:-translate-y-0.5 transition-all">${entityId ? 'Save' : (type === 'roadmap' ? 'Add Step' : `Add ${type.charAt(0).toUpperCase() + type.slice(1)}`)}</button>
+                        <p id="form-error" class="text-rose-500 text-sm text-center -mb-2" role="alert" aria-live="polite"></p>
+                        <div class="pt-2 flex gap-3 sm:gap-4">
+                            <button type="button" onclick="App.closeModal()" class="flex-1 px-3 sm:px-4 py-3 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl font-semibold text-sm transition-all min-h-[44px] focus:outline-2 focus:outline-brand-500 focus:outline-offset-2">Cancel</button>
+                            <button type="submit" class="flex-1 px-3 sm:px-4 py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold text-sm shadow-lg shadow-blue-600/30 hover:-translate-y-0.5 transition-all min-h-[44px] focus:outline-2 focus:outline-brand-500 focus:outline-offset-2">${entityId ? 'Save' : (type === 'roadmap' ? 'Add Step' : `Add ${type.charAt(0).toUpperCase() + type.slice(1)}`)}</button>
                         </div>
                     </form>
                 </div>
@@ -1331,25 +1729,31 @@ const App = {
         `;
         lucide.createIcons();
     },
+    handleCategoryChange(selectElement) {
+        if (selectElement.value === '__new__') {
+            this.state.pendingCategorySelect = selectElement;
+            this.openCategoryModal();
+        }
+    },
     openCategoryModal(catId = null) {
         const cat = catId ? this.state.categories.find(c => c.id === catId) : null;
         const title = cat ? 'Edit Category' : 'New Category';
         document.getElementById('modal-container').innerHTML = `
-            <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-                <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-md w-full animate-scale-in">
+            <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in modal-overlay" role="presentation">
+                <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-md w-full animate-scale-in modal-content" role="dialog" aria-modal="true" aria-labelledby="cat-modal-title">
                     <div class="px-6 py-5 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
-                        <h2 class="text-xl font-bold text-slate-900 dark:text-white">${title}</h2>
-                        <button aria-label="Close dialog" onclick="App.closeModal()" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:ring-2 focus:ring-brand-500 focus:outline-none"><i data-lucide="x" class="w-5 h-5"></i></button>
+                        <h2 id="cat-modal-title" class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white truncate">${title}</h2>
+                        <button type="button" aria-label="Close dialog" onclick="App.closeModal()" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-2 focus:outline-brand-500 focus:outline-offset-2 flex-shrink-0"><i data-lucide="x" class="w-5 h-5"></i></button>
                     </div>
                     <form onsubmit="App.saveCategory(event, ${catId})" class="p-6 space-y-4">
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="cat-name">Category Name</label>
-                            <input type="text" id="cat-name" autocomplete="off" value="${cat ? cat.name : ''}" required maxlength="50" placeholder="e.g. Gym Membership" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm" />
+                            <input type="text" id="cat-name" autocomplete="off" value="${cat ? cat.name : ''}" required maxlength="50" placeholder="e.g. Gym Membership" aria-invalid="false" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-2 focus:outline-brand-500 focus:outline-offset-2 text-sm min-h-[44px]" />
                         </div>
-                        <p id="cat-error" class="text-rose-500 text-sm hidden"></p>
-                        <div class="flex gap-4 pt-2">
-                            <button type="button" onclick="App.closeModal()" class="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl font-semibold text-sm">Cancel</button>
-                            <button type="submit" class="flex-1 px-4 py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold text-sm shadow-lg">Save</button>
+                        <p id="cat-error" class="text-rose-500 text-sm hidden" role="alert" aria-live="polite"></p>
+                        <div class="flex gap-3 sm:gap-4 pt-2">
+                            <button type="button" onclick="App.closeModal()" class="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl font-semibold text-sm min-h-[44px] focus:outline-2 focus:outline-brand-500 focus:outline-offset-2">Cancel</button>
+                            <button type="submit" class="flex-1 px-4 py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold text-sm shadow-lg min-h-[44px] focus:outline-2 focus:outline-brand-500 focus:outline-offset-2">Save</button>
                         </div>
                     </form>
                 </div>
@@ -1370,47 +1774,45 @@ const App = {
         e.preventDefault();
         const name = document.getElementById('cat-name').value.trim();
         const err = document.getElementById('cat-error');
-        const method = catId ? 'PUT' : 'POST';
-        const url = catId ? `/api/categories/${catId}` : '/api/categories';
-        const res = await fetch(url, {
-            method,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name })
-        });
-        const data = await res.json();
-        if (!res.ok) {
-            err.textContent = data.error;
-            err.classList.remove('hidden');
-            return;
+        err.classList.add('hidden');
+        
+        if (catId) {
+            const success = await this.categoryManager_update(catId, { name });
+            if (success) {
+                this.closeModal();
+                Toast.show('Category updated', 'success');
+            } else {
+                err.textContent = 'Failed to update category';
+                err.classList.remove('hidden');
+            }
+        } else {
+            const newCat = await this.categoryManager_create(name, 'expense');
+            if (newCat) {
+                this.closeModal();
+                Toast.show('Category created', 'success');
+                if (this.state.pendingCategorySelect) {
+                    const select = this.state.pendingCategorySelect;
+                    const newOption = document.createElement('option');
+                    newOption.value = name;
+                    newOption.textContent = name;
+                    newOption.selected = true;
+                    select.insertBefore(newOption, select.lastElementChild);
+                    this.state.pendingCategorySelect = null;
+                }
+            } else {
+                err.textContent = 'Failed to create category';
+                err.classList.remove('hidden');
+            }
         }
-        await this.fetchCategories();
-        this.closeModal();
-        Toast.show(catId ? 'Category updated' : 'Category created', 'success');
-        if (this.state.pendingCategorySelect && !catId) {
-            const select = this.state.pendingCategorySelect;
-            const newOption = document.createElement('option');
-            newOption.value = name;
-            newOption.textContent = name;
-            newOption.selected = true;
-            select.insertBefore(newOption, select.lastElementChild);
-            this.state.pendingCategorySelect = null;
-        }
-        this.render();
     },
     editCategory(catId) {
         this.openCategoryModal(catId);
     },
     async deleteCategory(catId) {
-        if (!confirm('Delete this category? Make sure no transactions use it.')) return;
-        const res = await fetch(`/api/categories/${catId}`, { method: 'DELETE' });
-        const data = await res.json();
-        if (!res.ok) {
-            Toast.show(data.error || 'Failed to delete', 'error');
-            return;
+        const success = await this.categoryManager_delete(catId);
+        if (success) {
+            Toast.show('Category deleted', 'success');
         }
-        await this.fetchCategories();
-        Toast.show('Category deleted', 'success');
-        this.render();
     },
     async switchAccountMode(mode) {
         const res = await fetch('/api/profile', {
@@ -1497,7 +1899,7 @@ const App = {
                     <form onsubmit="App.processSellInvestment(event, ${id})" class="p-8 space-y-4">
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Quantity to Sell</label>
-                            <input type="number" name="sellQuantity" step="0.0001" min="0.0001" max="${inv.shares}" value="${inv.shares}" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm" />
+                            <input type="number" name="sellQuantity" autocomplete="off" step="0.0001" min="0.0001" max="${inv.shares}" value="${inv.shares}" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm" />
                             <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Max: ${inv.shares}</p>
                         </div>
                         <div>
@@ -1620,7 +2022,7 @@ const App = {
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Quantity To Sell</label>
-                            <input type="number" name="sellQuantity" step="0.0001" min="0" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm" />
+                            <input type="number" name="sellQuantity" autocomplete="off" step="0.0001" min="0" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm" />
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Current Price Per Unit</label>
