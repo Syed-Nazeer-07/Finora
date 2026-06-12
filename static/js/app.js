@@ -1762,6 +1762,7 @@ const App = {
         lucide.createIcons();
         // Add backdrop click handler for category modal
         setTimeout(() => {
+            const container = document.getElementById('modal-container');
             const overlay = container.querySelector('.fixed.inset-0');
             if (overlay) {
                 overlay.addEventListener('click', (e) => {
