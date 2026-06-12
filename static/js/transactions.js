@@ -402,7 +402,7 @@ const AppViews = {
             <!-- Profile -->
             ${section('Profile', 'user', `
                 <div class="flex items-center gap-4 pb-4 border-b border-slate-100 dark:border-dark-border">
-                    <div class="w-16 h-16 rounded-full bg-gradient-to-br from-brand-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xl shrink-0">${initials}</div>
+                    <div class="w-16 h-16 rounded-full bg-gradient-to-br from-brand-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xl shrink-0" style="color: white; background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);">${initials}</div>
                     <div class="flex-1">
                         <p class="font-bold text-slate-900 dark:text-white text-xl">${u.name || 'User'}</p>
                         <p class="text-sm text-slate-500 dark:text-slate-400 truncate">${u.email || ''}</p>
