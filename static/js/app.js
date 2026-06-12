@@ -708,33 +708,23 @@ const App = {
         return new Intl.NumberFormat(this.getCurrencyLocale(), { maximumFractionDigits: 0 }).format(num || 0);
     },
     async saveFinancialProfile() {
-        const isCashFlow = this.state.profile?.account_mode === 'cashflow';
+    async saveMonthlyIncome() {
         const parseNum = (val) => parseFloat((val || '').replace(/,/g, '')) || 0;
-        const payload = {
-            current_savings: parseNum(document.getElementById('profile-savings')?.value),
-            current_investments: parseNum(document.getElementById('profile-investments')?.value),
-            monthly_expenses: parseNum(document.getElementById('profile-expenses')?.value)
-        };
-        if (!isCashFlow) {
-            payload.monthly_income = parseNum(document.getElementById('profile-monthly-income')?.value);
-        }
+        const monthly_income = parseNum(document.getElementById('profile-monthly-income')?.value);
+        
         const res = await fetch('/api/profile', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: JSON.stringify({ monthly_income })
         });
-        const err = document.getElementById('profile-save-err');
+        
         if (!res.ok) {
-            const data = await res.json();
-            if (err) {
-                err.textContent = data.error || 'Failed to save';
-                err.classList.remove('hidden');
-            }
+            Toast.show('Failed to save income', 'error');
             return;
         }
-        if (err) err.classList.add('hidden');
-        Object.assign(this.state.profile, payload);
-        Toast.show('Financial profile updated', 'success');
+        
+        this.state.profile.monthly_income = monthly_income;
+        Toast.show('Monthly income saved', 'success');
         this.render();
     },
     dangerAction(action) {
