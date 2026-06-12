@@ -796,7 +796,7 @@ const App = {
             if (!item) return `<div class="sidebar-section-divider mx-3 my-2 border-t border-slate-100 dark:border-dark-border"></div>`;
             const isActive = this.state.activeTab === item.id;
             const activeClasses = isActive
-                ? 'bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400 font-semibold'
+                ? 'bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400 font-semibold shadow-sm ring-1 ring-brand-500'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white';
             const iconClass = isActive ? 'text-brand-500 dark:text-brand-400' : 'text-slate-400 dark:text-slate-500';
             return `<button onclick="App.setActiveTab('${item.id}')"
