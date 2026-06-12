@@ -5,22 +5,22 @@ const AppViews = {
             <div class="space-y-6 slide-up pb-10">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
-                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Transaction Ledger</h2>
+                        <h2 class="text-2xl font-bold text-slate-900">Transaction Ledger</h2>
                         <p class="text-slate-500 dark:text-slate-400 text-sm">Advanced search and filtering.</p>
                     </div>
-                    <button onclick="App.openModal('transaction')" class="w-full sm:w-auto bg-brand-600 hover:bg-brand-700 text-white !text-white dark:text-white px-5 py-2.5 rounded-xl text-sm font-semibold flex justify-center items-center gap-2 transition-colors shadow-lg focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    <button onclick="App.openModal('transaction')" class="w-full sm:w-auto bg-brand-600 hover:bg-brand-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold flex justify-center items-center gap-2 transition-colors shadow-lg focus:ring-2 focus:ring-brand-500 focus:outline-none">
                         <i data-lucide="plus" class="w-4 h-4"></i> Add Record
                     </button>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-4 bg-white dark:bg-dark-card p-4 rounded-2xl border border-slate-200 dark:border-dark-border shadow-sm">
                     <div class="relative flex-1">
                         <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
-                        <input id="tx-search-input" type="text" placeholder="Search by description, category, or type…" oninput="App.handleTxSearch(event)" value="${this.state.txSearchQuery}" autocomplete="off" class="w-full pl-10 pr-8 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm dark:text-white transition-all">
+                        <input id="tx-search-input" type="text" placeholder="Search by description, category, or type…" oninput="App.handleTxSearch(event)" value="${this.state.txSearchQuery}" autocomplete="off" class="w-full pl-10 pr-8 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm transition-all">
                         <button id="tx-search-clear" onclick="App.clearTxSearch()" class="${this.state.txSearchQuery ? '' : 'hidden'} absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors" title="Clear search">
                             <i data-lucide="x" class="w-3.5 h-3.5"></i>
                         </button>
                     </div>
-                    <select id="tx-filter-select" onchange="App.handleTxFilter(event)" class="px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm dark:text-white transition-all">
+                    <select id="tx-filter-select" onchange="App.handleTxFilter(event)" class="px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm transition-all">
                         <option value="All">All Categories</option>
                         ${this.getCategoryNames().map(c => `<option value="${c}" ${this.state.txFilterCategory === c ? 'selected' : ''}>${this.getCategoryEmoji(c)} ${c}</option>`).join('')}
                     </select>
@@ -86,13 +86,13 @@ const AppViews = {
                 <td class="px-6 py-4">
                     <div class="flex items-center gap-4">
                         <div class="p-2 rounded-xl border-2 shadow-sm text-lg flex items-center justify-center w-10 h-10 shrink-0" style="border-color: ${catColor}; background-color: ${catColor}15">${catEmoji}</div>
-                        <span class="font-semibold text-slate-900 dark:text-white">${tx.description}</span>
+                        <span class="font-semibold text-slate-900">${tx.description}</span>
                     </div>
                 </td>
                 <td class="px-6 py-4">
                     <span class="text-xs font-medium px-2.5 py-1 rounded-lg whitespace-nowrap" style="background-color: ${catColor}20; color: ${catColor}">${tx.category}</span>
                 </td>
-                <td class="px-6 py-4 font-bold text-right whitespace-nowrap ${tx.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white'}">
+                <td class="px-6 py-4 font-bold text-right whitespace-nowrap ${tx.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900'}">
                     ${tx.type === 'income' ? '+' : '-'}${this.formatCurrency(tx.amount)}
                 </td>
                 <td class="px-6 py-4 text-right whitespace-nowrap">
@@ -124,15 +124,15 @@ const AppViews = {
                             <span class="text-2xl">${this.getCategoryEmoji(b.category)}</span>
                         </div>
                         <div>
-                            <h3 class="font-bold text-lg text-slate-900 dark:text-white leading-tight">${b.category}</h3>
+                            <h3 class="font-bold text-lg text-slate-900 leading-tight">${b.category}</h3>
                             <span class="text-xs font-bold uppercase tracking-wider ${isOver ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}">
                                 ${isOver ? 'Over Budget' : 'On Track'}
                             </span>
                         </div>
                     </div>
                     <div class="mb-2 flex justify-between text-sm mt-auto">
-                        <span class="text-slate-500 dark:text-slate-400">Spent: <strong class="text-slate-900 dark:text-white">${this.formatCurrency(b.spent)}</strong></span>
-                        <span class="text-slate-500 dark:text-slate-400">Limit: <strong class="text-slate-900 dark:text-white">${this.formatCurrency(b.limit)}</strong></span>
+                        <span class="text-slate-500 dark:text-slate-400">Spent: <strong class="text-slate-900">${this.formatCurrency(b.spent)}</strong></span>
+                        <span class="text-slate-500 dark:text-slate-400">Limit: <strong class="text-slate-900">${this.formatCurrency(b.limit)}</strong></span>
                     </div>
                     <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 mb-4 overflow-hidden">
                         <div class="h-3 rounded-full transition-all duration-1000 ${isOver ? 'bg-gradient-to-r from-rose-500 to-red-600' : 'bg-gradient-to-r from-brand-400 to-indigo-600'}" style="width: ${percent}%"></div>
@@ -155,7 +155,7 @@ const AppViews = {
             <div class="space-y-6 slide-up pb-10">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
                     <div>
-                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Budgets & Predictors</h2>
+                        <h2 class="text-2xl font-bold text-slate-900">Budgets & Predictors</h2>
                         <p class="text-slate-500 dark:text-slate-400 text-sm">Control spending with end-of-month (EOM) forecasts.</p>
                     </div>
                     <button onclick="App.openModal('budget')" class="w-full sm:w-auto bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-5 py-2.5 rounded-xl text-sm font-semibold flex justify-center items-center gap-2 hover:scale-105 transition-all shadow-lg">
@@ -201,7 +201,7 @@ const AppViews = {
                     <div class="grid grid-cols-3 gap-2 text-xs">
                         <div class="text-center p-2 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
                             <p class="text-slate-400 font-semibold mb-1">Current</p>
-                            <p class="font-bold text-slate-900 dark:text-white">${forecast.currentPace?.months ? forecast.currentPace.months + ' mo' : 'N/A'}</p>
+                            <p class="font-bold text-slate-900">${forecast.currentPace?.months ? forecast.currentPace.months + ' mo' : 'N/A'}</p>
                         </div>
                         <div class="text-center p-2 bg-brand-50 dark:bg-brand-500/10 rounded-lg border border-brand-200 dark:border-brand-500/20">
                             <p class="text-brand-600 dark:text-brand-400 font-semibold mb-1">+10%</p>
@@ -231,7 +231,7 @@ const AppViews = {
                     </div>
                     <div class="flex justify-between items-start w-full mb-6">
                         <div>
-                            <h3 class="font-bold text-xl text-slate-900 dark:text-white mb-1">${goal.name}</h3>
+                            <h3 class="font-bold text-xl text-slate-900 mb-1">${goal.name}</h3>
                             <p class="text-sm text-slate-500 dark:text-slate-400">Target: <span class="font-semibold text-slate-800 dark:text-slate-200">${this.formatCurrency(goal.target)}</span></p>
                         </div>
                         <div class="px-2.5 py-1 text-[10px] font-bold uppercase rounded border ${healthClass}">${healthLabel}</div>
@@ -240,13 +240,13 @@ const AppViews = {
                         <div class="relative w-32 h-32 shrink-0 rounded-full flex items-center justify-center shadow-inner"
                              style="background: conic-gradient(${isComplete ? '#10b981' : '#4f46e5'} ${percent}%, ${this.state.darkMode ? '#1e293b' : '#f1f5f9'} 0)">
                             <div class="absolute w-[112px] h-[112px] bg-white dark:bg-dark-card rounded-full flex flex-col items-center justify-center shadow-md border border-slate-100 dark:border-slate-800">
-                                <span class="text-2xl font-extrabold ${isComplete ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white'}">${percent}%</span>
+                                <span class="text-2xl font-extrabold ${isComplete ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900'}">${percent}%</span>
                             </div>
                         </div>
                         <div class="w-full space-y-4">
                             <div>
                                 <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-0.5">Current Saved</p>
-                                <p class="text-xl font-bold text-slate-900 dark:text-white">${this.formatCurrency(goal.current)}</p>
+                                <p class="text-xl font-bold text-slate-900">${this.formatCurrency(goal.current)}</p>
                             </div>
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
@@ -272,7 +272,7 @@ const AppViews = {
             <div class="space-y-6 slide-up pb-10">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
                     <div>
-                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Goal Forecasting</h2>
+                        <h2 class="text-2xl font-bold text-slate-900">Goal Forecasting</h2>
                         <p class="text-slate-500 dark:text-slate-400 text-sm">Track progress with enhanced forecasts, scenarios, and insights.</p>
                     </div>
                     <button onclick="App.openModal('saving')" class="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-sm font-semibold flex justify-center items-center gap-2 transition-colors shadow-lg">
@@ -299,7 +299,7 @@ const AppViews = {
             <div class="space-y-6 slide-up pb-10">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
                     <div>
-                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Investment Portfolio</h2>
+                        <h2 class="text-2xl font-bold text-slate-900">Investment Portfolio</h2>
                         <p class="text-slate-500 dark:text-slate-400 text-sm">Simple personal finance tracking.</p>
                     </div>
                     <div class="flex gap-2 w-full sm:w-auto">
@@ -316,11 +316,11 @@ const AppViews = {
                 <div class="grid grid-cols-3 gap-4">
                     <div class="bg-white dark:bg-dark-card rounded-2xl p-4 border border-slate-200 dark:border-dark-border">
                         <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold mb-1">Total Invested</p>
-                        <h3 class="text-2xl font-bold text-slate-900 dark:text-white">${this.formatCurrency(totalInvested)}</h3>
+                        <h3 class="text-2xl font-bold text-slate-900">${this.formatCurrency(totalInvested)}</h3>
                     </div>
                     <div class="bg-white dark:bg-dark-card rounded-2xl p-4 border border-slate-200 dark:border-dark-border">
                         <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold mb-1">Total Returned</p>
-                        <h3 class="text-2xl font-bold text-slate-900 dark:text-white">${this.formatCurrency(totalReturned)}</h3>
+                        <h3 class="text-2xl font-bold text-slate-900">${this.formatCurrency(totalReturned)}</h3>
                     </div>
                     <div class="bg-white dark:bg-dark-card rounded-2xl p-4 border border-slate-200 dark:border-dark-border">
                         <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold mb-1">Net Profit/Loss</p>
@@ -331,17 +331,17 @@ const AppViews = {
                 <!-- Active Assets -->
                 ${activeAssets.length > 0 ? `
                 <div class="bg-white dark:bg-dark-card rounded-2xl p-6 border border-slate-200 dark:border-dark-border">
-                    <h3 class="font-bold text-slate-900 dark:text-white mb-4">Current Active Assets</h3>
+                    <h3 class="font-bold text-slate-900 mb-4">Current Active Assets</h3>
                     <div class="space-y-3">
                         ${activeAssets.map(inv => `
                             <div class="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
                                 <div>
-                                    <p class="font-semibold text-slate-900 dark:text-white">${inv.symbol}</p>
+                                    <p class="font-semibold text-slate-900">${inv.symbol}</p>
                                     <p class="text-sm text-slate-600 dark:text-slate-400">${inv.shares} Units</p>
                                 </div>
                                 <div class="text-right">
                                     <p class="text-sm text-slate-600 dark:text-slate-400">Invested</p>
-                                    <p class="font-semibold text-slate-900 dark:text-white">${this.formatCurrency(inv.shares * inv.avgCost)}</p>
+                                    <p class="font-semibold text-slate-900">${this.formatCurrency(inv.shares * inv.avgCost)}</p>
                                 </div>
                             </div>
                         `).join('')}
@@ -351,17 +351,17 @@ const AppViews = {
                 
                 <!-- Investment History -->
                 <div class="bg-white dark:bg-dark-card rounded-2xl p-6 border border-slate-200 dark:border-dark-border">
-                    <h3 class="font-bold text-slate-900 dark:text-white mb-4">Investment Activity</h3>
+                    <h3 class="font-bold text-slate-900 mb-4">Investment Activity</h3>
                     ${sortedTransactions.length > 0 ? `
                     <div class="space-y-3">
                         ${sortedTransactions.slice(0, 10).map(t => `
                             <div class="flex justify-between items-start py-2 px-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
                                 <div class="flex-1">
-                                    <p class="font-semibold text-slate-900 dark:text-white text-sm">${t.description}</p>
+                                    <p class="font-semibold text-slate-900 text-sm">${t.description}</p>
                                     <p class="text-xs text-slate-500 dark:text-slate-400">${this.formatDate(t.date)}</p>
                                 </div>
                                 <div class="text-right">
-                                    <p class="text-sm font-semibold ${t.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white'}">${t.type === 'income' ? '+' : '-'}${this.formatCurrency(t.amount)}</p>
+                                    <p class="text-sm font-semibold ${t.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900'}">${t.type === 'income' ? '+' : '-'}${this.formatCurrency(t.amount)}</p>
                                 </div>
                             </div>
                         `).join('')}
@@ -381,14 +381,14 @@ const AppViews = {
             <div class="bg-white dark:bg-dark-card rounded-2xl border border-slate-200 dark:border-dark-border shadow-sm overflow-hidden">
                 <div class="px-6 py-4 border-b border-slate-100 dark:border-dark-border flex items-center gap-2">
                     <i data-lucide="${icon}" class="w-4 h-4 text-brand-500"></i>
-                    <h3 class="font-semibold text-sm text-slate-900 dark:text-white">${title}</h3>
+                    <h3 class="font-semibold text-sm text-slate-900">${title}</h3>
                 </div>
                 <div class="px-6 py-5 space-y-4">${content}</div>
             </div>`;
         const row = (label, value) => `
             <div class="flex items-center justify-between py-1">
                 <span class="text-sm text-slate-500 dark:text-slate-400">${label}</span>
-                <span class="text-sm font-medium text-slate-900 dark:text-white">${value}</span>
+                <span class="text-sm font-medium text-slate-900">${value}</span>
             </div>`;
         const currencies = [
             { code: 'INR', label: '₹ Indian Rupee' },
@@ -401,15 +401,15 @@ const AppViews = {
         return `
         <div class="space-y-6 slide-up pb-10 max-w-2xl mx-auto">
             <div>
-                <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Settings</h2>
+                <h2 class="text-2xl font-bold text-slate-900">Settings</h2>
                 <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Manage your account, preferences and data.</p>
             </div>
             <!-- Profile -->
             ${section('Profile', 'user', `
                 <div class="flex items-center gap-4 pb-4 border-b border-slate-100 dark:border-dark-border">
-                    <div class="w-16 h-16 rounded-full bg-gradient-to-br from-brand-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xl shrink-0" style="color: white; background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);">${initials}</div>
+                    <div class="w-16 h-16 rounded-full bg-gradient-to-br from-brand-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xl shrink-0">${initials}</div>
                     <div class="flex-1">
-                        <p class="font-bold text-slate-900 dark:text-white text-xl">${u.name || 'User'}</p>
+                        <p class="font-bold text-slate-900 text-xl">${u.name || 'User'}</p>
                         <p class="text-sm text-slate-500 dark:text-slate-400 truncate">${u.email || ''}</p>
                         <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">${verified ? '✓ Verified' : '⚠ Unverified'}</p>
                     </div>
@@ -424,8 +424,8 @@ const AppViews = {
                 <div class="pt-2">
                     <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Display Name</label>
                     <div class="flex gap-2">
-                        <input id="settings-name" type="text" autocomplete="off" value="${u.name || ''}" class="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
-                        <button onclick="App.saveSettingName()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white dark:text-white rounded-xl text-sm font-medium transition-colors">Save</button>
+                        <input id="settings-name" type="text" autocomplete="off" value="${u.name || ''}" class="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <button onclick="App.saveSettingName()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-medium transition-colors">Save</button>
                     </div>
                 </div>
                 <!-- Resend verification -->
@@ -436,14 +436,14 @@ const AppViews = {
                 <div class="space-y-3">
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Current Password</label>
-                        <input id="settings-pw-current" type="password" autocomplete="current-password" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <input id="settings-pw-current" type="password" autocomplete="current-password" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">New Password</label>
-                        <input id="settings-pw-new" type="password" autocomplete="new-password" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <input id="settings-pw-new" type="password" autocomplete="new-password" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
                     </div>
                     <p id="settings-pw-err" class="text-rose-500 text-xs hidden"></p>
-                    <button onclick="App.saveSettingPassword()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white dark:text-white rounded-xl text-sm font-medium transition-colors">Change Password</button>
+                    <button onclick="App.saveSettingPassword()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-medium transition-colors">Change Password</button>
                 </div>
             `) : section('Security', 'lock', `
                 <div class="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
@@ -455,17 +455,17 @@ const AppViews = {
             ${section('Appearance', 'palette', `
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-slate-900 dark:text-white">Theme</p>
+                        <p class="text-sm font-medium text-slate-900">Theme</p>
                         <p class="text-xs text-slate-500 dark:text-slate-400">Choose your preferred colour scheme</p>
                     </div>
                     <div class="flex gap-2">
-                        <button onclick="App.saveSetting('theme','light')" class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${(s.theme||'dark')==='light' ? 'bg-brand-600 !text-white border-brand-600' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}">Light</button>
-                        <button onclick="App.saveSetting('theme','dark')" class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${(s.theme||'dark')==='dark' ? 'bg-brand-600 !text-white border-brand-600' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}">Dark</button>
+                        <button onclick="App.saveSetting('theme','light')" class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${(s.theme||'dark')==='light' ? 'bg-brand-600 border-brand-600' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}">Light</button>
+                        <button onclick="App.saveSetting('theme','dark')" class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${(s.theme||'dark')==='dark' ? 'bg-brand-600 border-brand-600' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}">Dark</button>
                     </div>
                 </div>
                 <div class="flex items-center justify-between pt-1">
                     <div>
-                        <p class="text-sm font-medium text-slate-900 dark:text-white">Dashboard Greeting</p>
+                        <p class="text-sm font-medium text-slate-900">Dashboard Greeting</p>
                         <p class="text-xs text-slate-500 dark:text-slate-400">Show "Good morning/afternoon" banner</p>
                     </div>
                     <button onclick="App.saveSetting('show_greeting', ${s.show_greeting === false})" class="w-11 h-6 rounded-full transition-colors relative ${s.show_greeting !== false ? 'bg-brand-600' : 'bg-slate-300 dark:bg-slate-600'}">
@@ -474,12 +474,12 @@ const AppViews = {
                 </div>
                 <div class="flex items-center justify-between pt-1">
                     <div>
-                        <p class="text-sm font-medium text-slate-900 dark:text-white">Sidebar Default</p>
+                        <p class="text-sm font-medium text-slate-900">Sidebar Default</p>
                         <p class="text-xs text-slate-500 dark:text-slate-400">Start with sidebar expanded or collapsed</p>
                     </div>
                     <div class="flex gap-2">
-                        <button onclick="App.saveSetting('sidebar_collapsed',false)" class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${!s.sidebar_collapsed ? 'bg-brand-600 !text-white border-brand-600' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}">Expanded</button>
-                        <button onclick="App.saveSetting('sidebar_collapsed',true)" class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${s.sidebar_collapsed ? 'bg-brand-600 !text-white border-brand-600' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}">Collapsed</button>
+                        <button onclick="App.saveSetting('sidebar_collapsed',false)" class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${!s.sidebar_collapsed ? 'bg-brand-600 border-brand-600' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}">Expanded</button>
+                        <button onclick="App.saveSetting('sidebar_collapsed',true)" class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${s.sidebar_collapsed ? 'bg-brand-600 border-brand-600' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}">Collapsed</button>
                     </div>
                 </div>
             `)}
@@ -493,7 +493,7 @@ const AppViews = {
                                 <div class="flex items-start gap-3">
                                     <div class="text-xl">💼</div>
                                     <div>
-                                        <h4 class="font-semibold text-slate-900 dark:text-white">Income Mode</h4>
+                                        <h4 class="font-semibold text-slate-900">Income Mode</h4>
                                         <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Best for salary earners and structured financial planning</p>
                                     </div>
                                 </div>
@@ -502,7 +502,7 @@ const AppViews = {
                                 <div class="flex items-start gap-3">
                                     <div class="text-xl">💰</div>
                                     <div>
-                                        <h4 class="font-semibold text-slate-900 dark:text-white">Cash Flow Mode</h4>
+                                        <h4 class="font-semibold text-slate-900">Cash Flow Mode</h4>
                                         <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Best for students, allowance users, and irregular income</p>
                                     </div>
                                 </div>
@@ -517,11 +517,11 @@ const AppViews = {
                 <div class="space-y-3">
                     <div class="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
                         <span class="text-sm text-slate-600 dark:text-slate-400">Cash & Savings</span>
-                        <span class="font-semibold text-slate-900 dark:text-white">${this.formatCurrency(this.state.profile?.current_savings || 0)}</span>
+                        <span class="font-semibold text-slate-900">${this.formatCurrency(this.state.profile?.current_savings || 0)}</span>
                     </div>
                     <div class="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
                         <span class="text-sm text-slate-600 dark:text-slate-400">Investments</span>
-                        <span class="font-semibold text-slate-900 dark:text-white">${this.formatCurrency(this.state.profile?.current_investments || 0)}</span>
+                        <span class="font-semibold text-slate-900">${this.formatCurrency(this.state.profile?.current_investments || 0)}</span>
                     </div>
                     <p class="text-xs text-slate-500 dark:text-slate-400">These amounts are tracked through transactions. Add or edit investment holdings in the Portfolio section.</p>
                 </div>
@@ -531,13 +531,13 @@ const AppViews = {
             <div class="bg-white dark:bg-dark-card rounded-2xl border border-slate-200 dark:border-dark-border shadow-sm overflow-hidden">
                 <div class="px-6 py-4 border-b border-slate-100 dark:border-dark-border flex items-center gap-2">
                     <i data-lucide="trending-up" class="w-4 h-4 text-brand-500"></i>
-                    <h3 class="font-semibold text-sm text-slate-900 dark:text-white">Monthly Income</h3>
+                    <h3 class="font-semibold text-sm text-slate-900">Monthly Income</h3>
                 </div>
                 <div class="px-6 py-5 space-y-4">
                     <div class="relative">
                         <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2">Your Monthly Income</label>
                         <span class="absolute left-3 top-9 text-slate-400">${this.getCurrencySymbol()}</span>
-                        <input id="profile-monthly-income" type="text" inputmode="numeric" oninput="App.handleMoneyInput(event)" value="${this.formatNumber(this.state.profile?.monthly_income || 0)}" class="w-full pl-8 pr-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <input id="profile-monthly-income" type="text" inputmode="numeric" oninput="App.handleMoneyInput(event)" value="${this.formatNumber(this.state.profile?.monthly_income || 0)}" class="w-full pl-8 pr-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
                     </div>
                     <p class="text-xs text-slate-500 dark:text-slate-400">Salary, freelance income, or average monthly earnings</p>
                     <button onclick="App.saveMonthlyIncome()" class="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-semibold transition-colors focus:ring-2 focus:ring-brand-500 focus:outline-none">Save Monthly Income</button>
@@ -548,7 +548,7 @@ const AppViews = {
             ${section('Timezone', 'clock', `
                 <div>
                     <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Used for date grouping in transactions and reports.</p>
-                    <select onchange="App.saveSetting('timezone', this.value)" class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <select onchange="App.saveSetting('timezone', this.value)" class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
                         ${[
                             ['UTC',                  'UTC (Coordinated Universal Time)'],
                             ['Asia/Kolkata',          'Asia/Kolkata (IST +5:30)'],
@@ -585,7 +585,7 @@ const AppViews = {
                                     <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style="background-color: ${cat.color}20; border: 2px solid ${cat.color}">
                                         <span class="text-base">${cat.emoji}</span>
                                     </div>
-                                    <span class="text-sm font-medium text-slate-900 dark:text-white truncate">${cat.name}</span>
+                                    <span class="text-sm font-medium text-slate-900 truncate">${cat.name}</span>
                                     ${cat.is_default ? '<span class="text-[10px] px-2 py-0.5 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 rounded-full font-semibold">Default</span>' : ''}
                                 </div>
                                 ${!cat.is_default ? `
@@ -623,21 +623,21 @@ const AppViews = {
                 <div class="px-6 py-5 space-y-3">
                     <div class="flex items-center justify-between py-2">
                         <div>
-                            <p class="text-sm font-medium text-slate-900 dark:text-white">Delete All Transactions</p>
+                            <p class="text-sm font-medium text-slate-900">Delete All Transactions</p>
                             <p class="text-xs text-slate-500 dark:text-slate-400">Permanently removes all transaction records</p>
                         </div>
                         <button onclick="App.dangerAction('clear-transactions')" class="px-3 py-1.5 border border-rose-300 dark:border-rose-700 text-rose-600 dark:text-rose-400 rounded-lg text-xs font-semibold hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors">Delete</button>
                     </div>
                     <div class="flex items-center justify-between py-2 border-t border-slate-100 dark:border-dark-border">
                         <div>
-                            <p class="text-sm font-medium text-slate-900 dark:text-white">Delete All Financial Data</p>
+                            <p class="text-sm font-medium text-slate-900">Delete All Financial Data</p>
                             <p class="text-xs text-slate-500 dark:text-slate-400">Removes transactions, budgets, goals, investments and roadmap</p>
                         </div>
                         <button onclick="App.dangerAction('clear-financial-data')" class="px-3 py-1.5 border border-rose-300 dark:border-rose-700 text-rose-600 dark:text-rose-400 rounded-lg text-xs font-semibold hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors">Delete</button>
                     </div>
                     <div class="flex items-center justify-between py-2 border-t border-slate-100 dark:border-dark-border">
                         <div>
-                            <p class="text-sm font-medium text-slate-900 dark:text-white">Delete Account</p>
+                            <p class="text-sm font-medium text-slate-900">Delete Account</p>
                             <p class="text-xs text-slate-500 dark:text-slate-400">Permanently deletes your account and all data</p>
                         </div>
                         <button onclick="App.dangerAction('delete-account')" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold transition-colors">Delete Account</button>

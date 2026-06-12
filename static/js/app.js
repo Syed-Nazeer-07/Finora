@@ -751,9 +751,9 @@ const App = {
             overlay.className = 'fixed inset-0 z-[9998] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm fade-in';
             overlay.innerHTML = `
                 <div class="bg-white dark:bg-dark-card rounded-[2rem] shadow-2xl border border-slate-100 dark:border-slate-800 w-full max-w-sm slide-up p-8">
-                    <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">${cfg.title}</h3>
+                    <h3 class="text-lg font-bold text-slate-900 mb-2">${cfg.title}</h3>
                     <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">${cfg.msg}</p>
-                    <input id="danger-pw" type="password" placeholder="Enter your password to confirm" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-rose-500 mb-4">
+                    <input id="danger-pw" type="password" placeholder="Enter your password to confirm" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 mb-4">
                     <p id="danger-pw-err" class="text-rose-500 text-xs mb-3 hidden"></p>
                     <div class="flex gap-3">
                         <button id="danger-cancel" class="flex-1 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-300">Cancel</button>
@@ -1098,7 +1098,7 @@ const App = {
                 </div>
                 <div class="relative">
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="tx-desc-input">Description</label>
-                    <input type="text" id="tx-desc-input" name="description" autocomplete="off" value="${item ? item.description : ''}" required placeholder="e.g. Swiggy Order" oninput="App._descAutocomplete(event)" onblur="App._descHideDropdown()" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white transition-all" />
+                    <input type="text" id="tx-desc-input" name="description" autocomplete="off" value="${item ? item.description : ''}" required placeholder="e.g. Swiggy Order" oninput="App._descAutocomplete(event)" onblur="App._descHideDropdown()" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
                     <ul id="tx-desc-dropdown" class="hidden absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg overflow-hidden text-sm"></ul>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
@@ -1106,17 +1106,17 @@ const App = {
                         <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="tx-amount">Amount</label>
                         <div class="relative">
                             <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">${sym}</span>
-                            <input type="text" inputmode="numeric" id="tx-amount" name="amount" autocomplete="off" value="${item ? this.formatMoneyInput(item.amount) : ''}" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white transition-all" />
+                            <input type="text" inputmode="numeric" id="tx-amount" name="amount" autocomplete="off" value="${item ? this.formatMoneyInput(item.amount) : ''}" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
                         </div>
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="tx-date">Date</label>
-                        <input type="date" id="tx-date" name="date" required value="${item ? item.date : today}" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white transition-all" />
+                        <input type="date" id="tx-date" name="date" required value="${item ? item.date : today}" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
                     </div>
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="tx-category-select">Category</label>
-                    <select name="category" id="tx-category-select" onchange="App.handleCategoryChange(this)" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white transition-all">
+                    <select name="category" id="tx-category-select" onchange="App.handleCategoryChange(this)" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all">
                         ${catOptions}
                         <option value="__new__">+ Add New Category</option>
                     </select>
@@ -1128,7 +1128,7 @@ const App = {
             formHtml = `
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="budget-category-select">Category</label>
-                    <select name="category" id="budget-category-select" onchange="App.handleCategoryChange(this)" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white transition-all">
+                    <select name="category" id="budget-category-select" onchange="App.handleCategoryChange(this)" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all">
                         ${catOptions}
                         <option value="__new__">+ Add New Category</option>
                     </select>
@@ -1137,7 +1137,7 @@ const App = {
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="budget-limit">Monthly Limit</label>
                     <div class="relative">
                         <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">${sym}</span>
-                        <input type="text" inputmode="numeric" id="budget-limit" name="limit" autocomplete="off" value="${item ? this.formatMoneyInput(item.limit) : ''}" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white transition-all" />
+                        <input type="text" inputmode="numeric" id="budget-limit" name="limit" autocomplete="off" value="${item ? this.formatMoneyInput(item.limit) : ''}" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
                     </div>
                 </div>
             `;
@@ -1146,21 +1146,21 @@ const App = {
             formHtml = `
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="goal-name">Goal Name</label>
-                    <input type="text" id="goal-name" name="name" autocomplete="off" value="${item ? item.name : ''}" required placeholder="e.g. New Laptop" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white transition-all" />
+                    <input type="text" id="goal-name" name="name" autocomplete="off" value="${item ? item.name : ''}" required placeholder="e.g. New Laptop" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="goal-target">Target Amount</label>
                         <div class="relative">
                             <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">${sym}</span>
-                            <input type="text" inputmode="numeric" id="goal-target" name="target" autocomplete="off" value="${item ? this.formatMoneyInput(item.target) : ''}" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white transition-all" />
+                            <input type="text" inputmode="numeric" id="goal-target" name="target" autocomplete="off" value="${item ? this.formatMoneyInput(item.target) : ''}" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
                         </div>
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="goal-current">Currently Saved</label>
                         <div class="relative">
                             <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">${sym}</span>
-                            <input type="text" inputmode="numeric" id="goal-current" name="current" autocomplete="off" value="${item ? this.formatMoneyInput(item.current) : '0'}" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white transition-all" />
+                            <input type="text" inputmode="numeric" id="goal-current" name="current" autocomplete="off" value="${item ? this.formatMoneyInput(item.current) : '0'}" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
                         </div>
                     </div>
                 </div>
@@ -1169,12 +1169,12 @@ const App = {
                         <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="goal-monthly">Monthly Save</label>
                         <div class="relative">
                             <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">${sym}</span>
-                            <input type="text" inputmode="numeric" id="goal-monthly" name="monthlyContribution" value="${item ? this.formatMoneyInput(item.monthlyContribution || '') : ''}" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white transition-all" />
+                            <input type="text" inputmode="numeric" id="goal-monthly" name="monthlyContribution" value="${item ? this.formatMoneyInput(item.monthlyContribution || '') : ''}" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
                         </div>
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="goal-date">Target Date</label>
-                        <input type="date" id="goal-date" name="date" required value="${item && item.date ? item.date : today}" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white transition-all" />
+                        <input type="date" id="goal-date" name="date" required value="${item && item.date ? item.date : today}" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
                     </div>
                 </div>
             `;
@@ -1184,22 +1184,22 @@ const App = {
             formHtml = `
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="inv-symbol">Asset Name</label>
-                    <input type="text" id="inv-symbol" name="symbol" autocomplete="off" value="${item ? item.symbol : ''}" required placeholder="e.g. NVIDIA, Gold, Bitcoin" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white transition-all" />
+                    <input type="text" id="inv-symbol" name="symbol" autocomplete="off" value="${item ? item.symbol : ''}" required placeholder="e.g. NVIDIA, Gold, Bitcoin" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="inv-shares">Quantity / Units</label>
-                    <input type="number" id="inv-shares" name="shares" value="${item ? item.shares : ''}" required min="0" step="0.0001" placeholder="0" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white transition-all" />
+                    <input type="number" id="inv-shares" name="shares" value="${item ? item.shares : ''}" required min="0" step="0.0001" placeholder="0" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="inv-price">Purchase Price Per Unit</label>
                     <div class="relative">
                         <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">${sym}</span>
-                        <input type="text" inputmode="numeric" id="inv-price" name="avgCost" value="${item ? this.formatMoneyInput(item.avgCost) : ''}" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white transition-all" />
+                        <input type="text" inputmode="numeric" id="inv-price" name="avgCost" value="${item ? this.formatMoneyInput(item.avgCost) : ''}" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
                     </div>
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="inv-date">Purchase Date</label>
-                    <input type="date" id="inv-date" name="purchaseDate" value="${item ? item.purchaseDate || today : today}" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white transition-all" />
+                    <input type="date" id="inv-date" name="purchaseDate" value="${item ? item.purchaseDate || today : today}" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
                 </div>
                 <input type="hidden" name="invType" value="Asset" />
                 <input type="hidden" name="currentPrice" value="${item ? this.formatMoneyInput(item.currentPrice) : ''}" />
@@ -1209,7 +1209,7 @@ const App = {
                 <div class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl mb-2 border border-slate-200 dark:border-slate-700">
                     <div class="flex items-center gap-3">
                         <i data-lucide="${s.icon}" class="w-4 h-4 text-slate-500"></i>
-                        <span class="text-sm font-semibold dark:text-white">${s.title}</span>
+                        <span class="text-sm font-semibold">${s.title}</span>
                         <select onchange="App.updateRoadmapStatus(${s.id}, this.value)" class="text-xs bg-transparent text-slate-600 dark:text-slate-400 font-medium outline-none cursor-pointer">
                             <option value="completed" ${s.status === 'completed' ? 'selected' : ''}>Completed</option>
                             <option value="active" ${s.status === 'active' ? 'selected' : ''}>Active</option>
@@ -1225,10 +1225,10 @@ const App = {
             formHtml = `
                 <div class="mb-6 max-h-48 overflow-y-auto pr-2">${stepsHtml}</div>
                 <div class="pt-4 border-t border-slate-200 dark:border-slate-700">
-                    <h4 class="text-sm font-bold dark:text-white mb-3 flex items-center gap-2"><i data-lucide="plus-circle" class="w-4 h-4"></i> Add New Milestone</h4>
+                    <h4 class="text-sm font-bold mb-3 flex items-center gap-2"><i data-lucide="plus-circle" class="w-4 h-4"></i> Add New Milestone</h4>
                     <div class="grid grid-cols-2 gap-3 mb-2">
-                        <input type="text" name="title" autocomplete="off" placeholder="Milestone Name" required class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white"/>
-                        <select name="icon" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white">
+                        <input type="text" name="title" autocomplete="off" placeholder="Milestone Name" required class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm"/>
+                        <select name="icon" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm">
                             <option value="target">Target</option>
                             <option value="home">Home</option>
                             <option value="car">Car</option>
@@ -1249,26 +1249,26 @@ const App = {
                 <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
                     <div class="bg-white dark:bg-dark-card rounded-[2rem] shadow-2xl max-w-md w-full">
                         <div class="px-8 py-6 border-b border-slate-100 dark:border-slate-800">
-                            <h2 class="text-xl font-bold text-slate-900 dark:text-white">Confirm Sale</h2>
+                            <h2 class="text-xl font-bold text-slate-900">Confirm Sale</h2>
                             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Sell ${sellQuantity} shares of ${inv.symbol}</p>
                         </div>
                         <div class="p-8 space-y-4">
                             <div class="bg-slate-50 dark:bg-slate-800 rounded-xl p-4 space-y-3">
                                 <div class="flex justify-between">
                                     <span class="text-slate-600 dark:text-slate-300">Quantity</span>
-                                    <span class="font-semibold dark:text-white">${sellQuantity}</span>
+                                    <span class="font-semibold">${sellQuantity}</span>
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="text-slate-600 dark:text-slate-300">Price per Share</span>
-                                    <span class="font-semibold dark:text-white">${sym}${this.formatNumber(sellPrice)}</span>
+                                    <span class="font-semibold">${sym}${this.formatNumber(sellPrice)}</span>
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="text-slate-600 dark:text-slate-300">Total Cost</span>
-                                    <span class="font-semibold dark:text-white">${sym}${this.formatNumber(totalCost)}</span>
+                                    <span class="font-semibold">${sym}${this.formatNumber(totalCost)}</span>
                                 </div>
                                 <div class="flex justify-between border-t border-slate-200 dark:border-slate-700 pt-3">
-                                    <span class="font-semibold text-slate-900 dark:text-white">Sale Proceeds</span>
-                                    <span class="font-bold text-lg dark:text-white">${sym}${this.formatNumber(totalSale)}</span>
+                                    <span class="font-semibold text-slate-900">Sale Proceeds</span>
+                                    <span class="font-bold text-lg">${sym}${this.formatNumber(totalSale)}</span>
                                 </div>
                                 <div class="flex justify-between ${profit >= 0 ? 'text-emerald-600' : 'text-rose-600'}">
                                     <span class="font-semibold">Realized Return</span>
@@ -1280,7 +1280,7 @@ const App = {
                                 </div>
                                 <div class="flex justify-between pt-2 text-xs border-t border-slate-200 dark:border-slate-700">
                                     <span class="text-slate-500 dark:text-slate-400">Sale Date</span>
-                                    <span class="font-mono dark:text-white">${sellDate}</span>
+                                    <span class="font-mono">${sellDate}</span>
                                 </div>
                             </div>
                             <div class="p-3 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-lg text-xs text-blue-800 dark:text-blue-300">
@@ -1288,7 +1288,7 @@ const App = {
                             </div>
                             <div class="flex gap-3 pt-4">
                                 <button onclick="App.closeModal()" class="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl font-semibold text-sm transition-colors">Cancel</button>
-                                <button onclick="App.confirmSellInvestment()" class="flex-1 px-4 py-3 !bg-rose-600 hover:!bg-rose-700 !text-white rounded-xl font-semibold text-sm shadow-lg transition-colors">Confirm & Sell</button>
+                                <button onclick="App.confirmSellInvestment()" class="flex-1 px-4 py-3 !bg-rose-600 hover:!bg-rose-700 rounded-xl font-semibold text-sm shadow-lg transition-colors">Confirm & Sell</button>
                             </div>
                         </div>
                     </div>
@@ -1301,7 +1301,7 @@ const App = {
             <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity fade-in">
                 <div class="bg-white dark:bg-dark-card rounded-[2rem] shadow-2xl border border-slate-100 dark:border-slate-800 w-full max-w-md slide-up overflow-hidden">
                     <div class="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/20">
-                        <h2 class="text-xl font-bold text-slate-900 dark:text-white">${modalTitle}</h2>
+                        <h2 class="text-xl font-bold text-slate-900">${modalTitle}</h2>
                         <button type="button" aria-label="Close dialog" onclick="App.closeModal()" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors focus:ring-2 focus:ring-brand-500 focus:outline-none">
                             <i data-lucide="x" class="w-5 h-5"></i>
                         </button>
@@ -1311,7 +1311,7 @@ const App = {
                         <p id="form-error" class="text-rose-500 text-sm text-center -mb-2"></p>
                         <div class="pt-2 flex gap-4">
                             <button type="button" onclick="App.closeModal()" class="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl font-semibold text-sm transition-all">Cancel</button>
-                            <button type="submit" class="flex-1 px-4 py-3 bg-brand-600 hover:bg-brand-700 text-white dark:text-white rounded-xl font-semibold text-sm shadow-lg shadow-blue-600/30 hover:-translate-y-0.5 transition-all">${type === 'roadmap' ? 'Add Step' : 'Save Record'}</button>
+                            <button type="submit" class="flex-1 px-4 py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold text-sm shadow-lg shadow-blue-600/30 hover:-translate-y-0.5 transition-all">${type === 'roadmap' ? 'Add Step' : 'Save Record'}</button>
                         </div>
                     </form>
                 </div>
@@ -1326,18 +1326,18 @@ const App = {
             <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
                 <div class="bg-white dark:bg-dark-card rounded-2xl shadow-2xl max-w-md w-full animate-scale-in">
                     <div class="px-6 py-5 border-b border-slate-100 dark:border-dark-border flex items-center justify-between">
-                        <h2 class="text-xl font-bold text-slate-900 dark:text-white">${title}</h2>
+                        <h2 class="text-xl font-bold text-slate-900">${title}</h2>
                         <button aria-label="Close dialog" onclick="App.closeModal()" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:ring-2 focus:ring-brand-500 focus:outline-none"><i data-lucide="x" class="w-5 h-5"></i></button>
                     </div>
                     <form onsubmit="App.saveCategory(event, ${catId})" class="p-6 space-y-4">
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="cat-name">Category Name</label>
-                            <input type="text" id="cat-name" autocomplete="off" value="${cat ? cat.name : ''}" required maxlength="50" placeholder="e.g. Gym Membership" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white" />
+                            <input type="text" id="cat-name" autocomplete="off" value="${cat ? cat.name : ''}" required maxlength="50" placeholder="e.g. Gym Membership" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm" />
                         </div>
                         <p id="cat-error" class="text-rose-500 text-sm hidden"></p>
                         <div class="flex gap-4 pt-2">
                             <button type="button" onclick="App.closeModal()" class="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl font-semibold text-sm">Cancel</button>
-                            <button type="submit" class="flex-1 px-4 py-3 bg-brand-600 hover:bg-brand-700 text-white dark:text-white rounded-xl font-semibold text-sm shadow-lg">Save</button>
+                            <button type="submit" class="flex-1 px-4 py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold text-sm shadow-lg">Save</button>
                         </div>
                     </form>
                 </div>
@@ -1421,7 +1421,7 @@ const App = {
             <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
                 <div class="bg-white dark:bg-dark-card rounded-2xl shadow-2xl max-w-md w-full animate-scale-in">
                     <div class="px-6 py-5 border-b border-slate-100 dark:border-dark-border">
-                        <h2 class="text-xl font-bold text-slate-900 dark:text-white">Edit Available Balance</h2>
+                        <h2 class="text-xl font-bold text-slate-900">Edit Available Balance</h2>
                         <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Update your current cash on hand</p>
                     </div>
                     <div class="p-6 space-y-4">
@@ -1429,14 +1429,14 @@ const App = {
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Current Balance</label>
                             <div class="relative">
                                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">${sym}</span>
-                                <input type="text" id="edit-balance-input" inputmode="numeric" autocomplete="off" value="${this.formatNumber(currentBalance)}" oninput="App.handleMoneyInput(event)" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white transition-all" />
+                                <input type="text" id="edit-balance-input" inputmode="numeric" autocomplete="off" value="${this.formatNumber(currentBalance)}" oninput="App.handleMoneyInput(event)" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
                             </div>
                             <p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5">Money currently available to you</p>
                         </div>
                         <p id="edit-balance-error" class="text-rose-500 text-sm hidden"></p>
                         <div class="flex gap-3 pt-2">
                             <button onclick="App.closeModal()" class="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl font-semibold text-sm transition-colors">Cancel</button>
-                            <button onclick="App.saveAvailableBalance()" class="flex-1 px-4 py-3 bg-brand-600 hover:bg-brand-700 text-white dark:text-white rounded-xl font-semibold text-sm shadow-lg transition-colors">Save</button>
+                            <button onclick="App.saveAvailableBalance()" class="flex-1 px-4 py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold text-sm shadow-lg transition-colors">Save</button>
                         </div>
                     </div>
                 </div>
@@ -1479,25 +1479,25 @@ const App = {
             <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
                 <div class="bg-white dark:bg-dark-card rounded-[2rem] shadow-2xl max-w-md w-full">
                     <div class="px-8 py-6 border-b border-slate-100 dark:border-slate-800">
-                        <h2 class="text-xl font-bold text-slate-900 dark:text-white">Sell ${inv.symbol}</h2>
+                        <h2 class="text-xl font-bold text-slate-900">Sell ${inv.symbol}</h2>
                         <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">You own ${inv.shares} shares</p>
                     </div>
                     <form onsubmit="App.processSellInvestment(event, ${id})" class="p-8 space-y-4">
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Quantity to Sell</label>
-                            <input type="number" name="sellQuantity" step="0.0001" min="0.0001" max="${inv.shares}" value="${inv.shares}" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white" />
+                            <input type="number" name="sellQuantity" step="0.0001" min="0.0001" max="${inv.shares}" value="${inv.shares}" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm" />
                             <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Max: ${inv.shares}</p>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Sell Price Per Share</label>
                             <div class="relative">
                                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">${sym}</span>
-                                <input type="text" inputmode="numeric" name="sellPrice" oninput="App.handleMoneyInput(event)" value="${this.formatMoneyInput(inv.currentPrice)}" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white" />
+                                <input type="text" inputmode="numeric" name="sellPrice" oninput="App.handleMoneyInput(event)" value="${this.formatMoneyInput(inv.currentPrice)}" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm" />
                             </div>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Sell Date</label>
-                            <input type="date" name="sellDate" value="${today}" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white" />
+                            <input type="date" name="sellDate" value="${today}" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm" />
                         </div>
                         <div class="pt-4 space-y-2">
                             <div class="text-sm text-slate-600 dark:text-slate-300">
@@ -1595,35 +1595,35 @@ const App = {
             <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" onclick="if(event.target===this) App.closeModal()">
                 <div class="bg-white dark:bg-dark-card rounded-[2rem] shadow-2xl max-w-md w-full">
                     <div class="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
-                        <h2 class="text-xl font-bold text-slate-900 dark:text-white">Sell Asset</h2>
+                        <h2 class="text-xl font-bold text-slate-900">Sell Asset</h2>
                         <button type="button" onclick="App.closeModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 text-2xl leading-none">×</button>
                     </div>
                     <form onsubmit="App.handleSellAsset(event)" class="p-8 space-y-4">
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Select Asset</label>
-                            <select name="sellAssetSelect" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white">
+                            <select name="sellAssetSelect" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm">
                                 <option value="">Choose asset to sell...</option>
                                 ${activeAssets.map(inv => `<option value="${inv.id}|${inv.symbol}|${inv.shares}|${inv.avgCost}">${inv.symbol} (${inv.shares} units)</option>`).join('')}
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Quantity To Sell</label>
-                            <input type="number" name="sellQuantity" step="0.0001" min="0" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white" />
+                            <input type="number" name="sellQuantity" step="0.0001" min="0" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm" />
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Current Price Per Unit</label>
                             <div class="relative">
                                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">${this.getCurrencySymbol()}</span>
-                                <input type="text" inputmode="numeric" name="sellPrice" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white" />
+                                <input type="text" inputmode="numeric" name="sellPrice" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm" />
                             </div>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Sell Date</label>
-                            <input type="date" name="sellDate" value="${new Date().toISOString().split('T')[0]}" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white" />
+                            <input type="date" name="sellDate" value="${new Date().toISOString().split('T')[0]}" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm" />
                         </div>
                         <div class="flex gap-3 pt-4">
                             <button type="button" onclick="App.closeModal()" class="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl font-semibold text-sm transition-colors">Cancel</button>
-                            <button type="submit" style="background-color: #2563eb; color: white;" class="flex-1 px-4 py-3 text-white rounded-xl font-semibold text-sm shadow-lg hover:opacity-90">Sell Asset</button>
+                            <button type="submit" class="flex-1 px-4 py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold text-sm shadow-lg transition-colors">Sell Asset</button>
                         </div>
                     </form>
                 </div>
@@ -1744,7 +1744,7 @@ const App = {
                         <i data-lucide="trash-2" class="w-6 h-6 text-red-600 dark:text-red-400"></i>
                     </div>
                     <div>
-                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Delete ${count} ${entityName}?</h3>
+                        <h3 class="text-lg font-bold text-slate-900">Delete ${count} ${entityName}?</h3>
                         <p class="text-sm text-slate-500 dark:text-slate-400">This cannot be undone</p>
                     </div>
                 </div>
