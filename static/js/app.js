@@ -456,9 +456,6 @@ const App = {
         this.render();
         return true;
     },
-        const cat = this.state.categories.find(c => c.name === name);
-        return cat ? cat.color : '#3b82f6';
-    },
     _getSeparators() {
         if (this._sepCache) return this._sepCache;
         const parts = new Intl.NumberFormat(this.getCurrencyLocale()).formatToParts(1234567.89);
@@ -1495,7 +1492,6 @@ const App = {
         let formHtml = '';
         if (type === 'transaction') {
             const txType = this.state.txFormType || (item ? item.type : 'expense');
-            const catOptions = this.getCategoryNames(txType).map(cat => `<option value="${cat}" ${item && item.category === cat ? 'selected' : ''}>${cat}</option>`).join('');
             const sym = this.getCurrencySymbol();
             formHtml = `
                 <div class="grid grid-cols-2 gap-4">
@@ -1526,21 +1522,21 @@ const App = {
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="tx-category-select">Category</label>
                     <select name="category" id="tx-category-select" required aria-invalid="false" aria-describedby="tx-category-error" onchange="App.handleCategoryChange(this)" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-2 focus:outline-brand-500 focus:outline-offset-2 text-sm transition-all">
-                        ${catOptions}
-                        <option value="__new__">+ Add New Category</option>
+                        <option value="">Loading categories...</option>
                     </select>
                     <span id="tx-category-error" class="hidden text-rose-500 text-xs mt-1 block"></span>
                 </div>
             `;
+            // Populate category options after form HTML is created
+            const catOptions = this.getCategoryNames(txType).map(cat => `<option value="${cat}" ${item && item.category === cat ? 'selected' : ''}>${cat}</option>`).join('');
+            formHtml = formHtml.replace('<option value="">Loading categories...</option>', catOptions + '<option value="__new__">+ Add New Category</option>');
         } else if (type === 'budget') {
-            const catOptions = this.getCategoryNames().map(cat => `<option value="${cat}" ${item && item.category === cat ? 'selected' : ''}>${cat}</option>`).join('');
             const sym = this.getCurrencySymbol();
             formHtml = `
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="budget-category-select">Category</label>
                     <select name="category" id="budget-category-select" onchange="App.handleCategoryChange(this)" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all">
-                        ${catOptions}
-                        <option value="__new__">+ Add New Category</option>
+                        <option value="">Loading categories...</option>
                     </select>
                 </div>
                 <div>
@@ -1551,6 +1547,9 @@ const App = {
                     </div>
                 </div>
             `;
+            // Populate category options after form HTML is created
+            const catOptions = this.getCategoryNames().map(cat => `<option value="${cat}" ${item && item.category === cat ? 'selected' : ''}>${cat}</option>`).join('');
+            formHtml = formHtml.replace('<option value="">Loading categories...</option>', catOptions + '<option value="__new__">+ Add New Category</option>');
         } else if (type === 'saving') {
             const sym = this.getCurrencySymbol();
             formHtml = `
@@ -1745,10 +1744,10 @@ const App = {
                         <h2 id="cat-modal-title" class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white truncate">${title}</h2>
                         <button type="button" aria-label="Close dialog" onclick="App.closeModal()" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-2 focus:outline-brand-500 focus:outline-offset-2 flex-shrink-0"><i data-lucide="x" class="w-5 h-5"></i></button>
                     </div>
-                    <form onsubmit="App.saveCategory(event, ${catId})" class="p-6 space-y-4">
+                    <form id="cat-form" class="p-6 space-y-4" data-cat-id="${catId || ''}">
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="cat-name">Category Name</label>
-                            <input type="text" id="cat-name" autocomplete="off" value="${cat ? cat.name : ''}" required maxlength="50" placeholder="e.g. Gym Membership" aria-invalid="false" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-2 focus:outline-brand-500 focus:outline-offset-2 text-sm min-h-[44px]" />
+                            <input type="text" id="cat-name" autocomplete="off" value="${cat && cat.name ? cat.name : ''}" required maxlength="50" placeholder="e.g. Gym Membership" aria-invalid="false" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-2 focus:outline-brand-500 focus:outline-offset-2 text-sm min-h-[44px]" />
                         </div>
                         <p id="cat-error" class="text-rose-500 text-sm hidden" role="alert" aria-live="polite"></p>
                         <div class="flex gap-3 sm:gap-4 pt-2">
@@ -1760,6 +1759,16 @@ const App = {
             </div>
         `;
         lucide.createIcons();
+        // Add form submit handler
+        setTimeout(() => {
+            const form = document.getElementById('cat-form');
+            if (form) {
+                form.onsubmit = (e) => {
+                    const catId = form.dataset.catId || null;
+                    this.saveCategory(e, catId === '' ? null : parseInt(catId));
+                };
+            }
+        }, 0);
         // Add backdrop click handler for category modal
         setTimeout(() => {
             const container = document.getElementById('modal-container');
