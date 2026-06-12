@@ -192,18 +192,17 @@ body { overflow-x: hidden; }
     .sidebar { width: 100%; }
 }
 
-/* Modal responsive fixes */
-.modal-overlay {
-    padding: 1rem !important;
-    max-height: 100vh;
-    overflow-y: auto;
+/* Modal sizing - professional standard width */
+.modal-standard {
+    max-width: 750px;
+    width: 90%;
 }
 
-.modal-content {
-    max-width: calc(100vw - 2rem) !important;
-    max-height: 90vh;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+@media (max-width: 640px) {
+    .modal-standard {
+        width: 95%;
+        max-height: 90vh;
+    }
 }
 
 /* Form responsive fixes */
