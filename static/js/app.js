@@ -211,12 +211,15 @@ const App = {
             localStorage.setItem('sidebarCollapsed', settings.sidebar_collapsed);
             this._applySidebarCollapsed();
         }
-        this.fetchTransactions();
-        this.fetchCategories();
-        this.fetchBudgets();
-        this.fetchGoals();
-        this.fetchGoalForecasts();
-        this.fetchInvestments();
+        // Load critical dashboard data before rendering
+        await Promise.all([
+            this.fetchTransactions(),
+            this.fetchCategories(),
+            this.fetchBudgets(),
+            this.fetchGoals(),
+            this.fetchInvestments()
+        ]);
+        await this.fetchGoalForecasts();
     },
     async fetchCategories() {
         const res = await fetch('/api/categories');
