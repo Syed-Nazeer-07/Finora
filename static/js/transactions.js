@@ -459,7 +459,7 @@ const AppViews = {
                     <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Display Name</label>
                     <div class="flex gap-2">
                         <input id="settings-name" type="text" autocomplete="off" value="${u.name || ''}" class="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
-                        <button onclick="App.saveSettingName()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-medium transition-colors">Save</button>
+                        <button onclick="App.saveSettingName()" class="px-4 py-2 !bg-blue-600 hover:!bg-blue-700 !text-white rounded-xl text-sm font-medium transition-colors">Save</button>
                     </div>
                 </div>
                 <!-- Resend verification -->
@@ -477,7 +477,7 @@ const AppViews = {
                         <input id="settings-pw-new" type="password" autocomplete="new-password" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
                     </div>
                     <p id="settings-pw-err" class="text-rose-500 text-xs hidden"></p>
-                    <button onclick="App.saveSettingPassword()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-medium transition-colors">Change Password</button>
+                    <button onclick="App.saveSettingPassword()" class="px-4 py-2 !bg-blue-600 hover:!bg-blue-700 !text-white rounded-xl text-sm font-medium transition-colors">Change Password</button>
                 </div>
             `) : section('Security', 'lock', `
                 <div class="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
@@ -493,8 +493,8 @@ const AppViews = {
                         <p class="text-xs text-slate-500 dark:text-slate-400">Choose your preferred colour scheme</p>
                     </div>
                     <div class="flex gap-2">
-                        <button onclick="App.saveSetting('theme','light')" class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${(s.theme||'dark')==='light' ? 'bg-brand-600 text-white border-brand-600' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}">Light</button>
-                        <button onclick="App.saveSetting('theme','dark')" class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${(s.theme||'dark')==='dark' ? 'bg-brand-600 text-white border-brand-600' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}">Dark</button>
+                        <button onclick="App.saveSetting('theme','light')" class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${(s.theme||'dark')==='light' ? '!bg-blue-600 !text-white border-blue-600' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}">Light</button>
+                        <button onclick="App.saveSetting('theme','dark')" class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${(s.theme||'dark')==='dark' ? '!bg-blue-600 !text-white border-blue-600' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}">Dark</button>
                     </div>
                 </div>
                 <div class="flex items-center justify-between pt-1">
@@ -512,8 +512,8 @@ const AppViews = {
                         <p class="text-xs text-slate-500 dark:text-slate-400">Start with sidebar expanded or collapsed</p>
                     </div>
                     <div class="flex gap-2">
-                        <button onclick="App.saveSetting('sidebar_collapsed',false)" class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${!s.sidebar_collapsed ? 'bg-brand-600 text-white border-brand-600' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}">Expanded</button>
-                        <button onclick="App.saveSetting('sidebar_collapsed',true)" class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${s.sidebar_collapsed ? 'bg-brand-600 text-white border-brand-600' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}">Collapsed</button>
+                        <button onclick="App.saveSetting('sidebar_collapsed',false)" class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${!s.sidebar_collapsed ? '!bg-blue-600 !text-white border-blue-600' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}">Expanded</button>
+                        <button onclick="App.saveSetting('sidebar_collapsed',true)" class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${s.sidebar_collapsed ? '!bg-blue-600 !text-white border-blue-600' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}">Collapsed</button>
                     </div>
                 </div>
             `)}
@@ -585,7 +585,7 @@ const AppViews = {
                         <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Typical monthly spending (rent, food, bills, etc.)</p>
                     </div>
                     <p id="profile-save-err" class="text-rose-500 text-xs hidden"></p>
-                    <button onclick="App.saveFinancialProfile()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-medium transition-colors">Save Changes</button>
+                    <button onclick="App.saveFinancialProfile()" class="px-4 py-2 !bg-blue-600 hover:!bg-blue-700 !text-white rounded-xl text-sm font-medium transition-colors">Save Changes</button>
                 </div>
             `)}
             <!-- Timezone -->
