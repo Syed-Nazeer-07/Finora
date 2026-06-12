@@ -285,7 +285,7 @@ const AppViews = {
         `;
     },
     getInvestmentsHTML() {
-        const activeAssets = this.state.investments.filter(inv => inv.shares > 0);
+        const activeAssets = this.state.investments.filter(inv => inv.shares > 0).sort((a, b) => b.id - a.id);
         const totalInvested = this.state.investments.reduce((sum, inv) => sum + (inv.shares * inv.avgCost), 0);
         const totalReturned = this.state.investments.filter(inv => inv.shares === 0).reduce((sum, inv) => sum + (inv.quantity * inv.currentPrice - inv.quantity * inv.avgCost), 0);
         
