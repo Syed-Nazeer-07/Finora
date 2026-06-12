@@ -1243,29 +1243,7 @@ const App = {
                     </div>
                 </div>
             `;
-        }
-        container.innerHTML = `
-            <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity fade-in">
-                <div class="bg-white dark:bg-dark-card rounded-[2rem] shadow-2xl border border-slate-100 dark:border-slate-800 w-full max-w-md slide-up overflow-hidden">
-                    <div class="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/20">
-                        <h2 class="text-xl font-bold text-slate-900 dark:text-white">${modalTitle}</h2>
-                        <button type="button" onclick="App.closeModal()" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors">
-                            <i data-lucide="x" class="w-5 h-5"></i>
-                        </button>
-                    </div>
-                    <form onsubmit="App.handleFormSubmit(event)" class="p-8 space-y-6">
-                        ${formHtml}
-                        <p id="form-error" class="text-rose-500 text-sm text-center -mb-2"></p>
-                        <div class="pt-2 flex gap-4">
-                            <button type="button" onclick="App.closeModal()" class="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl font-semibold text-sm transition-all">Cancel</button>
-                            <button type="submit" class="flex-1 px-4 py-3 !bg-blue-600 hover:!bg-blue-700 !text-white rounded-xl font-semibold text-sm shadow-lg shadow-blue-600/30 hover:-translate-y-0.5 transition-all">${type === 'roadmap' ? 'Add Step' : 'Save Record'}</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        `;
-        lucide.createIcons();
-    } else if (type === 'confirm_sell') {
+        } else if (type === 'confirm_sell') {
             const { inv, totalSale, profit, profitPct } = this.state.pendingSellInvestment;
             const sym = this.getCurrencySymbol();
             container.innerHTML = `
@@ -1306,6 +1284,26 @@ const App = {
             lucide.createIcons();
             return;
         }
+        container.innerHTML = `
+            <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity fade-in">
+                <div class="bg-white dark:bg-dark-card rounded-[2rem] shadow-2xl border border-slate-100 dark:border-slate-800 w-full max-w-md slide-up overflow-hidden">
+                    <div class="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/20">
+                        <h2 class="text-xl font-bold text-slate-900 dark:text-white">${modalTitle}</h2>
+                        <button type="button" onclick="App.closeModal()" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    <form onsubmit="App.handleFormSubmit(event)" class="p-8 space-y-6">
+                        ${formHtml}
+                        <p id="form-error" class="text-rose-500 text-sm text-center -mb-2"></p>
+                        <div class="pt-2 flex gap-4">
+                            <button type="button" onclick="App.closeModal()" class="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl font-semibold text-sm transition-all">Cancel</button>
+                            <button type="submit" class="flex-1 px-4 py-3 !bg-blue-600 hover:!bg-blue-700 !text-white rounded-xl font-semibold text-sm shadow-lg shadow-blue-600/30 hover:-translate-y-0.5 transition-all">${type === 'roadmap' ? 'Add Step' : 'Save Record'}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
         lucide.createIcons();
     },
     openCategoryModal(catId = null) {
