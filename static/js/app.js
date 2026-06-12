@@ -1390,11 +1390,42 @@ const App = {
     },
     async editAvailableBalance() {
         const currentBalance = this.state.profile?.monthly_income || 0;
-        const newBalance = prompt(`Edit Available Balance\n\nCurrent: ₹${this.formatNumber(currentBalance)}\n\nEnter new amount:`, currentBalance);
-        if (newBalance === null) return;
-        const amount = this._parseMoney(newBalance);
+        const sym = this.getCurrencySymbol();
+        document.getElementById('modal-container').innerHTML = `
+            <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+                <div class="bg-white dark:bg-dark-card rounded-2xl shadow-2xl max-w-md w-full animate-scale-in">
+                    <div class="px-6 py-5 border-b border-slate-100 dark:border-dark-border">
+                        <h2 class="text-xl font-bold text-slate-900 dark:text-white">Edit Available Balance</h2>
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Update your current cash on hand</p>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Current Balance</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">${sym}</span>
+                                <input type="text" id="edit-balance-input" inputmode="numeric" autocomplete="off" value="${this.formatNumber(currentBalance)}" oninput="App.handleMoneyInput(event)" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white transition-all" />
+                            </div>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5">Money currently available to you</p>
+                        </div>
+                        <p id="edit-balance-error" class="text-rose-500 text-sm hidden"></p>
+                        <div class="flex gap-3 pt-2">
+                            <button onclick="App.closeModal()" class="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl font-semibold text-sm transition-colors">Cancel</button>
+                            <button onclick="App.saveAvailableBalance()" class="flex-1 px-4 py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold text-sm shadow-lg transition-colors">Save</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        lucide.createIcons();
+        setTimeout(() => document.getElementById('edit-balance-input')?.focus(), 100);
+    },
+    async saveAvailableBalance() {
+        const input = document.getElementById('edit-balance-input');
+        const error = document.getElementById('edit-balance-error');
+        const amount = this._parseMoney(input.value);
         if (isNaN(amount) || amount < 0) {
-            Toast.show('Invalid amount', 'error');
+            error.textContent = 'Please enter a valid amount';
+            error.classList.remove('hidden');
             return;
         }
         const res = await fetch('/api/profile', {
@@ -1403,10 +1434,12 @@ const App = {
             body: JSON.stringify({ monthly_income: amount })
         });
         if (!res.ok) {
-            Toast.show('Failed to update balance', 'error');
+            error.textContent = 'Failed to update balance';
+            error.classList.remove('hidden');
             return;
         }
         this.state.profile.monthly_income = amount;
+        this.closeModal();
         Toast.show('Available Balance updated', 'success');
         this.render();
     },
