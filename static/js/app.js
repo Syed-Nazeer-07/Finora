@@ -1265,6 +1265,48 @@ const App = {
             </div>
         `;
         lucide.createIcons();
+    } else if (type === 'confirm_sell') {
+            const { inv, totalSale, profit, profitPct } = this.state.pendingSellInvestment;
+            const sym = this.getCurrencySymbol();
+            container.innerHTML = `
+                <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+                    <div class="bg-white dark:bg-dark-card rounded-[2rem] shadow-2xl max-w-md w-full">
+                        <div class="px-8 py-6 border-b border-slate-100 dark:border-slate-800">
+                            <h2 class="text-xl font-bold text-slate-900 dark:text-white">Confirm Sale</h2>
+                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Sell ${inv.shares} shares of ${inv.symbol}</p>
+                        </div>
+                        <div class="p-8 space-y-4">
+                            <div class="bg-slate-50 dark:bg-slate-800 rounded-xl p-4 space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-slate-600 dark:text-slate-300">Shares</span>
+                                    <span class="font-semibold dark:text-white">${inv.shares}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-600 dark:text-slate-300">Sell Price</span>
+                                    <span class="font-semibold dark:text-white">${sym}${this.formatNumber(this.state.pendingSellInvestment.price)}</span>
+                                </div>
+                                <div class="flex justify-between border-t border-slate-200 dark:border-slate-700 pt-3">
+                                    <span class="font-semibold text-slate-900 dark:text-white">Total Sale</span>
+                                    <span class="font-bold text-lg dark:text-white">${sym}${this.formatNumber(totalSale)}</span>
+                                </div>
+                                <div class="flex justify-between ${profit >= 0 ? 'text-emerald-600' : 'text-rose-600'}">
+                                    <span class="font-semibold">Profit/Loss</span>
+                                    <span class="font-bold">${profit >= 0 ? '+' : ''}${sym}${this.formatNumber(Math.abs(profit))} (${profitPct}%)</span>
+                                </div>
+                            </div>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 text-center">This will delete the investment and create an income transaction.</p>
+                            <div class="flex gap-3 pt-4">
+                                <button onclick="App.closeModal()" class="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl font-semibold text-sm transition-colors">Cancel</button>
+                                <button onclick="App.confirmSellInvestment()" class="flex-1 px-4 py-3 !bg-rose-600 hover:!bg-rose-700 !text-white rounded-xl font-semibold text-sm shadow-lg transition-colors">Confirm Sale</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+            return;
+        }
+        lucide.createIcons();
     },
     openCategoryModal(catId = null) {
         const cat = catId ? this.state.categories.find(c => c.id === catId) : null;
@@ -1457,8 +1499,13 @@ const App = {
         const totalCost = inv.shares * inv.avgCost;
         const profit = totalSale - totalCost;
         const profitPct = ((profit / totalCost) * 100).toFixed(2);
-        const confirmMsg = `Confirm Sale\n\nSelling: ${inv.shares} shares of ${inv.symbol}\nSell Price: ₹${this.formatNumber(price)}\nTotal Sale: ₹${this.formatNumber(totalSale)}\n\nProfit/Loss: ₹${this.formatNumber(profit)} (${profit >= 0 ? '+' : ''}${profitPct}%)\n\nThis will delete the investment and create an income transaction.`;
-        if (!confirm(confirmMsg)) return;
+        this.state.pendingSellInvestment = { id, inv, price, totalSale, profit, profitPct };
+        this.renderModal('confirm_sell');
+        return;
+    },
+    async confirmSellInvestment() {
+        const { id, inv, price, totalSale, profit } = this.state.pendingSellInvestment;
+        this.closeModal();
         const res = await fetch(`/api/investments/${id}`, { method: 'DELETE' });
         if (!res.ok) {
             Toast.show('Failed to sell investment', 'error');
