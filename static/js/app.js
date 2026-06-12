@@ -1603,7 +1603,7 @@ const App = {
                         </div>
                         <div class="flex gap-3 pt-4">
                             <button type="button" onclick="App.closeModal()" class="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl font-semibold text-sm transition-colors">Cancel</button>
-                            <button type="submit" class="flex-1 px-4 py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold text-sm shadow-lg transition-colors">Sell Asset</button>
+                            <button type="submit" style="background-color: #2563eb; color: white;" class="flex-1 px-4 py-3 text-white rounded-xl font-semibold text-sm shadow-lg hover:opacity-90">Sell Asset</button>
                         </div>
                     </form>
                 </div>
