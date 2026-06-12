@@ -192,9 +192,9 @@ body { overflow-x: hidden; }
     .sidebar { width: 100%; }
 }
 
-/* Modal sizing - professional standard width */
+/* Modal sizing - professional compact width */
 .modal-standard {
-    max-width: 750px;
+    max-width: 650px;
     width: 90%;
 }
 

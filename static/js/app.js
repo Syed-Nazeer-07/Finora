@@ -1707,7 +1707,7 @@ const App = {
             return;
         }
         container.innerHTML = `
-            <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity fade-in modal-overlay" role="presentation">
+            <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm modal-overlay" role="presentation">
                 <div class="bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden modal-content modal-standard" role="dialog" aria-modal="true" aria-labelledby="modal-title">
                     <div class="px-6 sm:px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/20">
                         <h2 id="modal-title" class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white truncate">${modalTitle}</h2>
