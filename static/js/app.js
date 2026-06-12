@@ -858,6 +858,10 @@ const App = {
         }
         content.innerHTML = html;
         lucide.createIcons();
+        // Force Tailwind CDN to process new classes
+        if (window.tailwind && window.tailwind.process) {
+            window.tailwind.process();
+        }
         setTimeout(async () => {
             if (!this.state.chartsInitializing) {
                 this.state.chartsInitializing = true;
@@ -1296,7 +1300,7 @@ const App = {
                             </div>
                             <div class="flex gap-3 pt-4">
                                 <button onclick="App.closeModal()" class="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl font-semibold text-sm transition-colors">Cancel</button>
-                                <button onclick="App.confirmSellInvestment()" class="flex-1 px-4 py-3 !bg-rose-600 hover:!bg-rose-700 rounded-xl font-semibold text-sm shadow-lg transition-colors">Confirm & Sell</button>
+                                <button onclick="App.confirmSellInvestment()" class="flex-1 px-4 py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-semibold text-sm shadow-lg transition-colors">Confirm & Sell</button>
                             </div>
                         </div>
                     </div>
@@ -1319,7 +1323,7 @@ const App = {
                         <p id="form-error" class="text-rose-500 text-sm text-center -mb-2"></p>
                         <div class="pt-2 flex gap-4">
                             <button type="button" onclick="App.closeModal()" class="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl font-semibold text-sm transition-all">Cancel</button>
-                            <button type="submit" class="flex-1 px-4 py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold text-sm shadow-lg shadow-blue-600/30 hover:-translate-y-0.5 transition-all">${type === 'roadmap' ? 'Add Step' : 'Save Record'}</button>
+                            <button type="submit" class="flex-1 px-4 py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold text-sm shadow-lg shadow-blue-600/30 hover:-translate-y-0.5 transition-all">${entityId ? 'Save' : (type === 'roadmap' ? 'Add Step' : `Add ${type.charAt(0).toUpperCase() + type.slice(1)}`)}</button>
                         </div>
                     </form>
                 </div>

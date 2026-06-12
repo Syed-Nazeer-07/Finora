@@ -15,48 +15,93 @@
         }
     </script>
     
-    <!-- CRITICAL: Config MUST be set BEFORE Tailwind CDN loads -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
     <script>
-        tailwind = {
-            config: {
-                darkMode: 'class',
-                theme: {
-                    extend: {
-                        fontFamily: {
-                            sans: ['Inter', 'sans-serif'],
-                            display: ['Cal Sans', 'Inter', 'sans-serif'],
-                        },
-                        colors: {
-                            dark: {
-                                bg: '#0B0F19',
-                                card: '#111827',
-                                border: '#1F2937'
-                            },
-                            brand: {
-                                50: '#eff6ff',
-                                100: '#dbeafe',
-                                400: '#60a5fa',
-                                500: '#3b82f6',
-                                600: '#2563eb',
-                                900: '#1e3a8a',
-                            }
-                        },
-                        animation: {
-                            'float': 'float 3s ease-in-out infinite',
-                            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        },
-                        keyframes: {
-                            float: {
-                                '0%, 100%': { transform: 'translateY(0)' },
-                                '50%': { transform: 'translateY(-10px)' },
-                            }
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            900: '#1e3a8a',
                         }
                     }
                 }
             }
         };
     </script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            /* Dark mode backgrounds */
+            .dark .dark\:bg-slate-950 { background-color: rgb(2 6 23); }
+            .dark .dark\:bg-slate-900 { background-color: rgb(15 23 42); }
+            .dark .dark\:bg-slate-800 { background-color: rgb(30 41 59); }
+            .dark .dark\:bg-slate-700 { background-color: rgb(51 65 85); }
+            .dark .dark\:bg-slate-600 { background-color: rgb(71 85 105); }
+            .dark .dark\:bg-white { background-color: rgb(255 255 255); }
+            .dark .dark\:bg-slate-800\/20 { background-color: rgba(30 41 59 / 0.2); }
+            .dark .dark\:bg-slate-800\/30 { background-color: rgba(30 41 59 / 0.3); }
+            .dark .dark\:bg-slate-800\/50 { background-color: rgba(30 41 59 / 0.5); }
+            .dark .dark\:bg-slate-900\/50 { background-color: rgba(15 23 42 / 0.5); }
+            .dark .dark\:bg-rose-500\/10 { background-color: rgba(244 63 94 / 0.1); }
+            .dark .dark\:bg-emerald-500\/10 { background-color: rgba(16 185 129 / 0.1); }
+            .dark .dark\:bg-amber-500\/10 { background-color: rgba(245 158 11 / 0.1); }
+            .dark .dark\:bg-blue-500\/10 { background-color: rgba(59 130 246 / 0.1); }
+            .dark .dark\:bg-brand-500\/10 { background-color: rgba(59 130 246 / 0.1); }
+            
+            /* Dark mode text colors */
+            .dark .dark\:text-white { color: rgb(255 255 255); }
+            .dark .dark\:text-slate-200 { color: rgb(226 232 240); }
+            .dark .dark\:text-slate-300 { color: rgb(203 213 225); }
+            .dark .dark\:text-slate-400 { color: rgb(148 163 184); }
+            .dark .dark\:text-slate-500 { color: rgb(100 116 139); }
+            .dark .dark\:text-slate-600 { color: rgb(71 85 105); }
+            .dark .dark\:text-slate-800 { color: rgb(30 41 59); }
+            .dark .dark\:text-slate-900 { color: rgb(15 23 42); }
+            .dark .dark\:text-emerald-400 { color: rgb(52 211 153); }
+            .dark .dark\:text-emerald-300 { color: rgb(110 231 183); }
+            .dark .dark\:text-rose-400 { color: rgb(251 113 133); }
+            .dark .dark\:text-rose-300 { color: rgb(253 164 175); }
+            .dark .dark\:text-amber-400 { color: rgb(251 191 36); }
+            .dark .dark\:text-amber-300 { color: rgb(252 211 77); }
+            .dark .dark\:text-blue-300 { color: rgb(147 197 253); }
+            .dark .dark\:text-brand-400 { color: rgb(96 165 250); }
+            .dark .dark\:text-brand-300 { color: rgb(147 197 253); }
+            .dark .dark\:text-orange-400 { color: rgb(251 146 60); }
+            .dark .dark\:text-red-400 { color: rgb(248 113 113); }
+            
+            /* Dark mode borders */
+            .dark .dark\:border-slate-700 { border-color: rgb(51 65 85); }
+            .dark .dark\:border-slate-800 { border-color: rgb(30 41 59); }
+            .dark .dark\:border-slate-700\/50 { border-color: rgba(51 65 85 / 0.5); }
+            .dark .dark\:border-rose-500\/20 { border-color: rgba(244 63 94 / 0.2); }
+            .dark .dark\:border-rose-500\/30 { border-color: rgba(244 63 94 / 0.3); }
+            .dark .dark\:border-emerald-500\/20 { border-color: rgba(16 185 129 / 0.2); }
+            .dark .dark\:border-emerald-500\/30 { border-color: rgba(16 185 129 / 0.3); }
+            .dark .dark\:border-amber-500\/20 { border-color: rgba(245 158 11 / 0.2); }
+            .dark .dark\:border-blue-500\/20 { border-color: rgba(59 130 246 / 0.2); }
+            .dark .dark\:border-brand-500\/20 { border-color: rgba(59 130 246 / 0.2); }
+            
+            /* Dark mode hover states */
+            .dark .dark\:hover\:bg-slate-800:hover { background-color: rgb(30 41 59); }
+            .dark .dark\:hover\:text-white:hover { color: rgb(255 255 255); }
+            .dark .dark\:hover\:text-slate-200:hover { color: rgb(226 232 240); }
+            .dark .dark\:hover\:text-brand-400:hover { color: rgb(96 165 250); }
+            
+            /* Fix text without explicit dark variants */
+            .dark .text-slate-900:not([class*="dark:"]) { color: rgb(255 255 255); }
+            .dark .text-slate-800:not([class*="dark:"]) { color: rgb(226 232 240); }
+            .dark .text-slate-700:not([class*="dark:"]) { color: rgb(203 213 225); }
+            .dark .text-slate-600:not([class*="dark:"]) { color: rgb(148 163 184); }
+            .dark .text-slate-500:not([class*="dark:"]) { color: rgb(148 163 184); }
+        }
+    </style>
 
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -153,6 +198,9 @@
         </div>
     </main>
 
+    
+    <!-- Force Tailwind CDN to generate ALL dark mode classes used in JS -->
+    <div class="hidden dark:bg-amber-500/10 dark:bg-amber-900/20 dark:bg-blue-500/10 dark:bg-brand-500/10 dark:bg-brand-900/10 dark:bg-brand-900/20 dark:bg-emerald-500/10 dark:bg-emerald-900/20 dark:bg-orange-900/10 dark:bg-red-900/20 dark:bg-rose-500/10 dark:bg-rose-900/20 dark:bg-slate-600 dark:bg-slate-700 dark:bg-slate-800 dark:bg-slate-800/20 dark:bg-slate-800/30 dark:bg-slate-800/50 dark:bg-slate-900 dark:bg-slate-900/50 dark:bg-slate-950 dark:bg-white dark:border-amber-500/20 dark:border-amber-500/30 dark:border-blue-500/20 dark:border-brand-500/20 dark:border-brand-500/30 dark:border-brand-900/30 dark:border-emerald-500/20 dark:border-emerald-500/30 dark:border-orange-900/30 dark:border-rose-500/20 dark:border-rose-500/30 dark:border-rose-700 dark:border-rose-900/30 dark:border-rose-900/50 dark:border-slate-700 dark:border-slate-700/50 dark:border-slate-800 dark:from-white dark:ring-slate-950 dark:text-amber-300 dark:text-amber-400 dark:text-blue-300 dark:text-brand-300 dark:text-brand-400 dark:text-emerald-300 dark:text-emerald-400 dark:text-orange-400 dark:text-red-400 dark:text-rose-300 dark:text-rose-400 dark:text-slate-200 dark:text-slate-300 dark:text-slate-400 dark:text-slate-500 dark:text-slate-600 dark:text-slate-800 dark:text-slate-900 dark:text-white dark:to-slate-400 dark:hover:bg-slate-800 dark:hover:text-white dark:hover:text-slate-200 dark:hover:text-brand-400 dark:hover:bg-white/10"></div>
     
     <div id="modal-container"></div>
     
