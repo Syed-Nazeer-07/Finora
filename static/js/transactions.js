@@ -8,7 +8,7 @@ const AppViews = {
                         <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Transaction Ledger</h2>
                         <p class="text-slate-500 dark:text-slate-400 text-sm">Advanced search and filtering.</p>
                     </div>
-                    <button onclick="App.openModal('transaction')" class="w-full sm:w-auto bg-brand-600 hover:bg-brand-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium flex justify-center items-center gap-2 transition-colors shadow-sm hover:scale-105">
+                    <button onclick="App.openModal('transaction')" class="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-sm font-semibold flex justify-center items-center gap-2 transition-colors shadow-lg">
                         <i data-lucide="plus" class="w-4 h-4"></i> Add Record
                     </button>
                 </div>
@@ -270,7 +270,7 @@ const AppViews = {
                         <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Goal Forecasting</h2>
                         <p class="text-slate-500 dark:text-slate-400 text-sm">Track progress with enhanced forecasts, scenarios, and insights.</p>
                     </div>
-                    <button onclick="App.openModal('saving')" class="w-full sm:w-auto bg-brand-600 hover:bg-brand-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold flex justify-center items-center gap-2 hover:scale-105 transition-all shadow-lg">
+                    <button onclick="App.openModal('saving')" class="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-sm font-semibold flex justify-center items-center gap-2 transition-colors shadow-lg">
                         <i data-lucide="plus" class="w-4 h-4"></i> Add Goal
                     </button>
                 </div>
@@ -344,7 +344,7 @@ const AppViews = {
                         <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Investment Portfolio</h2>
                         <p class="text-slate-500 dark:text-slate-400 text-sm">Monitor assets, allocation, and risk profile.</p>
                     </div>
-                    <button onclick="App.openModal('investment')" class="w-full sm:w-auto bg-brand-600 hover:bg-brand-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold flex justify-center items-center gap-2 hover:scale-105 transition-all shadow-lg">
+                    <button onclick="App.openModal('investment')" class="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-sm font-semibold flex justify-center items-center gap-2 transition-colors shadow-lg">
                         <i data-lucide="plus" class="w-4 h-4"></i> Add Asset
                     </button>
                 </div>

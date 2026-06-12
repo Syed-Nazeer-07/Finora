@@ -208,7 +208,7 @@ const AppDashboard = {
                         <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-1">Dashboard</h1>
                         <p class="text-slate-500 dark:text-slate-400 text-sm">Your Personal Financial OS.</p>
                        </div>`}
-                <button onclick="App.openModal('transaction')" class="px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-semibold text-sm hover:scale-105 transition-all shadow-lg flex items-center gap-2">
+                <button onclick="App.openModal('transaction')" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-semibold text-sm shadow-lg flex items-center gap-2 transition-colors">
                     <i data-lucide="plus" class="w-4 h-4"></i> Add Transaction
                 </button>
             </div>
