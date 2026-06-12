@@ -285,122 +285,82 @@ const AppViews = {
         `;
     },
     getInvestmentsHTML() {
-        const calc = this.getCalculations();
-        let riskProfile = "Balanced";
-        let rowsHtml = this.state.investments.map(inv => {
-            const hasValidData = inv.shares > 0 && inv.avgCost > 0 && inv.currentPrice > 0;
-            
-            let returnDisplay;
-            if (!hasValidData) {
-                returnDisplay = `
-                    <div class="text-sm font-medium text-slate-500 dark:text-slate-400">
-                        <i data-lucide="clock" class="w-3.5 h-3.5 inline mr-1"></i>
-                        Awaiting Price Data
-                    </div>
-                    <div class="text-xs text-slate-400 mt-0.5">Update holdings & prices</div>
-                `;
-            } else {
-                const currentTotal = inv.shares * inv.currentPrice;
-                const costTotal = inv.shares * inv.avgCost;
-                const profit = currentTotal - costTotal;
-                const profitPercent = (profit / costTotal) * 100;
-                const isPositive = profit >= 0;
-                returnDisplay = `
-                    <div class="font-bold ${isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}">
-                        ${isPositive ? '+' : ''}${this.formatCurrency(profit)}
-                    </div>
-                    <div class="text-xs font-semibold mt-0.5 ${isPositive ? 'text-emerald-500' : 'text-rose-500'}">
-                        ${isPositive ? '+' : ''}${profitPercent.toFixed(2)}%
-                    </div>
-                `;
-            }
-            
-            return `
-                <tr class="group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-dark-border last:border-0">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="font-bold text-slate-900 dark:text-white">${inv.symbol}</div>
-                        <div class="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">${inv.type}</div>
-                    </td>
-                    <td class="px-6 py-4 font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">${inv.shares > 0 ? inv.shares : '—'}</td>
-                    <td class="px-6 py-4 text-slate-600 dark:text-slate-400 whitespace-nowrap">${inv.avgCost > 0 ? this.formatCurrency(inv.avgCost) : '—'}</td>
-                    <td class="px-6 py-4 font-semibold text-slate-900 dark:text-white whitespace-nowrap">${inv.currentPrice > 0 ? this.formatCurrency(inv.currentPrice) : '—'}</td>
-                    <td class="px-6 py-4 text-right whitespace-nowrap">
-                        ${returnDisplay}
-                    </td>
-                    <td class="px-6 py-4 text-right whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div class="flex items-center justify-end gap-1">
-                            <button onclick="App.sellInvestment(${inv.id})" class="text-slate-400 hover:text-emerald-500 transition-colors p-2" title="Sell Stock"><i data-lucide="dollar-sign" class="w-4 h-4"></i></button>
-                            <button onclick="App.openModal('investment', ${inv.id})" class="text-slate-400 hover:text-brand-500 transition-colors p-2" title="Edit"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
-                            <button onclick="App.deleteItem('investment', ${inv.id})" class="text-slate-400 hover:text-rose-500 transition-colors p-2" title="Delete"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                        </div>
-                    </td>
-                </tr>
-            `;
-        }).join('');
+        const activeAssets = this.state.investments.filter(inv => inv.shares > 0);
+        const totalInvested = this.state.investments.reduce((sum, inv) => sum + (inv.shares * inv.avgCost), 0);
+        const totalReturned = this.state.investments.filter(inv => inv.shares === 0).reduce((sum, inv) => sum + (inv.quantity * inv.currentPrice - inv.quantity * inv.avgCost), 0);
+        
         return `
             <div class="space-y-6 slide-up pb-10">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
                     <div>
                         <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Investment Portfolio</h2>
-                        <p class="text-slate-500 dark:text-slate-400 text-sm">Monitor assets, allocation, and risk profile.</p>
+                        <p class="text-slate-500 dark:text-slate-400 text-sm">Simple personal finance tracking.</p>
                     </div>
-                    <button onclick="App.openModal('investment')" class="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-sm font-semibold flex justify-center items-center gap-2 transition-colors shadow-lg">
-                        <i data-lucide="plus" class="w-4 h-4"></i> Add Asset
-                    </button>
+                    <div class="flex gap-2 w-full sm:w-auto">
+                        <button onclick="App.openModal('investment')" class="flex-1 sm:flex-none bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-sm font-semibold flex justify-center items-center gap-2 transition-colors shadow-lg">
+                            <i data-lucide="plus" class="w-4 h-4"></i> Add Asset
+                        </button>
+                        ${activeAssets.length > 0 ? `<button onclick="App.openSellModal()" class="flex-1 sm:flex-none bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-sm font-semibold flex justify-center items-center gap-2 transition-colors shadow-lg">
+                            <i data-lucide="trending-down" class="w-4 h-4"></i> Sell Asset
+                        </button>` : ''}
+                    </div>
                 </div>
-                ${this.state.investments.length > 0 ? `
-                <div class="p-3 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl flex items-start gap-2 text-amber-800 dark:text-amber-300 text-sm">
-                    <i data-lucide="alert-circle" class="w-4 h-4 mt-0.5 shrink-0"></i>
-                    <span>Prices are manually entered. Update current prices regularly for accurate valuations.</span>
+                
+                <!-- Summary Cards -->
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="bg-white dark:bg-dark-card rounded-2xl p-4 border border-slate-200 dark:border-dark-border">
+                        <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold mb-1">Total Invested</p>
+                        <h3 class="text-2xl font-bold text-slate-900 dark:text-white">${this.formatCurrency(totalInvested)}</h3>
+                    </div>
+                    <div class="bg-white dark:bg-dark-card rounded-2xl p-4 border border-slate-200 dark:border-dark-border">
+                        <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold mb-1">Total Returned</p>
+                        <h3 class="text-2xl font-bold text-slate-900 dark:text-white">${this.formatCurrency(totalReturned)}</h3>
+                    </div>
+                    <div class="bg-white dark:bg-dark-card rounded-2xl p-4 border border-slate-200 dark:border-dark-border">
+                        <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold mb-1">Net Profit/Loss</p>
+                        <h3 class="text-2xl font-bold ${(totalReturned - totalInvested) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}">${(totalReturned - totalInvested) >= 0 ? '+' : ''}${this.formatCurrency(totalReturned - totalInvested)}</h3>
+                    </div>
                 </div>
-                ` : ''}
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-2 bg-slate-900 text-white rounded-3xl p-8 shadow-2xl relative overflow-hidden flex flex-col justify-center">
-                        <div class="absolute top-0 right-0 w-96 h-96 bg-brand-500 rounded-full blur-[100px] opacity-30 -mr-20 -mt-20 pointer-events-none"></div>
-                        <div class="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-8">
-                            <div>
-                                <p class="text-slate-400 font-medium mb-2 text-sm uppercase tracking-wider">Total Value</p>
-                                <h3 class="text-4xl font-extrabold tracking-tight">${this.formatCurrency(calc.totalInvestmentValue)}</h3>
-                            </div>
-                            <div>
-                                <p class="text-slate-400 font-medium mb-2 text-sm uppercase tracking-wider">Total Invested</p>
-                                <h3 class="text-2xl font-semibold">${this.formatCurrency(calc.totalInvestmentCost)}</h3>
-                            </div>
-                            <div>
-                                <p class="text-slate-400 font-medium mb-2 text-sm uppercase tracking-wider">Unrealized Return</p>
-                                <div class="inline-flex items-center text-xl font-bold px-3 py-1.5 rounded-xl ${calc.investmentProfit >= 0 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'}">
-                                    <i data-lucide="${calc.investmentProfit >= 0 ? 'trending-up' : 'trending-down'}" class="w-5 h-5 mr-1"></i>
-                                    ${calc.investmentProfit >= 0 ? '+' : ''}${this.formatCurrency(calc.investmentProfit)}
+                
+                <!-- Active Assets -->
+                ${activeAssets.length > 0 ? `
+                <div class="bg-white dark:bg-dark-card rounded-2xl p-6 border border-slate-200 dark:border-dark-border">
+                    <h3 class="font-bold text-slate-900 dark:text-white mb-4">Current Active Assets</h3>
+                    <div class="space-y-3">
+                        ${activeAssets.map(inv => `
+                            <div class="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                                <div>
+                                    <p class="font-semibold text-slate-900 dark:text-white">${inv.symbol}</p>
+                                    <p class="text-sm text-slate-600 dark:text-slate-400">${inv.shares} Units</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-sm text-slate-600 dark:text-slate-400">Invested</p>
+                                    <p class="font-semibold text-slate-900 dark:text-white">${this.formatCurrency(inv.shares * inv.avgCost)}</p>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                    <div class="bg-white dark:bg-dark-card rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-dark-border flex flex-col items-center">
-                        <div class="w-full flex justify-between items-center mb-4">
-                            <h3 class="font-bold text-slate-900 dark:text-white text-sm">Asset Allocation</h3>
-                            <span class="text-xs font-semibold px-2 py-1 rounded bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20">Risk: ${riskProfile}</span>
-                        </div>
-                        <div class="relative w-full h-40 flex justify-center">
-                            <canvas id="allocationChart"></canvas>
-                        </div>
+                        `).join('')}
                     </div>
                 </div>
-                <div class="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-3xl shadow-sm overflow-hidden w-full">
-                    <div class="overflow-x-auto w-full">
-                        <table class="w-full text-left border-collapse min-w-full">
-                            <thead>
-                                <tr class="bg-slate-50/50 dark:bg-slate-800/50 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-dark-border">
-                                    <th class="px-6 py-5 font-semibold">Asset</th>
-                                    <th class="px-6 py-5 font-semibold">Holdings</th>
-                                    <th class="px-6 py-5 font-semibold">Avg Cost</th>
-                                    <th class="px-6 py-5 font-semibold">Current Price</th>
-                                    <th class="px-6 py-5 font-semibold text-right">Total Return</th>
-                                    <th class="px-6 py-5 font-semibold text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>${rowsHtml}</tbody>
-                        </table>
+                ` : ''}
+                
+                <!-- Investment History -->
+                <div class="bg-white dark:bg-dark-card rounded-2xl p-6 border border-slate-200 dark:border-dark-border">
+                    <h3 class="font-bold text-slate-900 dark:text-white mb-4">Investment Activity</h3>
+                    ${this.state.transactions.filter(t => t.category === 'Investment Returns').length > 0 ? `
+                    <div class="space-y-3">
+                        ${this.state.transactions.filter(t => t.category === 'Investment Returns').reverse().slice(0, 10).map(t => `
+                            <div class="flex justify-between items-start py-2 px-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                                <div class="flex-1">
+                                    <p class="font-semibold text-slate-900 dark:text-white text-sm">${t.description}</p>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400">${this.formatDate(t.date)}</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-sm font-semibold ${t.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white'}">${t.type === 'income' ? '+' : '-'}${this.formatCurrency(t.amount)}</p>
+                                </div>
+                            </div>
+                        `).join('')}
                     </div>
+                    ` : '<p class="text-sm text-slate-500 dark:text-slate-400">No investment activity yet.</p>'}
                 </div>
             </div>
         `;

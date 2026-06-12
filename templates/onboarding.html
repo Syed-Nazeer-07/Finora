@@ -271,7 +271,7 @@
         document.getElementById('step2-desc').textContent = isCashFlow
             ? 'This is your starting point — money in wallet, bank account, or anywhere you can access.'
             : 'Your monthly income helps us calculate your savings potential and financial health score.';
-        document.getElementById('monthly_income').placeholder = isCashFlow ? '5,000' : '1,50,000';
+        document.getElementById('monthly_income').placeholder = '';
         document.getElementById('step2-hint').textContent = isCashFlow
             ? 'Enter the total amount you currently have available.'
             : 'Include salary, freelance, business income — before taxes.';
@@ -283,7 +283,7 @@
         document.getElementById('step3-desc').textContent = isCashFlow
             ? 'Money you\'ve set aside and don\'t plan to spend soon (like in a savings account or piggy bank).'
             : 'Your current savings balance across all accounts — FDs, liquid funds, savings accounts.';
-        document.getElementById('current_savings').placeholder = isCashFlow ? '1,000' : '2,50,000';
+        document.getElementById('current_savings').placeholder = '';
         document.getElementById('step3-hint').textContent = isCashFlow
             ? 'Enter 0 if you don\'t have any — that\'s okay!'
             : 'Not sure? A rough estimate works fine.';
@@ -295,7 +295,7 @@
         document.getElementById('step3b-desc').textContent = isCashFlow
             ? 'If you have any money in stocks, mutual funds, or other investments.'
             : 'Stocks, mutual funds, ETFs, crypto, gold — total current market value.';
-        document.getElementById('current_investments').placeholder = isCashFlow ? '0' : '5,00,000';
+        document.getElementById('current_investments').placeholder = '';
         
         // Step 4: Expenses
         document.getElementById('step4-title').innerHTML = isCashFlow
@@ -304,7 +304,7 @@
         document.getElementById('step4-desc').textContent = isCashFlow
             ? 'An estimate of your typical monthly spending (food, transport, entertainment, subscriptions).'
             : 'Rent, food, transport, EMIs, subscriptions — your total monthly outflows.';
-        document.getElementById('monthly_expenses').placeholder = isCashFlow ? '3,000' : '60,000';
+        document.getElementById('monthly_expenses').placeholder = '';
         document.getElementById('step4-hint').textContent = isCashFlow
             ? 'Don\'t worry about being exact — a rough estimate is perfect.'
             : 'Include all recurring expenses. EMIs and subscriptions count too.';

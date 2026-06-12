@@ -1168,51 +1168,30 @@ const App = {
                 </div>
             `;
         } else if (type === 'investment') {
-            const invTypes = ['Stock', 'ETF', 'Crypto', 'Mutual Fund', 'Bonds', 'Gold', 'Silver'];
-            const typeIcons = { 'Stock': '📈', 'ETF': '📊', 'Crypto': '₿', 'Mutual Fund': '💼', 'Bonds': '📝', 'Gold': '🏆', 'Silver': '⭐' };
-            const typeOptions = invTypes.map(t => `<option value="${t}" ${item && item.type === t ? 'selected' : ''}>${typeIcons[t]} ${t}</option>`).join('');
             const sym = this.getCurrencySymbol();
-            const selectedType = item?.type || 'Stock';
-            const assetBoxEmoji = typeIcons[selectedType] || '📦';
+            const today = new Date().toISOString().split('T')[0];
             formHtml = `
-                <div class="p-4 rounded-xl bg-gradient-to-br from-brand-50 to-blue-50 dark:from-brand-500/10 dark:to-blue-500/10 border border-brand-200 dark:border-brand-500/30 flex items-center justify-center">
-                    <div class="text-center">
-                        <div class="text-5xl mb-2">${assetBoxEmoji}</div>
-                        <p id="asset-type-display" class="text-sm font-semibold text-slate-700 dark:text-slate-300">${selectedType}</p>
-                    </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Asset Name</label>
+                    <input type="text" name="symbol" autocomplete="off" value="${item ? item.symbol : ''}" required placeholder="e.g. NVIDIA, Gold, Bitcoin" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white transition-all" />
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Symbol/Name</label>
-                        <input type="text" name="symbol" autocomplete="off" value="${item ? item.symbol : ''}" required placeholder="e.g. AAPL" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white transition-all" />
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Asset Type</label>
-                        <select name="invType" onchange="App.updateAssetBox(this.value)" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white transition-all">
-                            ${typeOptions}
-                        </select>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Quantity / Units</label>
+                    <input type="number" name="shares" value="${item ? item.shares : ''}" required min="0" step="0.0001" placeholder="0" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white transition-all" />
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Purchase Price Per Unit</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">${sym}</span>
+                        <input type="text" inputmode="numeric" name="avgCost" value="${item ? this.formatMoneyInput(item.avgCost) : ''}" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white transition-all" />
                     </div>
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Shares Owned</label>
-                    <input type="number" name="shares" value="${item ? item.shares : ''}" required min="0" step="0.0001" placeholder="0" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white transition-all" />
+                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Purchase Date</label>
+                    <input type="date" name="purchaseDate" value="${item ? item.purchaseDate || today : today}" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white transition-all" />
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Average Cost</label>
-                        <div class="relative">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">${sym}</span>
-                            <input type="text" inputmode="numeric" name="avgCost" value="${item ? this.formatMoneyInput(item.avgCost) : ''}" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white transition-all" />
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Current Price</label>
-                        <div class="relative">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">${sym}</span>
-                            <input type="text" inputmode="numeric" name="currentPrice" value="${item ? this.formatMoneyInput(item.currentPrice) : ''}" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white transition-all" />
-                        </div>
-                    </div>
-                </div>
+                <input type="hidden" name="invType" value="Asset" />
+                <input type="hidden" name="currentPrice" value="${item ? this.formatMoneyInput(item.currentPrice) : ''}" />
             `;
         } else if (type === 'roadmap') {
             let stepsHtml = this.state.roadmap.map(s => `
@@ -1585,11 +1564,105 @@ const App = {
             Toast.show('Error: ' + err.message, 'error');
         }
     },
-    handleCategoryChange(selectEl) {
-        if (selectEl.value === '__new__') {
-            this.state.pendingCategorySelect = selectEl;
-            this.openCategoryModal();
-            selectEl.value = selectEl.options[0].value;
+    openSellModal() {
+        const activeAssets = this.state.investments.filter(inv => inv.shares > 0);
+        if (activeAssets.length === 0) {
+            Toast.show('No active assets to sell', 'error');
+            return;
+        }
+        const container = document.getElementById('modal-container');
+        container.innerHTML = `
+            <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+                <div class="bg-white dark:bg-dark-card rounded-[2rem] shadow-2xl max-w-md w-full">
+                    <div class="px-8 py-6 border-b border-slate-100 dark:border-slate-800">
+                        <h2 class="text-xl font-bold text-slate-900 dark:text-white">Sell Asset</h2>
+                    </div>
+                    <form onsubmit="App.handleSellAsset(event)" class="p-8 space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Select Asset</label>
+                            <select name="investmentId" required id="sell-asset-select" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white">
+                                <option value="">Choose asset to sell...</option>
+                                ${activeAssets.map(inv => `<option value="${inv.id}|${inv.symbol}|${inv.shares}|${inv.avgCost}">${inv.symbol} (${inv.shares} units)</option>`).join('')}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Quantity To Sell</label>
+                            <input type="number" name="sellQuantity" step="0.0001" min="0" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Current Price Per Unit</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">${this.getCurrencySymbol()}</span>
+                                <input type="text" inputmode="numeric" name="sellPrice" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white" />
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Sell Date</label>
+                            <input type="date" name="sellDate" value="${new Date().toISOString().split('T')[0]}" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white" />
+                        </div>
+                        <div class="flex gap-3 pt-4">
+                            <button type="button" onclick="App.closeModal()" class="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl font-semibold text-sm transition-colors">Cancel</button>
+                            <button type="submit" class="flex-1 px-4 py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold text-sm shadow-lg transition-colors">Sell</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+    },
+    async handleSellAsset(e) {
+        e.preventDefault();
+        const form = e.target;
+        const [invId, symbol, maxShares, avgCost] = form.sellAssetSelect.value.split('|');
+        const sellQuantity = parseFloat(form.sellQuantity.value) || 0;
+        const sellPrice = this._parseMoney(form.sellPrice.value) || 0;
+        const sellDate = form.sellDate.value;
+        
+        if (sellQuantity <= 0 || sellQuantity > parseFloat(maxShares)) {
+            Toast.show('Invalid quantity', 'error');
+            return;
+        }
+        if (sellPrice <= 0) {
+            Toast.show('Invalid sell price', 'error');
+            return;
+        }
+        
+        const totalSale = sellQuantity * sellPrice;
+        const totalCost = sellQuantity * parseFloat(avgCost);
+        const profit = totalSale - totalCost;
+        
+        this.closeModal();
+        
+        try {
+            const remainingQuantity = parseFloat(maxShares) - sellQuantity;
+            if (remainingQuantity > 0) {
+                const updateRes = await fetch(`/api/investments/${invId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ shares: remainingQuantity })
+                });
+                if (!updateRes.ok) throw new Error('Failed to update');
+            } else {
+                const deleteRes = await fetch(`/api/investments/${invId}`, { method: 'DELETE' });
+                if (!deleteRes.ok) throw new Error('Failed to delete');
+            }
+            
+            await fetch('/api/transactions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    description: `Sold ${sellQuantity} ${symbol} @ ${this.getCurrencySymbol()}${this.formatNumber(sellPrice)} - Profit ${profit >= 0 ? '+' : ''}${this.getCurrencySymbol()}${this.formatNumber(Math.abs(profit))}`,
+                    amount: totalSale,
+                    category: 'Investment Returns',
+                    type: 'income',
+                    date: sellDate
+                })
+            });
+            
+            Toast.show(`Sold ${sellQuantity} ${symbol} - Profit ${profit >= 0 ? '+' : ''}${this.getCurrencySymbol()}${this.formatNumber(Math.abs(profit))}`, 'success');
+            await this.fetchInvestments();
+            await this.fetchTransactions();
+        } catch (err) {
+            Toast.show('Error: ' + err.message, 'error');
         }
     },
     updateAssetBox(assetType) {
