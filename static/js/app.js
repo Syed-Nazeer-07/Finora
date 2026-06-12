@@ -1565,22 +1565,23 @@ const App = {
         }
     },
     openSellModal() {
-        const activeAssets = this.state.investments.filter(inv => inv.shares > 0);
+        const activeAssets = this.state.investments.filter(inv => inv.shares > 0).sort((a, b) => b.id - a.id);
         if (activeAssets.length === 0) {
             Toast.show('No active assets to sell', 'error');
             return;
         }
         const container = document.getElementById('modal-container');
         container.innerHTML = `
-            <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+            <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" onclick="if(event.target===this) App.closeModal()">
                 <div class="bg-white dark:bg-dark-card rounded-[2rem] shadow-2xl max-w-md w-full">
-                    <div class="px-8 py-6 border-b border-slate-100 dark:border-slate-800">
+                    <div class="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
                         <h2 class="text-xl font-bold text-slate-900 dark:text-white">Sell Asset</h2>
+                        <button type="button" onclick="App.closeModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 text-2xl leading-none">×</button>
                     </div>
                     <form onsubmit="App.handleSellAsset(event)" class="p-8 space-y-4">
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Select Asset</label>
-                            <select name="investmentId" required id="sell-asset-select" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white">
+                            <select name="sellAssetSelect" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm dark:text-white">
                                 <option value="">Choose asset to sell...</option>
                                 ${activeAssets.map(inv => `<option value="${inv.id}|${inv.symbol}|${inv.shares}|${inv.avgCost}">${inv.symbol} (${inv.shares} units)</option>`).join('')}
                             </select>
@@ -1602,12 +1603,13 @@ const App = {
                         </div>
                         <div class="flex gap-3 pt-4">
                             <button type="button" onclick="App.closeModal()" class="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl font-semibold text-sm transition-colors">Cancel</button>
-                            <button type="submit" class="flex-1 px-4 py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold text-sm shadow-lg transition-colors">Sell</button>
+                            <button type="submit" class="flex-1 px-4 py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold text-sm shadow-lg transition-colors">Sell Asset</button>
                         </div>
                     </form>
                 </div>
             </div>
         `;
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') this.closeModal(); });
     },
     async handleSellAsset(e) {
         e.preventDefault();

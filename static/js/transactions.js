@@ -288,6 +288,7 @@ const AppViews = {
         const activeAssets = this.state.investments.filter(inv => inv.shares > 0).sort((a, b) => b.id - a.id);
         const totalInvested = this.state.investments.reduce((sum, inv) => sum + (inv.shares * inv.avgCost), 0);
         const totalReturned = this.state.investments.filter(inv => inv.shares === 0).reduce((sum, inv) => sum + (inv.quantity * inv.currentPrice - inv.quantity * inv.avgCost), 0);
+        const sortedTransactions = [...this.state.transactions].filter(t => t.category === 'Investment Returns').sort((a, b) => new Date(b.date) - new Date(a.date));
         
         return `
             <div class="space-y-6 slide-up pb-10">
@@ -346,9 +347,9 @@ const AppViews = {
                 <!-- Investment History -->
                 <div class="bg-white dark:bg-dark-card rounded-2xl p-6 border border-slate-200 dark:border-dark-border">
                     <h3 class="font-bold text-slate-900 dark:text-white mb-4">Investment Activity</h3>
-                    ${this.state.transactions.filter(t => t.category === 'Investment Returns').length > 0 ? `
+                    ${sortedTransactions.length > 0 ? `
                     <div class="space-y-3">
-                        ${this.state.transactions.filter(t => t.category === 'Investment Returns').reverse().slice(0, 10).map(t => `
+                        ${sortedTransactions.slice(0, 10).map(t => `
                             <div class="flex justify-between items-start py-2 px-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
                                 <div class="flex-1">
                                     <p class="font-semibold text-slate-900 dark:text-white text-sm">${t.description}</p>
