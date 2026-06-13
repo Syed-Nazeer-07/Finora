@@ -340,6 +340,7 @@ const App = {
     },
     getSortedCategories(type = null) {
         let cats = type ? this.state.categories.filter(c => c.category_type === type) : this.state.categories;
+        cats = cats.filter(c => c.name !== '__new__'); // Filter out internal identifiers
         return cats.sort((a, b) => {
             if (a.is_default && !b.is_default) return -1;
             if (!a.is_default && b.is_default) return 1;
@@ -1503,7 +1504,7 @@ const App = {
                 </div>
                 <div class="relative">
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="tx-desc-input">Description</label>
-                    <input type="text" id="tx-desc-input" name="description" autocomplete="off" value="${item ? item.description : ''}" required placeholder="e.g. Swiggy Order" aria-invalid="false" aria-describedby="tx-desc-error" oninput="App._descAutocomplete(event)" onblur="App._descHideDropdown()" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-2 focus:outline-brand-500 focus:outline-offset-2 text-sm transition-all" />
+                    <input type="text" id="tx-desc-input" name="description" autocomplete="off" value="${item ? item.description : ''}" required placeholder="e.g., Coffee at Starbucks" aria-invalid="false" aria-describedby="tx-desc-error" oninput="App._descAutocomplete(event)" onblur="App._descHideDropdown()" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-2 focus:outline-brand-500 focus:outline-offset-2 text-sm transition-all" />
                     <ul id="tx-desc-dropdown" class="hidden absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg overflow-hidden text-sm"></ul>
                     <span id="tx-desc-error" class="hidden text-rose-500 text-xs mt-1 block"></span>
                 </div>
@@ -1512,7 +1513,7 @@ const App = {
                         <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="tx-amount">Amount</label>
                         <div class="relative">
                             <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">${sym}</span>
-                            <input type="text" inputmode="numeric" id="tx-amount" name="amount" autocomplete="off" value="${item ? this.formatMoneyInput(item.amount) : ''}" required placeholder="0" aria-invalid="false" aria-describedby="tx-amount-error" oninput="App.handleMoneyInput(event)" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-2 focus:outline-brand-500 focus:outline-offset-2 text-sm transition-all" />
+                            <input type="text" inputmode="numeric" id="tx-amount" name="amount" autocomplete="off" value="${item ? this.formatMoneyInput(item.amount) : ''}" required placeholder="0.00" aria-invalid="false" aria-describedby="tx-amount-error" oninput="App.handleMoneyInput(event)" onfocus="this.select()" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-2 focus:outline-brand-500 focus:outline-offset-2 text-sm transition-all" />
                         </div>
                         <span id="tx-amount-error" class="hidden text-rose-500 text-xs mt-1 block"></span>
                     </div>
@@ -1546,7 +1547,7 @@ const App = {
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="budget-limit">Monthly Limit</label>
                     <div class="relative">
                         <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">${sym}</span>
-                        <input type="text" inputmode="numeric" id="budget-limit" name="limit" autocomplete="off" value="${item ? this.formatMoneyInput(item.limit) : ''}" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
+                        <input type="text" inputmode="numeric" id="budget-limit" name="limit" autocomplete="off" value="${item ? this.formatMoneyInput(item.limit) : ''}" oninput="App.handleMoneyInput(event)" onfocus="this.select()" required placeholder="10,000" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
                     </div>
                 </div>
             `;
@@ -1558,21 +1559,21 @@ const App = {
             formHtml = `
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="goal-name">Goal Name</label>
-                    <input type="text" id="goal-name" name="name" autocomplete="off" value="${item ? item.name : ''}" required placeholder="e.g. New Laptop" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
+                    <input type="text" id="goal-name" name="name" autocomplete="off" value="${item ? item.name : ''}" required placeholder="e.g., New Laptop" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="goal-target">Target Amount</label>
                         <div class="relative">
                             <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">${sym}</span>
-                            <input type="text" inputmode="numeric" id="goal-target" name="target" autocomplete="off" value="${item ? this.formatMoneyInput(item.target) : ''}" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
+                            <input type="text" inputmode="numeric" id="goal-target" name="target" autocomplete="off" value="${item ? this.formatMoneyInput(item.target) : ''}" oninput="App.handleMoneyInput(event)" onfocus="this.select()" required placeholder="50,000" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
                         </div>
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="goal-current">Currently Saved</label>
                         <div class="relative">
                             <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">${sym}</span>
-                            <input type="text" inputmode="numeric" id="goal-current" name="current" autocomplete="off" value="${item ? this.formatMoneyInput(item.current) : '0'}" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
+                            <input type="text" inputmode="numeric" id="goal-current" name="current" autocomplete="off" value="${item ? this.formatMoneyInput(item.current) : '0'}" oninput="App.handleMoneyInput(event)" onfocus="this.select()" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
                         </div>
                     </div>
                 </div>
@@ -1581,7 +1582,7 @@ const App = {
                         <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="goal-monthly">Monthly Save</label>
                         <div class="relative">
                             <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">${sym}</span>
-                            <input type="text" inputmode="numeric" id="goal-monthly" name="monthlyContribution" value="${item ? this.formatMoneyInput(item.monthlyContribution || '') : ''}" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
+                            <input type="text" inputmode="numeric" id="goal-monthly" name="monthlyContribution" value="${item ? this.formatMoneyInput(item.monthlyContribution || '') : ''}" oninput="App.handleMoneyInput(event)" onfocus="this.select()" required placeholder="5,000" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
                         </div>
                     </div>
                     <div>
@@ -1730,6 +1731,11 @@ const App = {
             </div>
         `;
         lucide.createIcons();
+        // Auto-focus first input field
+        setTimeout(() => {
+            const firstInput = document.querySelector('#modal-container input:not([type=hidden]):not([type=date]), #modal-container select');
+            if (firstInput) firstInput.focus();
+        }, 100);
     },
     handleCategoryChange(selectElement) {
         if (selectElement.value === '__new__') {
@@ -1762,6 +1768,14 @@ const App = {
             </div>
         `;
         lucide.createIcons();
+        // Auto-focus category name input
+        setTimeout(() => {
+            const catInput = document.getElementById('cat-name');
+            if (catInput) {
+                catInput.focus();
+                if (!catId) catInput.select(); // Select all text if new category
+            }
+        }, 100);
         // Add form submit handler
         setTimeout(() => {
             const form = document.getElementById('cat-form');
@@ -1802,14 +1816,27 @@ const App = {
             const newCat = await this.categoryManager_create(name, 'expense');
             if (newCat) {
                 this.closeModal();
-                Toast.show('Category created', 'success');
+                Toast.show(`Category "${name}" created`, 'success');
+                // Auto-select the newly created category in the pending dropdown
                 if (this.state.pendingCategorySelect) {
                     const select = this.state.pendingCategorySelect;
-                    const newOption = document.createElement('option');
-                    newOption.value = name;
-                    newOption.textContent = name;
-                    newOption.selected = true;
-                    select.insertBefore(newOption, select.lastElementChild);
+                    // Remove the __new__ option temporarily
+                    const newOption = select.querySelector('option[value="__new__"]');
+                    if (newOption) newOption.remove();
+                    
+                    // Add new category option
+                    const opt = document.createElement('option');
+                    opt.value = name;
+                    opt.textContent = name;
+                    opt.selected = true;
+                    select.appendChild(opt);
+                    
+                    // Re-add __new__ option at the end
+                    const addNewOpt = document.createElement('option');
+                    addNewOpt.value = '__new__';
+                    addNewOpt.textContent = '+ Add New Category';
+                    select.appendChild(addNewOpt);
+                    
                     this.state.pendingCategorySelect = null;
                 }
             } else {

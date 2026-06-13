@@ -140,20 +140,20 @@ const AppDashboard = {
                     healthBadge = `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full border ${healthColors[forecast.health] || healthColors.on_track}">${healthLabels[forecast.health] || 'Unknown'}</span>`;
                 }
                 return `
-                <div class="py-3 border-b border-slate-100 dark:border-slate-700 last:border-0">
-                    <div class="flex justify-between items-start mb-1.5">
-                        <span class="text-sm font-semibold text-slate-900 dark:text-white dark:text-white truncate mr-2">${goal.name}</span>
+                <div class="py-3.5 border-b border-slate-100 dark:border-slate-700/80 last:border-0">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-sm font-bold text-slate-900 dark:text-white truncate mr-3">${goal.name}</span>
                         <div class="flex items-center gap-2 shrink-0">
                             ${healthBadge}
                             <span class="text-xs font-bold ${isComplete ? 'text-emerald-500' : 'text-slate-500 dark:text-slate-400'}">${pct.toFixed(0)}%</span>
                         </div>
                     </div>
-                    <div class="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full mb-1.5">
-                        <div class="h-1.5 rounded-full ${isComplete ? 'bg-emerald-500' : 'bg-brand-500'} transition-all" style="width:${pct}%"></div>
+                    <div class="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full mb-2">
+                        <div class="h-2 rounded-full ${isComplete ? 'bg-emerald-500' : 'bg-brand-500'} transition-all" style="width:${pct}%"></div>
                     </div>
                     <div class="flex justify-between text-xs text-slate-500 dark:text-slate-400">
-                        <span>${this.formatCurrency(goal.current)} <span class="text-slate-400">of ${this.formatCurrency(goal.target)}</span></span>
-                        <span class="text-right">${etaStr}</span>
+                        <span class="font-medium">${this.formatCurrency(goal.current)} <span class="text-slate-400 dark:text-slate-500">of ${this.formatCurrency(goal.target)}</span></span>
+                        <span class="text-right font-medium">${etaStr}</span>
                     </div>
                 </div>`;
             }).join('');
@@ -305,21 +305,21 @@ const AppDashboard = {
                         const textColor = pct >= 90 ? 'text-red-600 dark:text-red-400' : pct >= 75 ? 'text-amber-600 dark:text-amber-400' : 'text-slate-600 dark:text-slate-400';
                         return `
                         <div class="mb-4 last:mb-0">
-                            <div class="flex items-center justify-between mb-1.5">
-                                <div class="flex items-center gap-2">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-2.5">
                                     <div class="w-6 h-6 rounded-md flex items-center justify-center text-xs" style="background-color: ${catColor}30; border: 1.5px solid ${catColor}">
                                         ${this.getCategoryEmoji(b.category)}
                                     </div>
-                                    <span class="text-sm font-medium text-slate-700 dark:text-slate-300">${b.category}</span>
+                                    <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">${b.category}</span>
                                 </div>
                                 <span class="text-xs font-bold ${textColor}">${Math.round(pct)}%</span>
                             </div>
-                            <div class="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                            <div class="w-full h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mb-1.5">
                                 <div class="h-full rounded-full transition-all" style="width: ${Math.min(100, pct)}%; background-color: ${catColor}"></div>
                             </div>
                             <div class="flex justify-between mt-1">
-                                <span class="text-xs text-slate-500">${this.formatCurrency(b.spent)}</span>
-                                <span class="text-xs text-slate-500">of ${this.formatCurrency(b.limit)}</span>
+                                <span class="text-xs font-medium text-slate-500">${this.formatCurrency(b.spent)}</span>
+                                <span class="text-xs font-medium text-slate-500">of ${this.formatCurrency(b.limit)}</span>
                             </div>
                         </div>`;
                     }).join('') : '<div class="flex flex-col items-center justify-center py-6 text-slate-400 dark:text-slate-500"><i data-lucide="pie-chart" class="w-8 h-8 mb-2 opacity-40"></i><p class="text-sm">No budgets set</p><button onclick="App.openModal(\'budget\')" class="text-xs text-brand-500 hover:underline mt-1">Create Budget</button></div>'}
@@ -330,24 +330,25 @@ const AppDashboard = {
                 <!-- Recent Activity -->
                 <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm hover-card">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="font-bold text-sm text-slate-900 dark:text-white dark:text-white flex items-center gap-2">
+                        <h3 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
                             <i data-lucide="clock" class="w-4 h-4 text-purple-500"></i> Recent Activity
                         </h3>
                         <button onclick="App.setActiveTab('transactions')" class="text-xs text-brand-500 hover:text-brand-600 font-semibold">View All →</button>
                     </div>
-                    <div class="space-y-3 max-h-64 overflow-y-auto pr-2">
+                    <div class="dashboard-scroll max-h-64 overflow-y-auto">
                         ${activity.today.concat(activity.yesterday, activity.earlier).slice(0, 7).map(tx => {
                             const catColor = this.getCategoryColor(tx.category);
+                            const displayCategory = tx.category === '__new__' ? 'Uncategorized' : tx.category;
                             return `
-                        <div class="flex items-center gap-3 py-3 border-b border-slate-50 dark:border-slate-700/50 last:border-0">
-                            <div class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style="background-color: ${catColor}20; border: 2px solid ${catColor}">
-                                <span class="text-base">${this.getCategoryEmoji(tx.category)}</span>
+                        <div class="flex items-center gap-4 py-3.5 border-b border-slate-50 dark:border-slate-700/50 last:border-0">
+                            <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style="background-color: ${catColor}20; border: 2px solid ${catColor}">
+                                <span class="text-lg">${this.getCategoryEmoji(tx.category)}</span>
                             </div>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-sm font-medium text-slate-900 dark:text-white dark:text-white truncate">${tx.description}</p>
-                                <p class="text-xs font-medium" style="color: ${catColor}">${tx.category}</p>
+                            <div class="flex-1 min-w-0 pr-2">
+                                <p class="text-sm font-semibold text-slate-900 dark:text-white truncate mb-0.5">${tx.description}</p>
+                                <p class="text-xs font-medium" style="color: ${catColor}">${displayCategory}</p>
                             </div>
-                            <span class="text-sm font-bold shrink-0 ${tx.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white dark:text-white'}">
+                            <span class="text-sm font-bold shrink-0 ${tx.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white'}">
                                 ${tx.type === 'income' ? '+' : '-'}${this.formatCurrency(tx.amount)}
                             </span>
                         </div>`;

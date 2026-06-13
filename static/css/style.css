@@ -126,12 +126,32 @@ body.sidebar-collapsed-state #sidebar-chevron {
 
 /* Staggered animations */
 
-/* Custom Scrollbar */
-::-webkit-scrollbar { width: 6px; height: 6px; }
+/* Custom Scrollbar - Modern thin style */
+::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
-.dark ::-webkit-scrollbar-thumb { background: #334155; }
-::-webkit-scrollbar-thumb:hover { background: #64748b; }
+::-webkit-scrollbar-thumb { 
+    background: rgba(148, 163, 184, 0.4); 
+    border-radius: 10px;
+    transition: background 0.2s ease;
+}
+.dark ::-webkit-scrollbar-thumb { background: rgba(71, 85, 105, 0.5); }
+::-webkit-scrollbar-thumb:hover { 
+    background: rgba(100, 116, 139, 0.6);
+}
+.dark ::-webkit-scrollbar-thumb:hover { 
+    background: rgba(100, 116, 139, 0.7);
+}
+
+/* Dashboard-specific scrollbar improvements */
+.dashboard-scroll::-webkit-scrollbar { width: 4px; }
+.dashboard-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
+    padding-right: 8px;
+}
+.dark .dashboard-scroll {
+    scrollbar-color: rgba(71, 85, 105, 0.5) transparent;
+}
 
 /* Glassmorphism utilities */
 .glass {
