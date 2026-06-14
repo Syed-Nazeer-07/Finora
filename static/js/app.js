@@ -1859,7 +1859,7 @@ const App = {
         this.render();
     },
     async editAvailableBalance() {
-        const currentBalance = this.state.profile?.monthly_income || 0;
+        const currentBalance = this.state.profile?.current_savings || 0;
         const sym = this.getCurrencySymbol();
         document.getElementById('modal-container').innerHTML = `
             <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm modal-overlay">
@@ -1901,14 +1901,14 @@ const App = {
         const res = await fetch('/api/profile', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ monthly_income: amount })
+            body: JSON.stringify({ current_savings: amount })
         });
         if (!res.ok) {
             error.textContent = 'Failed to update balance';
             error.classList.remove('hidden');
             return;
         }
-        this.state.profile.monthly_income = amount;
+        this.state.profile.current_savings = amount;
         this.closeModal();
         Toast.show('Available Balance updated', 'success');
         this.render();
