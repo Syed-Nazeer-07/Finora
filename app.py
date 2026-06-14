@@ -71,12 +71,12 @@ if not app.debug:
         app.logger.info(f"Using database: {db_uri.split(':')[0]}")
     app.logger.info("Finora startup")
 
-app.config["MAIL_SERVER"]   = os.environ.get("MAIL_SERVER", "smtp.gmail.com").strip('\'"')
-app.config["MAIL_PORT"]     = int(os.environ.get("MAIL_PORT", 587))
+app.config["MAIL_SERVER"]   = os.environ.get("MAIL_SERVER", "smtp.gmail.com").strip('\'" \r\n')
+app.config["MAIL_PORT"]     = int(str(os.environ.get("MAIL_PORT", "587")).strip('\'" \r\n'))
 app.config["MAIL_USE_TLS"]  = True
-app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME", "").strip('\'"')
-app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD", "").strip('\'"')
-app.config["MAIL_DEFAULT_SENDER"] = os.environ.get("MAIL_DEFAULT_SENDER", os.environ.get("MAIL_USERNAME", "")).strip('\'"')
+app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME", "").strip('\'" \r\n')
+app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD", "").strip('\'" \r\n')
+app.config["MAIL_DEFAULT_SENDER"] = os.environ.get("MAIL_DEFAULT_SENDER", os.environ.get("MAIL_USERNAME", "")).strip('\'" \r\n')
 
 db = SQLAlchemy(app)
 mail = Mail(app)
@@ -913,32 +913,31 @@ def _base_url():
         return "http://127.0.0.1:5000"
 
 
-def _send_email(to, subject, body_html):
-    """Send email with timeout handling. Returns True on success, False on failure."""
-    html = _EMAIL_HEADER.format(base_url=_base_url()) + body_html + _EMAIL_FOOTER.format(base_url=_base_url())
-    try:
-        app.logger.info(f"Attempting to send email to {to} via SMTP {app.config.get('MAIL_SERVER')}:{app.config.get('MAIL_PORT')}")
-        msg = Message(subject=subject, recipients=[to], html=html)
-        
-        # Set timeout for SMTP operations to prevent worker death
+import threading
+
+def _async_send_email(app, msg, to):
+    with app.app_context():
         import socket
         old_timeout = socket.getdefaulttimeout()
-        socket.setdefaulttimeout(10)  # 10 second timeout
-        
+        socket.setdefaulttimeout(10)
         try:
+            app.logger.info(f"Attempting to send email to {to} via SMTP {app.config.get('MAIL_SERVER')}:{app.config.get('MAIL_PORT')}")
             mail.send(msg)
             app.logger.info(f"Email sent successfully to {to}")
-            return True
+        except Exception as e:
+            app.logger.error(f"Mail send failed to {to}: {type(e).__name__}: {e}")
         finally:
             socket.setdefaulttimeout(old_timeout)
-            
-    except socket.timeout:
-        app.logger.error(f"SMTP timeout sending to {to} - connection timed out after 10s")
-        return False
-    except Exception as e:
-        app.logger.error(f"Mail send failed to {to}: {type(e).__name__}: {e}")
-        app.logger.error(f"SMTP Config - Server: {app.config.get('MAIL_SERVER')}, Port: {app.config.get('MAIL_PORT')}, TLS: {app.config.get('MAIL_USE_TLS')}")
-        return False
+
+def _send_email(to, subject, body_html):
+    """Send email asynchronously to prevent UI freezing."""
+    html = _EMAIL_HEADER.format(base_url=_base_url()) + body_html + _EMAIL_FOOTER.format(base_url=_base_url())
+    msg = Message(subject=subject, recipients=[to], html=html)
+    
+    # Run the email sending in a background thread so the web request returns immediately
+    thr = threading.Thread(target=_async_send_email, args=(app, msg, to))
+    thr.start()
+    return True
 
 
 def _send_verification_email(user, token):
