@@ -486,26 +486,6 @@ const App = {
             timeZone: this.state.settings?.timezone || 'UTC'
         }).format(new Date(y, m - 1, d));
     },
-    getCalculations() {
-        try {
-            const p = this.state.profile || {};
-            const isCashFlow = p.account_mode === 'cashflow';
-            
-            const current_savings  = Number(p.current_savings || 0) || 0;
-            const monthly_income   = Number(p.monthly_income || 0) || 0;
-            const monthly_expenses = Number(p.monthly_expenses || 0) || 0;
-            
-            const txs = Array.isArray(this.state.transactions) ? this.state.transactions : [];
-            const invs = Array.isArray(this.state.investments) ? this.state.investments : [];
-            const budgets = Array.isArray(this.state.budgets) ? this.state.budgets : [];
-            const savings = Array.isArray(this.state.savings) ? this.state.savings : [];
-
-            // Core Transaction Math
-            const txIncome = txs.filter(t => t.type === 'income').reduce((acc, t) => acc + Number(t.amount || 0), 0);
-            const txExpenses = txs.filter(t => t.type === 'expense').reduce((acc, t) => acc + Number(t.amount || 0), 0);
-            const totalIncome = Number(txIncome || monthly_income) || 0;
-            const totalExpenses = Number(txExpenses || monthly_expenses) || 0;
-
     getPortfolioSummary() {
         const invs = Array.isArray(this.state.investments) ? this.state.investments : [];
         const txs = Array.isArray(this.state.transactions) ? this.state.transactions : [];
