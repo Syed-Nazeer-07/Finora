@@ -4,12 +4,20 @@ from flask_mail import Mail, Message
 from authlib.integrations.flask_client import OAuth
 from datetime import date, datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.middleware.proxy_fix import ProxyFix
 from dotenv import load_dotenv
 import os, secrets
 
 load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(
+    app.wsgi_app,
+    x_for=1,
+    x_proto=1,
+    x_host=1,
+    x_port=1
+)
 
 database_url = os.environ.get("DATABASE_URL")
 if not database_url:
