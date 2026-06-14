@@ -8,6 +8,14 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from dotenv import load_dotenv
 import os, secrets
 
+# Force IPv4 to prevent "Network is unreachable" (Errno 101) with smtp.gmail.com
+import socket
+old_getaddrinfo = socket.getaddrinfo
+def force_ipv4_getaddrinfo(*args, **kwargs):
+    responses = old_getaddrinfo(*args, **kwargs)
+    return [r for r in responses if r[0] == socket.AF_INET]
+socket.getaddrinfo = force_ipv4_getaddrinfo
+
 load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 
 app = Flask(__name__)
