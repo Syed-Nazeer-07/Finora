@@ -31,7 +31,7 @@ database_url = os.environ.get("DATABASE_URL")
 if not database_url:
     if os.environ.get("FLASK_ENV") == "production":
         raise RuntimeError("DATABASE_URL environment variable is required in production")
-    database_url = "sqlite:///wealthsync.db"
+    database_url = "sqlite:///finora.db"
 if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 app.config["SQLALCHEMY_DATABASE_URI"] = database_url
@@ -79,16 +79,24 @@ if not app.debug:
         app.logger.info(f"Using database: {db_uri.split(':')[0]}")
     app.logger.info("Finora startup")
 
-app.config["MAIL_SERVER"]   = os.environ.get("MAIL_SERVER", "smtp.gmail.com").strip('\'" \r\n')
-app.config["MAIL_PORT"]     = 465
-app.config["MAIL_USE_TLS"]  = False
-app.config["MAIL_USE_SSL"]  = True
+app.config["MAIL_SERVER"] = os.environ.get("MAIL_SERVER", "smtp.gmail.com").strip('\'" \r\n')
+app.config["MAIL_PORT"] = int(os.environ.get("MAIL_PORT", 587))
+app.config["MAIL_USE_TLS"] = os.environ.get("MAIL_USE_TLS", "True").lower() == "true"
+app.config["MAIL_USE_SSL"] = os.environ.get("MAIL_USE_SSL", "False").lower() == "true"
 app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME", "").strip('\'" \r\n')
 app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD", "").strip('\'" \r\n')
 app.config["MAIL_DEFAULT_SENDER"] = os.environ.get("MAIL_DEFAULT_SENDER", os.environ.get("MAIL_USERNAME", "")).strip('\'" \r\n')
 
 db = SQLAlchemy(app)
 mail = Mail(app)
+
+with app.app_context():
+    app.logger.info("Email Configuration Diagnostics:")
+    app.logger.info(f"MAIL_SERVER={app.config.get('MAIL_SERVER')}")
+    app.logger.info(f"MAIL_PORT={app.config.get('MAIL_PORT')}")
+    app.logger.info(f"MAIL_USE_TLS={app.config.get('MAIL_USE_TLS')}")
+    app.logger.info(f"MAIL_USE_SSL={app.config.get('MAIL_USE_SSL')}")
+    app.logger.info(f"MAIL_DEFAULT_SENDER={app.config.get('MAIL_DEFAULT_SENDER')}")
 
 from flask_migrate import Migrate
 migrate = Migrate(app, db)
@@ -242,7 +250,7 @@ with app.app_context():
     if User.query.count() == 0:
         demo = User(
             name="Nazeer",
-            email="nazeer@wealthsync.app",
+            email="nazeer@finora.app",
             password_hash=generate_password_hash("changeme"),
         )
         db.session.add(demo)
@@ -1574,6 +1582,52 @@ def delete_account():
     db.session.commit()
     session.clear()
     return jsonify({"success": True})
+
+@app.route("/api/admin/test-smtp", methods=["GET"])
+def test_smtp():
+    import smtplib, socket
+    server = app.config.get('MAIL_SERVER')
+    port = app.config.get('MAIL_PORT')
+    use_tls = app.config.get('MAIL_USE_TLS')
+    use_ssl = app.config.get('MAIL_USE_SSL')
+    username = app.config.get('MAIL_USERNAME')
+    password = app.config.get('MAIL_PASSWORD')
+    
+    stages = []
+    
+    try:
+        stages.append("1. DNS Resolution: Attempting...")
+        ips = socket.gethostbyname_ex(server)
+        stages[-1] += f" OK ({ips[2]})"
+        
+        stages.append(f"2. TCP Connection to {server}:{port}: Attempting...")
+        if use_ssl:
+            import ssl
+            context = ssl.create_default_context()
+            smtp = smtplib.SMTP_SSL(server, port, context=context, timeout=10)
+        else:
+            smtp = smtplib.SMTP(server, port, timeout=10)
+        stages[-1] += " OK"
+        
+        stages.append("3. EHLO Handshake: Attempting...")
+        smtp.ehlo()
+        stages[-1] += " OK"
+        
+        if use_tls and not use_ssl:
+            stages.append("3b. STARTTLS Handshake: Attempting...")
+            smtp.starttls()
+            stages[-1] += " OK"
+            
+        stages.append("4. SMTP Authentication: Attempting...")
+        smtp.login(username, password)
+        stages[-1] += " OK"
+        
+        smtp.quit()
+        return jsonify({"success": True, "stages": stages})
+    except Exception as e:
+        stages[-1] += f" FAILED: {type(e).__name__} - {str(e)}"
+        return jsonify({"success": False, "error": str(e), "stages": stages}), 500
+
 
 
 @app.route("/api/net-worth-history")

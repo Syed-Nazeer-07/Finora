@@ -1,5 +1,5 @@
 #!/bin/bash
-# Initialize Flask-Migrate for WealthSync
+# Initialize Flask-Migrate for Finora
 # Run this once to set up migrations
 
 cd "$(dirname "$0")"

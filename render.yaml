@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: wealthsync
+    name: finora
     env: python
     plan: free
     buildCommand: pip install -r requirements.txt
@@ -32,7 +32,7 @@ services:
         sync: false
 
 databases:
-  - name: wealthsync-db
-    databaseName: wealthsync
-    user: wealthsync
+  - name: finora-db
+    databaseName: finora
+    user: finora
     plan: free
