@@ -71,12 +71,12 @@ if not app.debug:
         app.logger.info(f"Using database: {db_uri.split(':')[0]}")
     app.logger.info("Finora startup")
 
-app.config["MAIL_SERVER"]   = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
+app.config["MAIL_SERVER"]   = os.environ.get("MAIL_SERVER", "smtp.gmail.com").strip('\'"')
 app.config["MAIL_PORT"]     = int(os.environ.get("MAIL_PORT", 587))
 app.config["MAIL_USE_TLS"]  = True
-app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME")
-app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD")
-app.config["MAIL_DEFAULT_SENDER"] = os.environ.get("MAIL_DEFAULT_SENDER", os.environ.get("MAIL_USERNAME"))
+app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME", "").strip('\'"')
+app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD", "").strip('\'"')
+app.config["MAIL_DEFAULT_SENDER"] = os.environ.get("MAIL_DEFAULT_SENDER", os.environ.get("MAIL_USERNAME", "")).strip('\'"')
 
 db = SQLAlchemy(app)
 mail = Mail(app)
