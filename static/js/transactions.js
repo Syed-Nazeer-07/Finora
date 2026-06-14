@@ -375,57 +375,57 @@ const AppViews = {
                 <div class="grid grid-cols-3 gap-4">
                     <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200 dark:border-slate-700">
                         <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold mb-1">Total Invested</p>
-                        <h3 class="text-2xl font-bold text-slate-900 dark:text-white dark:text-white">\${this.formatCurrency(totalInvested)}</h3>
+                        <h3 class="text-2xl font-bold text-slate-900 dark:text-white dark:text-white">${this.formatCurrency(totalInvested)}</h3>
                     </div>
                     <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200 dark:border-slate-700">
                         <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold mb-1">Total Returned</p>
-                        <h3 class="text-2xl font-bold text-slate-900 dark:text-white dark:text-white">\${this.formatCurrency(totalReturned)}</h3>
+                        <h3 class="text-2xl font-bold text-slate-900 dark:text-white dark:text-white">${this.formatCurrency(totalReturned)}</h3>
                     </div>
                     <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200 dark:border-slate-700">
                         <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold mb-1">Net Profit/Loss</p>
-                        <h3 class="text-2xl font-bold \${(totalReturned - totalInvested) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}">\${(totalReturned - totalInvested) >= 0 ? '+' : ''}\${this.formatCurrency(totalReturned - totalInvested)}</h3>
+                        <h3 class="text-2xl font-bold ${(totalReturned - totalInvested) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}">${(totalReturned - totalInvested) >= 0 ? '+' : ''}${this.formatCurrency(totalReturned - totalInvested)}</h3>
                     </div>
                 </div>
                 
                 <!-- Active Assets -->
-                \${activeAssets.length > 0 ? \`
+                ${activeAssets.length > 0 ? `
                 <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-700">
                     <h3 class="font-bold text-slate-900 dark:text-white mb-4">Current Active Assets</h3>
                     <div class="space-y-3">
-                        \${activeAssets.map(inv => \`
+                        ${activeAssets.map(inv => `
                             <div class="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
                                 <div>
-                                    <p class="font-semibold text-slate-900 dark:text-white">\${inv.symbol}</p>
-                                    <p class="text-sm text-slate-600 dark:text-slate-400">\${inv.shares} Units</p>
+                                    <p class="font-semibold text-slate-900 dark:text-white">${inv.symbol}</p>
+                                    <p class="text-sm text-slate-600 dark:text-slate-400">${inv.shares} Units</p>
                                 </div>
                                 <div class="text-right">
                                     <p class="text-sm text-slate-600 dark:text-slate-400">Invested</p>
-                                    <p class="font-semibold text-slate-900 dark:text-white">\${this.formatCurrency(inv.shares * inv.avgCost)}</p>
+                                    <p class="font-semibold text-slate-900 dark:text-white">${this.formatCurrency(inv.shares * inv.avgCost)}</p>
                                 </div>
                             </div>
-                        \`).join('')}
+                        `).join('')}
                     </div>
                 </div>
-                \` : ''}
+                ` : ''}
                 
                 <!-- Investment History -->
                 <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-700">
                     <h3 class="font-bold text-slate-900 dark:text-white mb-4">Investment Activity</h3>
-                    \${sortedTransactions.length > 0 ? \`
+                    ${sortedTransactions.length > 0 ? `
                     <div class="space-y-3">
-                        \${sortedTransactions.slice(0, 10).map(t => \`
+                        ${sortedTransactions.slice(0, 10).map(t => `
                             <div class="flex justify-between items-start py-2 px-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
                                 <div class="flex-1">
-                                    <p class="font-semibold text-slate-900 dark:text-white text-sm">\${t.description}</p>
-                                    <p class="text-xs text-slate-500 dark:text-slate-400">\${this.formatDate(t.date)}</p>
+                                    <p class="font-semibold text-slate-900 dark:text-white text-sm">${t.description}</p>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400">${this.formatDate(t.date)}</p>
                                 </div>
                                 <div class="text-right">
-                                    <p class="text-sm font-semibold \${t.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900'}">\${t.type === 'income' ? '+' : '-'}\${this.formatCurrency(t.amount)}</p>
+                                    <p class="text-sm font-semibold ${t.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900'}">${t.type === 'income' ? '+' : '-'}${this.formatCurrency(t.amount)}</p>
                                 </div>
                             </div>
-                        \`).join('')}
+                        `).join('')}
                     </div>
-                    \` : '<div class="flex flex-col items-center gap-3 py-8"><i data-lucide="trending-up" class="w-10 h-10 text-slate-300 dark:text-slate-600"></i><p class="text-slate-700 dark:text-slate-300 font-semibold">No Activity Yet</p><p class="text-sm text-slate-500">Your investment history will appear here</p></div>'}
+                    ` : '<div class="flex flex-col items-center gap-3 py-8"><i data-lucide="trending-up" class="w-10 h-10 text-slate-300 dark:text-slate-600"></i><p class="text-slate-700 dark:text-slate-300 font-semibold">No Activity Yet</p><p class="text-sm text-slate-500">Your investment history will appear here</p></div>'}
                 </div>
                 `}
             </div>
