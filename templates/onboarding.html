@@ -113,7 +113,7 @@
                 <p id="step2-desc" class="text-slate-600 mb-8 text-base">Your monthly income helps us calculate your savings potential and financial health score.</p>
                 <div class="relative">
                     <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 font-semibold text-lg">₹</span>
-                    <input id="monthly_income" type="text" inputmode="numeric" placeholder="Enter your monthly income" autocomplete="off"
+                    <input id="monthly_income" type="text" inputmode="decimal" placeholder="Enter your monthly income" autocomplete="new-password"
                         oninput="fmtInput(this)"
                         class="w-full pl-10 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 text-lg font-semibold placeholder-slate-400 focus:outline-none transition-all">
                 </div>
@@ -127,7 +127,7 @@
                 <p id="step3-desc" class="text-slate-600 mb-8 text-base">Your current savings balance across all accounts — FDs, liquid funds, savings accounts.</p>
                 <div class="relative">
                     <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 font-semibold text-lg">₹</span>
-                    <input id="current_savings" type="text" inputmode="numeric" placeholder="Enter your current savings" autocomplete="off"
+                    <input id="current_savings" type="text" inputmode="decimal" placeholder="Enter your current savings" autocomplete="new-password"
                         oninput="fmtInput(this)"
                         class="w-full pl-10 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 text-lg font-semibold placeholder-slate-400 focus:outline-none transition-all">
                 </div>
@@ -141,7 +141,7 @@
                 <p id="step3b-desc" class="text-slate-600 mb-8 text-base">Stocks, mutual funds, ETFs, crypto, gold — total current market value.</p>
                 <div class="relative">
                     <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 font-semibold text-lg">₹</span>
-                    <input id="current_investments" type="text" inputmode="numeric" placeholder="Enter current investments"
+                    <input id="current_investments" type="text" inputmode="decimal" placeholder="Enter current investments" autocomplete="new-password"
                         oninput="fmtInput(this)"
                         class="w-full pl-10 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 text-lg font-semibold placeholder-slate-400 focus:outline-none transition-all">
                 </div>
@@ -155,7 +155,7 @@
                 <p id="step4-desc" class="text-slate-600 mb-8 text-base">Rent, food, transport, EMIs, subscriptions — your total monthly outflows.</p>
                 <div class="relative">
                     <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 font-semibold text-lg">₹</span>
-                    <input id="monthly_expenses" type="text" inputmode="numeric" placeholder="Enter monthly expenses"
+                    <input id="monthly_expenses" type="text" inputmode="decimal" placeholder="Enter monthly expenses" autocomplete="new-password"
                         oninput="fmtInput(this)"
                         class="w-full pl-10 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 text-lg font-semibold placeholder-slate-400 focus:outline-none transition-all">
                 </div>
@@ -195,7 +195,7 @@
                     </div>
                 </div>
 
-                <input id="custom-goal-input" type="text" maxlength="200" placeholder="Describe your goal…"
+                <input id="custom-goal-input" type="text" maxlength="200" placeholder="Describe your goal…" autocomplete="new-password"
                     class="w-full hidden px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-600 focus:outline-none transition-all text-sm">
 
                 <input type="hidden" id="financial_goal" value="">
@@ -433,7 +433,7 @@
             }
         }
 
-        data[field] = field === 'financial_goal' ? val : parseFloat(val.replace(/,/g, ''));
+        data[field] = (field === 'financial_goal' || field === 'account_mode') ? val : parseFloat(val.replace(/,/g, ''));
 
         if (current < TOTAL) {
             document.getElementById(`step-${current}`).classList.add('hidden');
@@ -515,7 +515,7 @@
                     </button>
                 </div>
                 <p id="display-${it.field}" class="font-bold text-slate-900 text-sm leading-tight">${it.value}</p>
-                <input id="edit-${it.field}" type="text" ${it.field !== 'financial_goal' ? 'inputmode="numeric"' : ''} class="hidden w-full px-3 py-2 border border-brand-500 rounded-lg text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500" />
+                <input id="edit-${it.field}" type="text" autocomplete="new-password" ${it.field !== 'financial_goal' ? 'inputmode="decimal"' : ''} class="hidden w-full px-3 py-2 border border-brand-500 rounded-lg text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500" />
             </div>
         `).join('');
 

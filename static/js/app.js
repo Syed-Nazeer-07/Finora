@@ -10,38 +10,21 @@ const DataSync = {
     
     // Mutation handlers that trigger dependent re-fetches
     async onTransactionChange() {
-        await Promise.all([
-            App.state.activeTab === 'dashboard' ? Promise.resolve() : Promise.resolve()
-        ]);
-        // Dashboard calculations use transactions directly
-        // No re-fetch needed, just re-render dependent views
-        if (App.state.activeTab === 'dashboard') {
-            App.renderDashboardOnly();
-        } else if (App.state.activeTab === 'budgets') {
-            App.renderBudgetsOnly();
-        }
+        App.render(true);
     },
     
     async onBudgetChange() {
-        // Re-render dashboard since it shows budget usage
-        if (App.state.activeTab === 'dashboard') {
-            App.renderDashboardOnly();
-        }
+        App.render(true);
     },
     
     async onGoalChange() {
         // Re-fetch forecasts since they depend on goals
         await App.fetchGoalForecasts();
-        if (App.state.activeTab === 'dashboard') {
-            App.renderDashboardOnly();
-        }
+        App.render(true);
     },
     
     async onInvestmentChange() {
-        // Dashboard calculations depend on investments
-        if (App.state.activeTab === 'dashboard') {
-            App.renderDashboardOnly();
-        }
+        App.render(true);
     },
     
     // Trigger full sync after critical mutations
@@ -399,17 +382,11 @@ const App = {
         }
         const newCat = await res.json();
         this.state.categories.push(newCat);
-        this.render();
         return newCat;
     },
     async categoryManager_update(catId, updates) {
         const cat = this.state.categories.find(c => c.id === catId);
         if (!cat) {
-            Toast.show('Category not found', 'error');
-            return false;
-        }
-        if (cat.is_default) {
-            Toast.show('Cannot edit default categories', 'error');
             return false;
         }
         if (updates.name) {
@@ -512,33 +489,24 @@ const App = {
     getCalculations() {
         const p = this.state.profile || {};
         const isCashFlow = p.account_mode === 'cashflow';
-        const txIncome   = this.state.transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
-        const txExpenses = this.state.transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
-        const totalSavings         = p.current_savings     ?? 0;
-        const profileIncome        = p.monthly_income      ?? 0;
-        const profileExpenses      = p.monthly_expenses    ?? 0;
-        const validInvestments = this.state.investments.filter(inv => inv.shares > 0 && inv.avgCost > 0 && inv.currentPrice > 0);
+        const txIncome   = this.state.transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + Number(t.amount || 0), 0);
+        const txExpenses = this.state.transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + Number(t.amount || 0), 0);
+        const totalSavings         = Number(p.current_savings || 0);
+        const profileIncome        = Number(p.monthly_income || 0);
+        const profileExpenses      = Number(p.monthly_expenses || 0);
+        const validInvestments = this.state.investments.filter(inv => Number(inv.shares) > 0 && Number(inv.avgCost) > 0 && Number(inv.currentPrice) > 0);
         const totalInvestmentValue = validInvestments.length
-            ? validInvestments.reduce((acc, inv) => acc + (inv.shares * inv.currentPrice), 0)
-            : (p.current_investments ?? 0);
+            ? validInvestments.reduce((acc, inv) => acc + (Number(inv.shares) * Number(inv.currentPrice)), 0)
+            : Number(p.current_investments || 0);
+        const activeInvestmentCost = validInvestments.reduce((acc, inv) => acc + (Number(inv.shares) * Number(inv.avgCost)), 0);
         const totalIncome   = txIncome   || profileIncome;
         const totalExpenses = txExpenses || profileExpenses;
         
         let currentCash, availableBalance, netWorth;
         
-        if (isCashFlow) {
-            currentCash = profileIncome + txIncome - txExpenses;
-            availableBalance = currentCash;
-            netWorth = currentCash + totalSavings + totalInvestmentValue;
-        } else {
-            if (this.state.transactions.length === 0) {
-                currentCash = profileIncome - profileExpenses;
-            } else {
-                currentCash = profileIncome + txIncome - profileExpenses - txExpenses;
-            }
-            availableBalance = currentCash;
-            netWorth = currentCash + totalSavings + totalInvestmentValue;
-        }
+        currentCash = txIncome - txExpenses - activeInvestmentCost;
+        availableBalance = isCashFlow ? currentCash : (currentCash + totalSavings + totalInvestmentValue);
+        netWorth = currentCash + totalSavings + totalInvestmentValue;
         const now = new Date();
         const thisYM  = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
         const lastDate = new Date(now.getFullYear(), now.getMonth()-1, 1);
@@ -1106,13 +1074,13 @@ const App = {
         lucide.createIcons();
         setTimeout(() => this.initInvestmentCharts(), 50);
     },
-    render() {
+    render(force = false) {
         // Debounce render to prevent double initialization
         clearTimeout(this.state.renderTimer);
-        this.state.renderTimer = setTimeout(() => this._doRender(), 50);
+        this.state.renderTimer = setTimeout(() => this._doRender(force), 50);
     },
-    _doRender() {
-        if (this.state.activeTab === 'transactions' && !this.state.txLoading && !this.state.txError) {
+    _doRender(force = false) {
+        if (!force && this.state.activeTab === 'transactions' && !this.state.txLoading && !this.state.txError) {
             const focused = document.activeElement;
             const txContent = document.getElementById('tx-table-body');
             if (focused && focused.closest('#main-content') && txContent) {
@@ -1390,36 +1358,48 @@ const App = {
             return;
         }
         if (type === 'budget') {
-            const res = await fetch(`/api/budgets/${id}`, { method: 'DELETE' });
-            if (!res.ok) { Toast.show('Failed to delete budget', 'error'); return; }
-            
-            // Update state directly
-            this.state.budgets = this.state.budgets.filter(b => b.id !== id);
-            
-            Toast.show('Budget deleted', 'success');
-            await DataSync.onBudgetChange();
+            ConfirmModal.show({
+                title: 'Delete Budget',
+                message: 'Are you sure you want to delete this budget?<br>This action cannot be undone.',
+                confirmLabel: 'Delete',
+                onConfirm: async () => {
+                    const res = await fetch(`/api/budgets/${id}`, { method: 'DELETE' });
+                    if (!res.ok) { Toast.show('Failed to delete budget', 'error'); return; }
+                    this.state.budgets = this.state.budgets.filter(b => b.id !== id);
+                    Toast.show('Budget deleted', 'success');
+                    await DataSync.onBudgetChange();
+                }
+            });
             return;
         }
         if (type === 'saving') {
-            const res = await fetch(`/api/goals/${id}`, { method: 'DELETE' });
-            if (!res.ok) { Toast.show('Failed to delete goal', 'error'); return; }
-            
-            // Update state directly
-            this.state.savings = this.state.savings.filter(s => s.id !== id);
-            
-            Toast.show('Goal deleted', 'success');
-            await DataSync.onGoalChange();
+            ConfirmModal.show({
+                title: 'Delete Goal',
+                message: 'Are you sure you want to delete this goal?<br>This action cannot be undone.',
+                confirmLabel: 'Delete',
+                onConfirm: async () => {
+                    const res = await fetch(`/api/goals/${id}`, { method: 'DELETE' });
+                    if (!res.ok) { Toast.show('Failed to delete goal', 'error'); return; }
+                    this.state.savings = this.state.savings.filter(s => s.id !== id);
+                    Toast.show('Goal deleted', 'success');
+                    await DataSync.onGoalChange();
+                }
+            });
             return;
         }
         if (type === 'investment') {
-            const res = await fetch(`/api/investments/${id}`, { method: 'DELETE' });
-            if (!res.ok) { Toast.show('Failed to delete investment', 'error'); return; }
-            
-            // Update state directly
-            this.state.investments = this.state.investments.filter(i => i.id !== id);
-            
-            Toast.show('Investment deleted', 'success');
-            await DataSync.onInvestmentChange();
+            ConfirmModal.show({
+                title: 'Delete Investment',
+                message: 'Are you sure you want to delete this investment?<br>This action cannot be undone.',
+                confirmLabel: 'Delete',
+                onConfirm: async () => {
+                    const res = await fetch(`/api/investments/${id}`, { method: 'DELETE' });
+                    if (!res.ok) { Toast.show('Failed to delete investment', 'error'); return; }
+                    this.state.investments = this.state.investments.filter(i => i.id !== id);
+                    Toast.show('Investment deleted', 'success');
+                    await DataSync.onInvestmentChange();
+                }
+            });
             return;
         }
         if (type === 'roadmap') {
@@ -1503,7 +1483,7 @@ const App = {
                 </div>
                 <div class="relative">
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="tx-desc-input">Description</label>
-                    <input type="text" id="tx-desc-input" name="description" autocomplete="off" value="${item ? item.description : ''}" required placeholder="e.g. Swiggy Order" aria-invalid="false" aria-describedby="tx-desc-error" oninput="App._descAutocomplete(event)" onblur="App._descHideDropdown()" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-2 focus:outline-brand-500 focus:outline-offset-2 text-sm transition-all" />
+                    <input type="text" id="tx-desc-input" name="description" autocomplete="new-password" value="${item ? item.description : ''}" required placeholder="e.g. Swiggy Order" aria-invalid="false" aria-describedby="tx-desc-error" oninput="App._descAutocomplete(event)" onblur="App._descHideDropdown()" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-2 focus:outline-brand-500 focus:outline-offset-2 text-sm transition-all" />
                     <ul id="tx-desc-dropdown" class="hidden absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg overflow-hidden text-sm"></ul>
                     <span id="tx-desc-error" class="hidden text-rose-500 text-xs mt-1 block"></span>
                 </div>
@@ -1512,7 +1492,7 @@ const App = {
                         <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="tx-amount">Amount</label>
                         <div class="relative">
                             <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">${sym}</span>
-                            <input type="text" inputmode="numeric" id="tx-amount" name="amount" autocomplete="off" value="${item ? this.formatMoneyInput(item.amount) : ''}" required placeholder="0" aria-invalid="false" aria-describedby="tx-amount-error" oninput="App.handleMoneyInput(event)" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-2 focus:outline-brand-500 focus:outline-offset-2 text-sm transition-all" />
+                            <input type="text" inputmode="decimal" id="tx-amount" name="amount" autocomplete="new-password" value="${item ? this.formatMoneyInput(item.amount) : ''}" required placeholder="0" aria-invalid="false" aria-describedby="tx-amount-error" oninput="App.handleMoneyInput(event)" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-2 focus:outline-brand-500 focus:outline-offset-2 text-sm transition-all" />
                         </div>
                         <span id="tx-amount-error" class="hidden text-rose-500 text-xs mt-1 block"></span>
                     </div>
@@ -1546,7 +1526,7 @@ const App = {
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="budget-limit">Monthly Limit</label>
                     <div class="relative">
                         <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">${sym}</span>
-                        <input type="text" inputmode="numeric" id="budget-limit" name="limit" autocomplete="off" value="${item ? this.formatMoneyInput(item.limit) : ''}" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
+                        <input type="text" inputmode="decimal" id="budget-limit" name="limit" autocomplete="new-password" value="${item ? this.formatMoneyInput(item.limit) : ''}" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
                     </div>
                 </div>
             `;
@@ -1558,21 +1538,21 @@ const App = {
             formHtml = `
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="goal-name">Goal Name</label>
-                    <input type="text" id="goal-name" name="name" autocomplete="off" value="${item ? item.name : ''}" required placeholder="e.g. New Laptop" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
+                    <input type="text" id="goal-name" name="name" autocomplete="new-password" value="${item ? item.name : ''}" required placeholder="e.g. New Laptop" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="goal-target">Target Amount</label>
                         <div class="relative">
                             <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">${sym}</span>
-                            <input type="text" inputmode="numeric" id="goal-target" name="target" autocomplete="off" value="${item ? this.formatMoneyInput(item.target) : ''}" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
+                            <input type="text" inputmode="decimal" id="goal-target" name="target" autocomplete="new-password" value="${item ? this.formatMoneyInput(item.target) : ''}" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
                         </div>
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="goal-current">Currently Saved</label>
                         <div class="relative">
                             <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">${sym}</span>
-                            <input type="text" inputmode="numeric" id="goal-current" name="current" autocomplete="off" value="${item ? this.formatMoneyInput(item.current) : '0'}" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
+                            <input type="text" inputmode="decimal" id="goal-current" name="current" autocomplete="new-password" value="${item ? this.formatMoneyInput(item.current) : '0'}" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
                         </div>
                     </div>
                 </div>
@@ -1581,7 +1561,7 @@ const App = {
                         <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="goal-monthly">Monthly Save</label>
                         <div class="relative">
                             <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">${sym}</span>
-                            <input type="text" inputmode="numeric" id="goal-monthly" name="monthlyContribution" value="${item ? this.formatMoneyInput(item.monthlyContribution || '') : ''}" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
+                            <input type="text" inputmode="decimal" id="goal-monthly" name="monthlyContribution" value="${item ? this.formatMoneyInput(item.monthlyContribution || '') : ''}" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
                         </div>
                     </div>
                     <div>
@@ -1596,17 +1576,17 @@ const App = {
             formHtml = `
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="inv-symbol">Asset Name</label>
-                    <input type="text" id="inv-symbol" name="symbol" autocomplete="off" value="${item ? item.symbol : ''}" required placeholder="e.g. NVIDIA, Gold, Bitcoin" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
+                    <input type="text" id="inv-symbol" name="symbol" autocomplete="new-password" value="${item ? item.symbol : ''}" required placeholder="e.g. NVIDIA, Gold, Bitcoin" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="inv-shares">Quantity / Units</label>
-                    <input type="number" id="inv-shares" autocomplete="off" name="shares" value="${item ? item.shares : ''}" required min="0" step="0.0001" placeholder="0" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
+                    <input type="number" id="inv-shares" autocomplete="new-password" name="shares" value="${item ? item.shares : ''}" required min="0" step="0.0001" placeholder="0" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="inv-price">Purchase Price Per Unit</label>
                     <div class="relative">
                         <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">${sym}</span>
-                        <input type="text" inputmode="numeric" id="inv-price" name="avgCost" value="${item ? this.formatMoneyInput(item.avgCost) : ''}" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
+                        <input type="text" inputmode="decimal" id="inv-price" name="avgCost" value="${item ? this.formatMoneyInput(item.avgCost) : ''}" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
                     </div>
                 </div>
                 <div>
@@ -1639,7 +1619,7 @@ const App = {
                 <div class="pt-4 border-t border-slate-200 dark:border-slate-700">
                     <h4 class="text-sm font-bold mb-3 flex items-center gap-2"><i data-lucide="plus-circle" class="w-4 h-4"></i> Add New Milestone</h4>
                     <div class="grid grid-cols-2 gap-3 mb-2">
-                        <input type="text" name="title" autocomplete="off" placeholder="Milestone Name" required class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm"/>
+                        <input type="text" name="title" autocomplete="new-password" placeholder="Milestone Name" required class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm"/>
                         <select name="icon" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm">
                             <option value="target">Target</option>
                             <option value="home">Home</option>
@@ -1740,21 +1720,27 @@ const App = {
     openCategoryModal(catId = null) {
         const cat = catId ? this.state.categories.find(c => c.id === catId) : null;
         const title = cat ? 'Edit Category' : 'New Category';
-        document.getElementById('modal-container').innerHTML = `
-            <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm modal-overlay" role="presentation">
+        let catContainer = document.getElementById('category-modal-container');
+        if (!catContainer) {
+            catContainer = document.createElement('div');
+            catContainer.id = 'category-modal-container';
+            document.body.appendChild(catContainer);
+        }
+        catContainer.innerHTML = `
+            <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm modal-overlay" role="presentation">
                 <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl modal-content modal-standard" role="dialog" aria-modal="true" aria-labelledby="cat-modal-title">
                     <div class="px-6 py-5 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
                         <h2 id="cat-modal-title" class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white truncate">${title}</h2>
-                        <button type="button" aria-label="Close dialog" onclick="App.closeModal()" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-2 focus:outline-brand-500 focus:outline-offset-2 flex-shrink-0"><i data-lucide="x" class="w-5 h-5"></i></button>
+                        <button type="button" aria-label="Close dialog" onclick="App.closeCategoryModal()" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-2 focus:outline-brand-500 focus:outline-offset-2 flex-shrink-0"><i data-lucide="x" class="w-5 h-5"></i></button>
                     </div>
                     <form id="cat-form" class="p-6 space-y-4" data-cat-id="${catId || ''}">
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5" for="cat-name">Category Name</label>
-                            <input type="text" id="cat-name" autocomplete="off" value="${cat && cat.name ? cat.name : ''}" required maxlength="50" placeholder="e.g. Gym Membership" aria-invalid="false" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-2 focus:outline-brand-500 focus:outline-offset-2 text-sm min-h-[44px]" />
+                            <input type="text" id="cat-name" autocomplete="new-password" value="${cat && cat.name ? cat.name : ''}" required maxlength="50" placeholder="e.g. Gym Membership" aria-invalid="false" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-2 focus:outline-brand-500 focus:outline-offset-2 text-sm min-h-[44px]" />
                         </div>
                         <p id="cat-error" class="text-rose-500 text-sm hidden" role="alert" aria-live="polite"></p>
                         <div class="flex gap-3 sm:gap-4 pt-2">
-                            <button type="button" onclick="App.closeModal()" class="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl font-semibold text-sm min-h-[44px] focus:outline-2 focus:outline-brand-500 focus:outline-offset-2">Cancel</button>
+                            <button type="button" onclick="App.closeCategoryModal()" class="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl font-semibold text-sm min-h-[44px] focus:outline-2 focus:outline-brand-500 focus:outline-offset-2">Cancel</button>
                             <button type="submit" class="flex-1 px-4 py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold text-sm shadow-lg min-h-[44px] focus:outline-2 focus:outline-brand-500 focus:outline-offset-2">Save</button>
                         </div>
                     </form>
@@ -1774,14 +1760,25 @@ const App = {
         }, 0);
         // Add backdrop click handler for category modal
         setTimeout(() => {
-            const container = document.getElementById('modal-container');
+            const container = document.getElementById('category-modal-container');
+            if (!container) return;
             const overlay = container.querySelector('.fixed.inset-0');
             if (overlay) {
                 overlay.addEventListener('click', (e) => {
-                    if (e.target === overlay) this.closeModal();
+                    if (e.target === overlay) this.closeCategoryModal();
                 }, { once: false });
             }
         }, 10);
+    },
+    closeCategoryModal() {
+        const container = document.getElementById('category-modal-container');
+        if (container) {
+            container.innerHTML = '';
+        }
+        if (this.state.pendingCategorySelect && this.state.pendingCategorySelect.value === '__new__') {
+            this.state.pendingCategorySelect.value = ''; // reset to default
+            this.state.pendingCategorySelect = null;
+        }
     },
     async saveCategory(e, catId) {
         e.preventDefault();
@@ -1792,7 +1789,7 @@ const App = {
         if (catId) {
             const success = await this.categoryManager_update(catId, { name });
             if (success) {
-                this.closeModal();
+                this.closeCategoryModal();
                 Toast.show('Category updated', 'success');
             } else {
                 err.textContent = 'Failed to update category';
@@ -1801,8 +1798,6 @@ const App = {
         } else {
             const newCat = await this.categoryManager_create(name, 'expense');
             if (newCat) {
-                this.closeModal();
-                Toast.show('Category created', 'success');
                 if (this.state.pendingCategorySelect) {
                     const select = this.state.pendingCategorySelect;
                     const newOption = document.createElement('option');
@@ -1812,6 +1807,8 @@ const App = {
                     select.insertBefore(newOption, select.lastElementChild);
                     this.state.pendingCategorySelect = null;
                 }
+                this.closeCategoryModal();
+                Toast.show('Category created', 'success');
             } else {
                 err.textContent = 'Failed to create category';
                 err.classList.remove('hidden');
@@ -1856,7 +1853,7 @@ const App = {
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Current Balance</label>
                             <div class="relative">
                                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">${sym}</span>
-                                <input type="text" id="edit-balance-input" inputmode="numeric" autocomplete="off" value="${this.formatNumber(currentBalance)}" oninput="App.handleMoneyInput(event)" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
+                                <input type="text" id="edit-balance-input" inputmode="decimal" autocomplete="new-password" value="${this.formatNumber(currentBalance)}" oninput="App.handleMoneyInput(event)" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm transition-all" />
                             </div>
                             <p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5">Money currently available to you</p>
                         </div>
@@ -1912,19 +1909,19 @@ const App = {
                     <form onsubmit="App.processSellInvestment(event, ${id})" class="p-8 space-y-4">
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Quantity to Sell</label>
-                            <input type="number" name="sellQuantity" autocomplete="off" step="0.0001" min="0.0001" max="${inv.shares}" value="${inv.shares}" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm" />
+                            <input type="number" name="sellQuantity" autocomplete="new-password" step="0.0001" min="0.0001" max="${inv.shares}" value="${inv.shares}" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm" />
                             <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Max: ${inv.shares}</p>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Sell Price Per Share</label>
                             <div class="relative">
                                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">${sym}</span>
-                                <input type="text" inputmode="numeric" name="sellPrice" oninput="App.handleMoneyInput(event)" value="${this.formatMoneyInput(inv.currentPrice)}" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm" />
+                                <input type="text" inputmode="decimal" name="sellPrice" autocomplete="new-password" oninput="App.handleMoneyInput(event)" value="${this.formatMoneyInput(inv.currentPrice)}" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm" />
                             </div>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Sell Date</label>
-                            <input type="date" name="sellDate" value="${today}" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm" />
+                            <input type="date" name="sellDate" autocomplete="new-password" value="${today}" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm" />
                         </div>
                         <div class="pt-4 space-y-2">
                             <div class="text-sm text-slate-600 dark:text-slate-300">
@@ -2035,18 +2032,18 @@ const App = {
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Quantity To Sell</label>
-                            <input type="number" name="sellQuantity" autocomplete="off" step="0.0001" min="0" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm" />
+                            <input type="number" name="sellQuantity" autocomplete="new-password" step="0.0001" min="0" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm" />
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Current Price Per Unit</label>
                             <div class="relative">
                                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">${this.getCurrencySymbol()}</span>
-                                <input type="text" inputmode="numeric" name="sellPrice" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm" />
+                                <input type="text" inputmode="decimal" name="sellPrice" autocomplete="new-password" oninput="App.handleMoneyInput(event)" required placeholder="0" class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm" />
                             </div>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Sell Date</label>
-                            <input type="date" name="sellDate" value="${new Date().toISOString().split('T')[0]}" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm" />
+                            <input type="date" name="sellDate" autocomplete="new-password" value="${new Date().toISOString().split('T')[0]}" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm" />
                         </div>
                         <div class="flex gap-3 pt-4">
                             <button type="button" onclick="App.closeModal()" class="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl font-semibold text-sm transition-colors">Cancel</button>
