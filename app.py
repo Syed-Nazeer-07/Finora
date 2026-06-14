@@ -1,21 +1,12 @@
 from flask import Flask, render_template, jsonify, request, session, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
-from flask_mail import Mail, Message
 from authlib.integrations.flask_client import OAuth
 from datetime import date, datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
 from dotenv import load_dotenv
 import os, secrets
-
-# Force IPv4 to prevent "Network is unreachable" (Errno 101) with smtp.gmail.com
-import socket
-old_getaddrinfo = socket.getaddrinfo
-def force_ipv4_getaddrinfo(*args, **kwargs):
-    responses = old_getaddrinfo(*args, **kwargs)
-    return [r for r in responses if r[0] == socket.AF_INET]
-socket.getaddrinfo = force_ipv4_getaddrinfo
-
+import resend
 load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 
 app = Flask(__name__)
@@ -79,24 +70,10 @@ if not app.debug:
         app.logger.info(f"Using database: {db_uri.split(':')[0]}")
     app.logger.info("Finora startup")
 
-app.config["MAIL_SERVER"] = os.environ.get("MAIL_SERVER", "smtp.gmail.com").strip('\'" \r\n')
-app.config["MAIL_PORT"] = int(os.environ.get("MAIL_PORT", 587))
-app.config["MAIL_USE_TLS"] = os.environ.get("MAIL_USE_TLS", "True").lower() == "true"
-app.config["MAIL_USE_SSL"] = os.environ.get("MAIL_USE_SSL", "False").lower() == "true"
-app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME", "").strip('\'" \r\n')
-app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD", "").strip('\'" \r\n')
-app.config["MAIL_DEFAULT_SENDER"] = os.environ.get("MAIL_DEFAULT_SENDER", os.environ.get("MAIL_USERNAME", "")).strip('\'" \r\n')
+resend.api_key = os.environ.get("RESEND_API_KEY", "")
+app.config["EMAIL_FROM"] = os.environ.get("EMAIL_FROM", "Finora <onboarding@resend.dev>")
 
 db = SQLAlchemy(app)
-mail = Mail(app)
-
-with app.app_context():
-    app.logger.info("Email Configuration Diagnostics:")
-    app.logger.info(f"MAIL_SERVER={app.config.get('MAIL_SERVER')}")
-    app.logger.info(f"MAIL_PORT={app.config.get('MAIL_PORT')}")
-    app.logger.info(f"MAIL_USE_TLS={app.config.get('MAIL_USE_TLS')}")
-    app.logger.info(f"MAIL_USE_SSL={app.config.get('MAIL_USE_SSL')}")
-    app.logger.info(f"MAIL_DEFAULT_SENDER={app.config.get('MAIL_DEFAULT_SENDER')}")
 
 from flask_migrate import Migrate
 migrate = Migrate(app, db)
@@ -932,27 +909,28 @@ def _base_url():
 
 import threading
 
-def _async_send_email(app, msg, to):
+def _async_send_email(app, to, subject, html):
     with app.app_context():
-        import socket
-        old_timeout = socket.getdefaulttimeout()
-        socket.setdefaulttimeout(10)
         try:
-            app.logger.info(f"Attempting to send email to {to} via SMTP {app.config.get('MAIL_SERVER')}:{app.config.get('MAIL_PORT')}")
-            mail.send(msg)
-            app.logger.info(f"Email sent successfully to {to}")
+            app.logger.info(f"Email request started: Sending '{subject}' to {to} via Resend")
+            params = {
+                "from": app.config.get("EMAIL_FROM", "Finora <onboarding@resend.dev>"),
+                "to": [to],
+                "subject": subject,
+                "html": html
+            }
+            response = resend.Emails.send(params)
+            app.logger.info(f"Email delivered successfully to {to}. Resend ID: {response.get('id')}")
         except Exception as e:
-            app.logger.error(f"Mail send failed to {to}: {type(e).__name__}: {e}")
-        finally:
-            socket.setdefaulttimeout(old_timeout)
+            app.logger.error(f"Email API error for {to}: {type(e).__name__}: {e}")
 
 def _send_email(to, subject, body_html):
-    """Send email asynchronously to prevent UI freezing."""
+    """Send email asynchronously using Resend API to prevent UI freezing."""
     html = _EMAIL_HEADER.format(base_url=_base_url()) + body_html + _EMAIL_FOOTER.format(base_url=_base_url())
-    msg = Message(subject=subject, recipients=[to], html=html)
     
     # Run the email sending in a background thread so the web request returns immediately
-    thr = threading.Thread(target=_async_send_email, args=(app, msg, to))
+    import threading
+    thr = threading.Thread(target=_async_send_email, args=(app, to, subject, html))
     thr.start()
     return True
 
