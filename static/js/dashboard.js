@@ -235,11 +235,11 @@ const AppDashboard = {
                         </div>
                         <div class="grid grid-cols-3 gap-4 border-t border-white/10 pt-6">
                             ${isCashFlow 
-                                ? `<div><p class="text-slate-400 text-xs mb-1">Savings</p><p class="font-semibold text-lg">${this.formatCurrency(calc.totalSavings)}</p></div>
-                                   <div><p class="text-slate-400 text-xs mb-1">Monthly Income</p><p class="font-semibold text-lg">${this.formatCurrency(calc.profileIncome)}</p></div>
-                                   <div><p class="text-slate-400 text-xs mb-1">Monthly Expenses</p><p class="font-semibold text-lg">${this.formatCurrency(calc.profileExpenses)}</p></div>`
+                                ? `<div><p class="text-slate-400 text-xs mb-1">Savings</p><p class="font-semibold text-lg">${this.formatCurrency(calc.current_savings)}</p></div>
+                                   <div><p class="text-slate-400 text-xs mb-1">Monthly Income</p><p class="font-semibold text-lg">${this.formatCurrency(calc.monthly_income)}</p></div>
+                                   <div><p class="text-slate-400 text-xs mb-1">Monthly Expenses</p><p class="font-semibold text-lg">${this.formatCurrency(calc.monthly_expenses)}</p></div>`
                                 : `<div><p class="text-slate-400 text-xs mb-1">Liquid Cash</p><p class="font-semibold text-lg">${this.formatCurrency(calc.currentCash)}</p></div>
-                                   <div><p class="text-slate-400 text-xs mb-1">Savings</p><p class="font-semibold text-lg">${this.formatCurrency(calc.totalSavings)}</p></div>
+                                   <div><p class="text-slate-400 text-xs mb-1">Savings</p><p class="font-semibold text-lg">${this.formatCurrency(calc.current_savings)}</p></div>
                                    <div><p class="text-slate-400 text-xs mb-1">Investments</p><p class="font-semibold text-lg">${this.formatCurrency(calc.totalInvestmentValue)}</p></div>`
                             }
                         </div>

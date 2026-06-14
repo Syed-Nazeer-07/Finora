@@ -489,24 +489,30 @@ const App = {
     getCalculations() {
         const p = this.state.profile || {};
         const isCashFlow = p.account_mode === 'cashflow';
+        
+        const current_savings  = Number(p.current_savings || 0) || 0;
+        const monthly_income   = Number(p.monthly_income || 0) || 0;
+        const monthly_expenses = Number(p.monthly_expenses || 0) || 0;
+
+        console.log("--- DASHBOARD INIT AUDIT ---");
+        console.log("Mode:", p.account_mode);
+        console.log("Savings:", current_savings);
+        console.log("Income:", monthly_income);
+        console.log("Expenses:", monthly_expenses);
+        
         const txIncome   = this.state.transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + Number(t.amount || 0), 0);
         const txExpenses = this.state.transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + Number(t.amount || 0), 0);
-        const totalSavings         = Number(p.current_savings || 0);
-        const profileIncome        = Number(p.monthly_income || 0);
-        const profileExpenses      = Number(p.monthly_expenses || 0);
         const validInvestments = this.state.investments.filter(inv => Number(inv.shares) > 0 && Number(inv.avgCost) > 0 && Number(inv.currentPrice) > 0);
         const totalInvestmentValue = validInvestments.length
             ? validInvestments.reduce((acc, inv) => acc + (Number(inv.shares) * Number(inv.currentPrice)), 0)
             : Number(p.current_investments || 0);
         const activeInvestmentCost = validInvestments.reduce((acc, inv) => acc + (Number(inv.shares) * Number(inv.avgCost)), 0);
-        const totalIncome   = txIncome   || profileIncome;
-        const totalExpenses = txExpenses || profileExpenses;
         
         let currentCash, availableBalance, netWorth;
         
         currentCash = txIncome - txExpenses - activeInvestmentCost;
-        availableBalance = isCashFlow ? (totalSavings + currentCash) : (currentCash + totalSavings + totalInvestmentValue);
-        netWorth = currentCash + totalSavings + totalInvestmentValue;
+        availableBalance = isCashFlow ? (current_savings + currentCash) : (currentCash + current_savings + totalInvestmentValue);
+        netWorth = currentCash + current_savings + totalInvestmentValue;
         const now = new Date();
         const thisYM  = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
         const lastDate = new Date(now.getFullYear(), now.getMonth()-1, 1);
@@ -559,10 +565,10 @@ const App = {
                 consistencyScore: Math.round(consistencyScore)
             };
         } else {
-            const monthlyIncome = profileIncome || (txIncome / Math.max(1, this.state.transactions.length));
-            const savingsRate = totalSavings / (monthlyIncome * 12 || 1);
+            const monthlyIncome = monthly_income || (txIncome / Math.max(1, this.state.transactions.length));
+            const savingsRate = current_savings / (monthlyIncome * 12 || 1);
             const savingsRateScore = Math.min(20, savingsRate * 100);
-            const emergencyMonths = totalSavings / (profileExpenses || totalExpenses || 1);
+            const emergencyMonths = current_savings / (monthly_expenses || txExpenses || 1);
             const emergencyFundScore = Math.min(20, (emergencyMonths / 6) * 20);
             let budgetScore = budgetProgress.length > 0
                 ? (budgetProgress.filter(b => b.spent <= b.limit).length / budgetProgress.length) * 15
@@ -573,7 +579,7 @@ const App = {
                     sum + Math.min(100, g.target > 0 ? (g.current / g.target) * 100 : 0), 0) / this.state.savings.length;
                 goalScore = (avgProgress / 100) * 15;
             }
-            const invRatio = totalSavings > 0 ? (totalInvestmentValue / totalSavings) : (totalInvestmentValue > 0 ? 1 : 0);
+            const invRatio = current_savings > 0 ? (totalInvestmentValue / current_savings) : (totalInvestmentValue > 0 ? 1 : 0);
             const investmentScore = Math.min(15, invRatio * 15);
             const monthlyExp = {};
             this.state.transactions.filter(t => t.type === 'expense').forEach(t => {
@@ -602,7 +608,7 @@ const App = {
             };
         }
         return {
-            totalIncome, totalExpenses, currentCash, totalSavings,
+            totalIncome, totalExpenses, currentCash, current_savings, monthly_income, monthly_expenses,
             totalInvestmentValue, totalInvestmentCost, investmentProfit,
             netWorth, availableBalance, netWorthGrowth, budgetProgress, healthScore,
             breakdown, isCashFlow
@@ -614,7 +620,7 @@ const App = {
         return [
             {
                 id: 1, icon: 'shield-check', title: 'Emergency Funded',
-                earned: calc.totalSavings >= ((p.monthly_expenses || 0) * 6)
+                earned: calc.current_savings >= ((p.monthly_expenses || 0) * 6)
             },
             {
                 id: 2, icon: 'target', title: 'Budget Master',
@@ -658,7 +664,7 @@ const App = {
         if (overBudget) {
             insights.push({ type: 'warning', icon: 'pie-chart', text: `You have exceeded your ${overBudget.category} budget by ${this.formatCurrency(overBudget.spent - overBudget.limit)}.` });
         }
-        if (calc.totalSavings > 0 && calc.totalInvestmentValue === 0) {
+        if (calc.current_savings > 0 && calc.totalInvestmentValue === 0) {
             insights.push({ type: 'info', icon: 'trending-up', text: 'You have savings but no investments. Consider starting a systematic investment plan (SIP).' });
         }
         if (insights.length === 0) {
