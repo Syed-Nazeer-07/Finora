@@ -645,14 +645,24 @@ const App = {
                     const cv = avgExp > 0 ? Math.sqrt(variance) / avgExp : 1;
                     stabilityScore = Math.max(0, 10 * (1 - Math.min(1, cv)));
                 }
-                const growthScore = netWorth > 0 ? 5 : 2;
-                healthScore = Math.round(savingsRateScore + emergencyFundScore + budgetScore + goalScore + investmentScore + stabilityScore + growthScore);
-                breakdown = { savingsRateScore: Math.round(savingsRateScore), emergencyFundScore: Math.round(emergencyFundScore), budgetScore: Math.round(budgetScore), goalScore: Math.round(goalScore), investmentScore: Math.round(investmentScore), stabilityScore: Math.round(stabilityScore), growthScore: Math.round(growthScore) };
-            }
+            const growthScore = netWorth > 0 ? 5 : 2;
+            healthScore = Math.round(savingsRateScore + emergencyFundScore + budgetScore + goalScore + investmentScore + stabilityScore + growthScore);
+            breakdown = { savingsRateScore: Math.round(savingsRateScore), emergencyFundScore: Math.round(emergencyFundScore), budgetScore: Math.round(budgetScore), goalScore: Math.round(goalScore), investmentScore: Math.round(investmentScore), stabilityScore: Math.round(stabilityScore), growthScore: Math.round(growthScore) };
+        }
 
-            return {
-                totalIncome, totalExpenses, currentCash, current_savings, monthly_income, monthly_expenses,
-                monthTxIncome, monthTxExpenses, lastMonthTxIncome, lastMonthTxExpenses,
+        // --- Temporary Console Logs for Audit ---
+        console.group('%c[Audit] Financial Calculations', 'color: #f59e0b; font-weight: bold');
+        console.log('Total Income (txs + profile):', totalIncome);
+        console.log('Total Expenses (txs + profile):', totalExpenses);
+        console.log('Transaction Net Cash (currentCash):', currentCash);
+        console.log('Baseline Savings (profile):', current_savings);
+        console.log('Calculated Balance (availableBalance):', availableBalance);
+        console.log('Calculated Net Worth:', netWorth);
+        console.groupEnd();
+
+        return {
+            totalIncome, totalExpenses, currentCash, current_savings, monthly_income, monthly_expenses,
+            monthTxIncome, monthTxExpenses, lastMonthTxIncome, lastMonthTxExpenses,
                 totalInvestmentValue, totalInvestmentCost, investmentProfit,
                 totalReturned, realizedCost, realizedProfit, netProfitLoss,
                 netWorth, availableBalance, netWorthGrowth, cashFlowGrowth,
@@ -1903,7 +1913,8 @@ const App = {
         this.render();
     },
     async editAvailableBalance() {
-        const currentBalance = this.state.profile?.current_savings || 0;
+        const calc = this.getCalculations();
+        const currentBalance = calc.availableBalance;
         const sym = this.getCurrencySymbol();
         document.getElementById('modal-container').innerHTML = `
             <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm modal-overlay">
@@ -1942,17 +1953,23 @@ const App = {
             error.classList.remove('hidden');
             return;
         }
+
+        // Subtract the existing transaction net cash from the desired target balance 
+        // to find the correct baseline "current_savings" to save.
+        const calc = this.getCalculations();
+        const baselineSavings = amount - calc.currentCash;
+
         const res = await fetch('/api/profile', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ current_savings: amount })
+            body: JSON.stringify({ current_savings: baselineSavings })
         });
         if (!res.ok) {
             error.textContent = 'Failed to update balance';
             error.classList.remove('hidden');
             return;
         }
-        this.state.profile.current_savings = amount;
+        this.state.profile.current_savings = baselineSavings;
         this.closeModal();
         Toast.show('Available Balance updated', 'success');
         this.render();

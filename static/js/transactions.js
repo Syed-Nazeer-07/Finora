@@ -518,19 +518,22 @@ const AppViews = {
                 </div>
             `)}
             <!-- Financial Profile -->
-            ${section('Financial Summary', 'wallet', `
+            ${section('Financial Summary', 'wallet', (() => {
+                const calc = this.getCalculations();
+                return `
                 <div class="space-y-3">
                     <div class="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
                         <span class="text-sm text-slate-600 dark:text-slate-400">Cash & Savings</span>
-                        <span class="font-semibold text-slate-900 dark:text-white">${this.formatCurrency(this.state.profile?.current_savings || 0)}</span>
+                        <span class="font-semibold text-slate-900 dark:text-white">${this.formatCurrency(calc.availableBalance)}</span>
                     </div>
                     <div class="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
                         <span class="text-sm text-slate-600 dark:text-slate-400">Investments</span>
-                        <span class="font-semibold text-slate-900 dark:text-white">${this.formatCurrency(this.state.profile?.current_investments || 0)}</span>
+                        <span class="font-semibold text-slate-900 dark:text-white">${this.formatCurrency(calc.totalInvestmentValue)}</span>
                     </div>
                     <p class="text-xs text-slate-500 dark:text-slate-400">These amounts are tracked through transactions. Add or edit investment holdings in the Portfolio section.</p>
                 </div>
-            `)}
+                `;
+            })())}
             <!-- Monthly Income (Income Mode Only) -->
             ${this.state.profile?.account_mode === 'income' ? `
             <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
