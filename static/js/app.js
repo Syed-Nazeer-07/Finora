@@ -535,7 +535,7 @@ const App = {
             const budgets = Array.isArray(this.state.budgets) ? this.state.budgets : [];
             const savings = Array.isArray(this.state.savings) ? this.state.savings : [];
 
-            // Core Transaction Math
+            // Core Transaction Math (all-time)
             const txIncome = txs.filter(t => t.type === 'income').reduce((acc, t) => acc + Number(t.amount || 0), 0);
             const txExpenses = txs.filter(t => t.type === 'expense').reduce((acc, t) => acc + Number(t.amount || 0), 0);
             const totalIncome = Number(txIncome || monthly_income) || 0;
@@ -555,19 +555,41 @@ const App = {
             const availableBalance = isCashFlow ? (current_savings + currentCash) : (currentCash + current_savings + portfolio.unrealizedValue);
             const netWorth = currentCash + current_savings + portfolio.unrealizedValue;
 
+            // --- Monthly breakdown (this month vs last month) ---
             const now = new Date();
             const thisYM  = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
             const lastDate = new Date(now.getFullYear(), now.getMonth()-1, 1);
             const lastYM  = `${lastDate.getFullYear()}-${String(lastDate.getMonth()+1).padStart(2,'0')}`;
             const txThisMonth = txs.filter(t => t.date.startsWith(thisYM));
             const txLastMonth = txs.filter(t => t.date.startsWith(lastYM));
+
+            // This month's actual transaction income/expenses
+            const monthTxIncome   = txThisMonth.filter(t => t.type === 'income').reduce((s,t) => s + Number(t.amount || 0), 0);
+            const monthTxExpenses = txThisMonth.filter(t => t.type === 'expense').reduce((s,t) => s + Number(t.amount || 0), 0);
+            const lastMonthTxIncome   = txLastMonth.filter(t => t.type === 'income').reduce((s,t) => s + Number(t.amount || 0), 0);
+            const lastMonthTxExpenses = txLastMonth.filter(t => t.type === 'expense').reduce((s,t) => s + Number(t.amount || 0), 0);
+
             const netThisMonth = txThisMonth.reduce((s,t) => s + (t.type==='income' ? t.amount : -t.amount), 0);
             const netLastMonth = txLastMonth.reduce((s,t) => s + (t.type==='income' ? t.amount : -t.amount), 0);
+
+            // Net worth growth (for net worth mode)
             let netWorthGrowth = 0;
             if (netLastMonth !== 0) {
                 netWorthGrowth = ((netThisMonth - netLastMonth) / Math.abs(netLastMonth)) * 100;
             } else if (netThisMonth > 0) {
                 netWorthGrowth = 100;
+            }
+
+            // Cashflow-specific growth: month-over-month net cashflow change
+            let cashFlowGrowth = 0;
+            if (isCashFlow) {
+                const lastNetCash = lastMonthTxIncome - lastMonthTxExpenses;
+                const thisNetCash = monthTxIncome - monthTxExpenses;
+                if (lastNetCash !== 0) {
+                    cashFlowGrowth = ((thisNetCash - lastNetCash) / Math.abs(lastNetCash)) * 100;
+                } else if (thisNetCash > 0) {
+                    cashFlowGrowth = 100;
+                }
             }
 
             const budgetProgress = budgets.map(budget => {
@@ -630,18 +652,20 @@ const App = {
 
             return {
                 totalIncome, totalExpenses, currentCash, current_savings, monthly_income, monthly_expenses,
+                monthTxIncome, monthTxExpenses, lastMonthTxIncome, lastMonthTxExpenses,
                 totalInvestmentValue, totalInvestmentCost, investmentProfit,
                 totalReturned, realizedCost, realizedProfit, netProfitLoss,
-                netWorth, availableBalance, netWorthGrowth, budgetProgress, healthScore,
-                breakdown, isCashFlow
+                netWorth, availableBalance, netWorthGrowth, cashFlowGrowth,
+                budgetProgress, healthScore, breakdown, isCashFlow
             };
         } catch (error) {
             console.error("Dashboard calculation error:", error);
             return {
                 totalIncome: 0, totalExpenses: 0, currentCash: 0, current_savings: 0, monthly_income: 0, monthly_expenses: 0,
+                monthTxIncome: 0, monthTxExpenses: 0, lastMonthTxIncome: 0, lastMonthTxExpenses: 0,
                 totalInvestmentValue: 0, totalInvestmentCost: 0, investmentProfit: 0,
-                netWorth: 0, availableBalance: 0, netWorthGrowth: 0, budgetProgress: [], healthScore: 0,
-                breakdown: {}, isCashFlow: false
+                netWorth: 0, availableBalance: 0, netWorthGrowth: 0, cashFlowGrowth: 0,
+                budgetProgress: [], healthScore: 0, breakdown: {}, isCashFlow: false
             };
         }
     },

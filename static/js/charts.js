@@ -25,6 +25,8 @@ const AppCharts = {
             
             const existingNwChart = Chart.getChart(nwCtx);
             if (existingNwChart) existingNwChart.destroy();
+
+            const isCashFlowChart = nwCtx.getAttribute('data-mode') === 'cashflow';
             
             let nwLabels = ['Jan','Feb','Mar','Apr','May','Jun'];
             let nwData   = [0,0,0,0,0,0];
@@ -37,6 +39,10 @@ const AppCharts = {
                 console.warn('No net worth data available');
                 return;
             }
+
+            const chartLabel = isCashFlowChart ? 'Cash Balance' : 'Net Worth';
+            const chartColor = isCashFlowChart ? '#3b82f6' : '#8b5cf6';
+            const chartBg    = isCashFlowChart ? 'rgba(59, 130, 246, 0.1)' : 'rgba(139, 92, 246, 0.1)';
             
             const skeleton = document.getElementById('netWorthSkeleton');
             const chartContainer = nwCtx.closest('[data-chart-type]');
@@ -46,14 +52,14 @@ const AppCharts = {
                 data: {
                     labels: nwLabels,
                     datasets: [{
-                        label: 'Net Worth',
+                        label: chartLabel,
                         data: nwData,
-                        borderColor: '#8b5cf6',
-                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        borderColor: chartColor,
+                        backgroundColor: chartBg,
                         borderWidth: 3,
                         tension: 0.4,
                         fill: true,
-                        pointBackgroundColor: '#8b5cf6',
+                        pointBackgroundColor: chartColor,
                         pointBorderColor: isDark ? '#0f172a' : '#ffffff',
                         pointBorderWidth: 2,
                         pointRadius: 4,
@@ -101,8 +107,20 @@ const AppCharts = {
             
             const skeleton = document.getElementById('expenseSkeleton');
             const chartContainer = expCtx.closest('[data-chart-type]');
-            
-            const expenses = this.state.transactions.filter(t => t.type === 'expense');
+
+            const isCashFlowChart = expCtx.getAttribute('data-mode') === 'cashflow';
+
+            // In cashflow mode, show only this month's expenses
+            // In net worth mode, show all-time expenses
+            let expenses;
+            if (isCashFlowChart) {
+                const now = new Date();
+                const thisYM = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+                expenses = this.state.transactions.filter(t => t.type === 'expense' && t.date.startsWith(thisYM));
+            } else {
+                expenses = this.state.transactions.filter(t => t.type === 'expense');
+            }
+
             if (!expenses || expenses.length === 0) {
                 console.warn('No expense data available');
                 return;

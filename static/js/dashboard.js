@@ -8,6 +8,22 @@ const AppDashboard = {
         const streak = this.getStreak();
         const isCashFlow = this.state.profile?.account_mode === 'cashflow';
         const financialInsights = [];
+
+        // ── Dashboard Mode Diagnostics ──
+        console.group('%c[Dashboard] Mode Diagnostics', 'color: #8b5cf6; font-weight: bold');
+        console.log('Current Mode:', isCashFlow ? 'CASHFLOW' : 'NET WORTH');
+        console.log('Active Data Source:', isCashFlow ? 'Transaction-derived monthly cashflow' : 'Profile + Portfolio net worth');
+        console.log('Hero Card:', {
+            label: isCashFlow ? 'Available Balance' : 'Total Net Worth',
+            value: isCashFlow ? calc.availableBalance : calc.netWorth,
+            growth: isCashFlow ? calc.cashFlowGrowth : calc.netWorthGrowth
+        });
+        console.log('Sub-metrics:', isCashFlow
+            ? { savings: calc.current_savings, monthlyIncome: calc.monthTxIncome, monthlyExpenses: calc.monthTxExpenses }
+            : { liquidCash: calc.currentCash, savings: calc.current_savings, investments: calc.totalInvestmentValue }
+        );
+        console.log('Chart Data:', { chartTitle: isCashFlow ? 'Balance Trend' : 'Net Worth Trend', expenseTitle: isCashFlow ? 'Spending Breakdown' : 'Expense Breakdown' });
+        console.groupEnd();
         const now = new Date();
         const thisYM = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
         const lastMonth = now.getMonth() === 0 ? 11 : now.getMonth() - 1;
@@ -228,16 +244,16 @@ const AppDashboard = {
                                 </div>
                                 <h2 class="text-4xl sm:text-5xl font-extrabold tracking-tight">${this.formatCurrency(isCashFlow ? calc.availableBalance : calc.netWorth)}</h2>
                             </div>
-                            <div class="px-3 py-1.5 rounded-full ${calc.netWorthGrowth >= 0 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'} flex items-center gap-1 text-sm font-bold backdrop-blur-md shrink-0" title="${isCashFlow ? 'Balance change this month' : 'Net worth growth this month'}">
-                                <i data-lucide="${calc.netWorthGrowth >= 0 ? 'trending-up' : 'trending-down'}" class="w-4 h-4"></i>
-                                ${calc.netWorthGrowth >= 0 ? '+' : ''}${calc.netWorthGrowth.toFixed(1)}%
+                            <div class="px-3 py-1.5 rounded-full ${(isCashFlow ? calc.cashFlowGrowth : calc.netWorthGrowth) >= 0 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'} flex items-center gap-1 text-sm font-bold backdrop-blur-md shrink-0" title="${isCashFlow ? 'Cash flow change vs last month' : 'Net worth growth this month'}">
+                                <i data-lucide="${(isCashFlow ? calc.cashFlowGrowth : calc.netWorthGrowth) >= 0 ? 'trending-up' : 'trending-down'}" class="w-4 h-4"></i>
+                                ${(isCashFlow ? calc.cashFlowGrowth : calc.netWorthGrowth) >= 0 ? '+' : ''}${(isCashFlow ? calc.cashFlowGrowth : calc.netWorthGrowth).toFixed(1)}%
                             </div>
                         </div>
                         <div class="grid grid-cols-3 gap-4 border-t border-white/10 pt-6">
                             ${isCashFlow 
                                 ? `<div><p class="text-slate-400 text-xs mb-1">Savings</p><p class="font-semibold text-lg">${this.formatCurrency(calc.current_savings)}</p></div>
-                                   <div><p class="text-slate-400 text-xs mb-1">Monthly Income</p><p class="font-semibold text-lg">${this.formatCurrency(calc.monthly_income)}</p></div>
-                                   <div><p class="text-slate-400 text-xs mb-1">Monthly Expenses</p><p class="font-semibold text-lg">${this.formatCurrency(calc.monthly_expenses)}</p></div>`
+                                   <div><p class="text-slate-400 text-xs mb-1">This Month Income</p><p class="font-semibold text-lg">${this.formatCurrency(calc.monthTxIncome)}</p></div>
+                                   <div><p class="text-slate-400 text-xs mb-1">This Month Expenses</p><p class="font-semibold text-lg">${this.formatCurrency(calc.monthTxExpenses)}</p></div>`
                                 : `<div><p class="text-slate-400 text-xs mb-1">Liquid Cash</p><p class="font-semibold text-lg">${this.formatCurrency(calc.currentCash)}</p></div>
                                    <div><p class="text-slate-400 text-xs mb-1">Savings</p><p class="font-semibold text-lg">${this.formatCurrency(calc.current_savings)}</p></div>
                                    <div><p class="text-slate-400 text-xs mb-1">Investments</p><p class="font-semibold text-lg">${this.formatCurrency(calc.totalInvestmentValue)}</p></div>`
@@ -380,17 +396,17 @@ const AppDashboard = {
             <!-- Row 3: Charts -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 slide-up delay-300">
                 <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm hover-card">
-                    <h3 class="font-bold text-lg text-slate-900 dark:text-white dark:text-white mb-6">Net Worth Trend</h3>
+                    <h3 class="font-bold text-lg text-slate-900 dark:text-white dark:text-white mb-6">${isCashFlow ? 'Balance Trend' : 'Net Worth Trend'}</h3>
                     <div class="h-56 relative w-full">
                         <div class="skeleton skeleton-chart absolute inset-0" id="netWorthSkeleton"></div>
-                        <canvas id="netWorthChart" style="opacity: 0;"></canvas>
+                        <canvas id="netWorthChart" data-mode="${isCashFlow ? 'cashflow' : 'networth'}" style="opacity: 0;"></canvas>
                     </div>
                 </div>
                 <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm hover-card">
-                    <h3 class="font-bold text-lg text-slate-900 dark:text-white dark:text-white mb-6">Expense Breakdown</h3>
+                    <h3 class="font-bold text-lg text-slate-900 dark:text-white dark:text-white mb-6">${isCashFlow ? 'Spending Breakdown' : 'Expense Breakdown'}</h3>
                     <div class="h-56 relative w-full flex justify-center">
                         <div class="skeleton skeleton-chart absolute inset-0" id="expenseSkeleton"></div>
-                        <canvas id="expenseChart" style="opacity: 0;"></canvas>
+                        <canvas id="expenseChart" data-mode="${isCashFlow ? 'cashflow' : 'networth'}" style="opacity: 0;"></canvas>
                     </div>
                 </div>
             </div>
