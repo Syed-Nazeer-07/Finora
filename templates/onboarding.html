@@ -447,6 +447,16 @@
         btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="60" stroke-dashoffset="30"/></svg><span>Saving…</span>';
 
         console.log("ONBOARDING SAVE START");
+        
+        // --- FIX FOR CASHFLOW MODE ---
+        // In cashflow mode, Step 2 ("How much money do you have right now?") was repurposed 
+        // to use the 'monthly_income' field, and Step 3 used 'current_savings'.
+        // We must combine them into 'current_savings' so the Dashboard calculates balance correctly.
+        if (data.account_mode === 'cashflow') {
+            data.current_savings = (data.monthly_income || 0) + (data.current_savings || 0);
+            data.monthly_income = 0;
+        }
+
         const payload = { ...data, onboarding_completed: true };
         const res = await fetch('/api/profile', {
             method: 'PUT',
@@ -497,12 +507,17 @@
         }
 
         // Summary cards
-        const items = [
-            { label:'Monthly Income',  value: fmt(data.monthly_income),      icon:'trending-up',  color:'text-emerald-400', field:'monthly_income' },
-            { label:'Current Savings', value: fmt(data.current_savings),      icon:'piggy-bank',   color:'text-brand-400',   field:'current_savings' },
-            { label:'Investments',     value: fmt(data.current_investments),  icon:'bar-chart-2',  color:'text-purple-400',  field:'current_investments' },
-            { label:'Monthly Goal',    value: data.financial_goal || 'Not Set', icon:'target',    color:'text-amber-400',   field:'financial_goal' },
-        ];
+        const isCashFlow = data.account_mode === 'cashflow';
+        const items = [];
+        if (!isCashFlow) {
+            items.push({ label:'Monthly Income',  value: fmt(data.monthly_income),      icon:'trending-up',  color:'text-emerald-400', field:'monthly_income' });
+            items.push({ label:'Current Savings', value: fmt(data.current_savings),      icon:'piggy-bank',   color:'text-brand-400',   field:'current_savings' });
+        } else {
+            items.push({ label:'Starting Balance', value: fmt(data.current_savings),      icon:'wallet',   color:'text-brand-400',   field:'current_savings' });
+        }
+        items.push({ label:'Investments',     value: fmt(data.current_investments),  icon:'bar-chart-2',  color:'text-purple-400',  field:'current_investments' });
+        items.push({ label:'Monthly Goal',    value: data.financial_goal || 'Not Set', icon:'target',    color:'text-amber-400',   field:'financial_goal' });
+
         document.getElementById('summary-cards').innerHTML = items.map(it => `
             <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl relative group">
                 <div class="flex items-center justify-between gap-2 mb-2">
