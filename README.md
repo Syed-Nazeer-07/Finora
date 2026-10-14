@@ -1,10 +1,9 @@
 # 💰 Finora - Personal Finance Operating System
 
-#### Video Demo: https://youtu.be/Qr60kzJl4Vo
+
 
 #### Live Demo: https://finoraweb.online  (currently not available due to budget concerns)
 
-#### GitHub Repository: https://github.com/Syed-Nazeer-07/finora
 
  ---
 
