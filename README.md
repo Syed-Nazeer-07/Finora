@@ -221,19 +221,7 @@ Building Finora provided hands-on experience with several full-stack engineering
 - Connecting a custom domain and configuring HTTPS
 - Debugging differences between local and production environments
 
-## 🛣️ Future Improvements
 
-Potential next steps include:
-
-- [ ] AI-assisted spending insights and recommendations
-- [ ] Spending trend analysis and forecasting
-- [ ] Recurring transaction support
-- [ ] Bank account integrations
-- [ ] PDF financial report exports
-- [ ] More advanced investment analytics
-- [ ] Multi-currency support
-- [ ] Notifications and reminders
-- [ ] Mobile application support
 
 ## 🎓 What I Learned
 
