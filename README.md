@@ -1,363 +1,270 @@
-# 💰 Finora - Personal Finance Operating System
+<div align="center">
 
+# 💰 Finora
+### Personal Finance Operating System
 
+**Understand your money. Track your progress. Build better financial habits.**
 
-#### Live Demo: https://finoraweb.online  (currently not available due to budget concerns)
+A full-stack personal finance application built with Flask, SQLAlchemy, and PostgreSQL as my **CS50 Final Project**.
 
+[![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![Flask](https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-D71F00?style=for-the-badge&logo=sqlalchemy&logoColor=white)](https://www.sqlalchemy.org/)
 
- ---
+[Features](#-features) · [Tech Stack](#-technology-stack) · [Architecture](#-project-structure) · [Getting Started](#-getting-started) · [Roadmap](#-future-improvements)
 
-# Description
-
-Finora is a full-stack personal finance management web application designed to help users understand, organize, and improve their financial lives through a modern and intuitive interface.
-
-The primary goal of Finora is to provide users with a centralized platform where they can monitor their financial health, track expenses, manage savings, set financial goals, create budgets, and analyze spending habits. Many existing finance applications are either overly complicated or focused primarily on investments. Finora aims to bridge this gap by offering a clean, user-friendly experience that is accessible to students, young professionals, and everyday users who want greater control over their finances.
-
-The project was built as my CS50 Final Project and represents the culmination of the concepts learned throughout the course, including web development, databases, authentication, APIs, backend architecture, and deployment.
-
----
-
-# Problem Being Solved
-
-Many individuals struggle to maintain a clear picture of their financial situation. Income, expenses, savings, budgets, and goals are often spread across multiple applications, spreadsheets, or physical notes.
-
-This creates several problems:
-
-- Lack of visibility into overall financial health.
-- Difficulty tracking spending patterns.
-- Challenges maintaining budgets.
-- Limited motivation to save consistently.
-- Poor understanding of long-term financial progress.
-
-Finora addresses these issues by consolidating all financial information into a single dashboard that automatically calculates financial metrics and presents them in an understandable format.
+</div>
 
 ---
 
-# Key Features
+> **Live demo:** [finoraweb.online](https://finoraweb.online)  
+> **Availability:** The hosted demo is currently offline due to hosting budget constraints. The project source code remains available in this repository.
 
-## Dashboard
+## 📌 Overview
 
-The dashboard serves as the central hub of the application.
+Finora is a full-stack personal finance management web application designed to help people understand, organize, and improve their financial lives from one place.
 
-Users can instantly view:
+Instead of scattering financial information across spreadsheets, notes, and separate tools, Finora brings together transaction tracking, budgeting, savings goals, investment records, and financial health insights in a unified dashboard.
 
-- Total balance
-- Savings
-- Monthly income
-- Monthly expenses
+Built as my **CS50 Final Project**, Finora applies core concepts in web development, relational database design, authentication, backend architecture, API integration, and deployment to a practical application.
+
+## 🎯 The Problem
+
+Managing personal finances can be difficult when income, expenses, budgets, savings, and goals are tracked separately. This can make it harder to understand spending habits, stay within limits, or measure progress toward financial goals.
+
+Finora addresses this problem by centralizing financial activity and presenting useful summaries and progress indicators in a clear, approachable interface.
+
+## ✨ Features
+
+### 📊 Financial Dashboard
+Get a consolidated overview of your financial position, including:
+- Total balance and savings
+- Monthly income and expenses
 - Net worth
-- Financial health indicators
 - Spending summaries
 - Budget progress
+- Financial health indicators
 
-The dashboard is designed to provide a quick overview of a user's financial position without requiring navigation through multiple pages.
+### 💳 Transaction Management
+Organize financial activity in one place:
+- Add, edit, and delete transactions
+- Record income and expenses
+- Track savings contributions
+- Record investment entries
+- Categorize transactions for reporting and analysis
 
----
+### 🧾 Budget Tracking
+Create category-based budgets and compare spending with planned limits. Example categories include food, transportation, entertainment, education, and utilities.
 
-## Transaction Management
+### 🎯 Savings Goals
+Set financial targets and follow progress over time. Goals can represent an emergency fund, a laptop purchase, travel, or education expenses. Progress indicators help show how much has been saved and what remains.
 
-Users can create, edit, and delete financial transactions.
+### 📈 Investment Tracking
+Record investments and asset values to help understand how investment holdings contribute to overall net worth.
 
-Supported transaction types include:
-
-- Income
-- Expenses
-- Savings contributions
-- Investment entries
-
-Transactions are categorized and stored in the database, allowing the application to generate meaningful analytics and reports.
-
----
-
-## Budget Tracking
-
-Finora allows users to create budgets for specific spending categories.
-
-Examples include:
-
-- Food
-- Transportation
-- Entertainment
-- Education
-- Utilities
-
-The application continuously compares spending against predefined limits and provides visual indicators of budget utilization.
-
----
-
-## Financial Goals
-
-Users can create savings goals and monitor progress over time.
-
-Examples include:
-
-- Laptop purchase
-- Emergency fund
-- Travel fund
-- Education expenses
-
-Each goal displays progress percentages and remaining amounts needed to reach the target.
-
----
-
-## Investment Tracking
-
-Finora includes investment tracking functionality that allows users to:
-
-- Record investments
-- Monitor asset values
-- Track portfolio growth
-
-This helps users understand how investments contribute to overall net worth.
-
----
-
-## Financial Health Analysis
-
-One of the most important features of Finora is its financial health evaluation system.
-
-The application analyzes:
-
+### 🩺 Financial Health Analysis
+Review indicators related to:
 - Savings behavior
 - Spending patterns
 - Cash flow
-- Goal completion progress
+- Goal progress
 - Budget adherence
 
-These metrics are combined to provide users with an overall picture of their financial well-being.
+These indicators provide a consolidated view of financial habits. They are intended as informational summaries, not professional financial advice.
 
----
-
-## Authentication System
-
-Security is a critical component of financial applications.
-
-Finora supports:
-
+### 🔐 Authentication and Account Protection
 - Email and password authentication
-- Google OAuth authentication
+- Google OAuth sign-in
 - Session-based user management
 - Protected routes
+- User-specific financial data access
 
-Users can securely access their own financial information while ensuring data isolation between accounts.
+## 🧰 Technology Stack
+
+| Layer | Technologies | Purpose |
+|---|---|---|
+| Frontend | HTML5, CSS3, JavaScript (ES6+), Tailwind CSS, Lucide Icons | Responsive interface and interactive UI |
+| Backend | Python, Flask, Flask Blueprints | Application routes and backend logic |
+| ORM | SQLAlchemy | Database models and queries |
+| Production database | PostgreSQL | Persistent relational data storage |
+| Development database | SQLite | Local development |
+| Authentication | Google OAuth, password hashing, sessions | Sign-in and session handling |
+| Hosting | Railway | Application and production database deployment |
+| Domain and transport | Custom domain, HTTPS | Public access and encrypted connections |
+
+## 🏗️ Project Structure
+
+The application separates route handling, data models, templates, static assets, and reusable business logic. The structure below describes the main areas of the project; exact filenames may vary by repository version.
+
+```text
+Finora/
+├── app.py              # Flask application entry point
+├── models/             # SQLAlchemy models and relationships
+├── services/           # Financial calculations and business logic
+├── templates/          # Jinja/HTML templates
+├── static/             # CSS, JavaScript, images, and UI assets
+├── utils/              # Shared helper functions
+└── ...                 # Configuration and supporting files
+```
+
+### Architectural responsibilities
+
+- **`app.py`** — initializes the Flask application, loads configuration, registers blueprints, and sets up database integration.
+- **`models/`** — defines data entities such as users, transactions, budgets, goals, and investments.
+- **`services/`** — keeps reusable financial calculations and dashboard logic separate from route handlers.
+- **`templates/`** — contains rendered pages such as authentication, onboarding, and dashboard views.
+- **`static/`** — contains stylesheets, client-side JavaScript, images, and other interface assets.
+- **`utils/`** — provides shared helper functions.
+
+## 🚀 Getting Started
+
+The live deployment is currently unavailable. To run the project locally, use the repository source code.
+
+### Prerequisites
+
+- Python 3.10 or later (use the version supported by the project)
+- Git
+- pip
+- SQLite for local development, or PostgreSQL if configuring a PostgreSQL database
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/Syed-Nazeer-07/Finora.git
+cd Finora
+```
+
+### 2. Create and activate a virtual environment
+
+**Windows (PowerShell)**
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+```
+
+**macOS / Linux**
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+### 3. Install dependencies
+
+If the repository contains a `requirements.txt` file:
+
+```bash
+pip install -r requirements.txt
+```
+
+If it does not, install the dependencies listed by the project and its configuration. Do not assume a dependency list without checking the repository.
+
+### 4. Configure environment variables
+
+Create a local `.env` file if the project uses environment-based configuration. Add the variables required by the application, such as database connection settings and Google OAuth credentials.
+
+```env
+# Example placeholders only — use the variable names expected by the application
+SECRET_KEY=replace-with-a-local-secret
+DATABASE_URL=replace-with-your-database-url
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+```
+
+**Important:** These are illustrative placeholders, not a verified list of the application's exact environment variable names. Check the source code and configuration before running the app. Never commit real secrets or credentials.
+
+### 5. Initialize the database
+
+Follow the database setup and migration steps implemented by the repository. The exact command depends on how database initialization is configured.
+
+### 6. Run the application
+
+For a standard Flask setup, the application may be started with:
+
+```bash
+flask --app app run --debug
+```
+
+If the project defines a different startup command, use that command instead. Once running, open the local URL printed by Flask in your browser.
+
+## 🔒 Security Notes
+
+Because Finora handles personal financial information, security and data isolation are important design considerations.
+
+- Keep secret keys, database credentials, and OAuth secrets out of version control.
+- Use HTTPS for deployed environments.
+- Use secure password hashing and session configuration.
+- Protect authenticated routes and enforce user-level data access.
+- Use environment-specific configuration for local and production deployments.
+
+## 🧠 Design Decisions
+
+- **Flask:** A lightweight framework that supports clear separation of routes, models, and application logic.
+- **SQLAlchemy:** An ORM that makes relational data and model relationships easier to manage.
+- **PostgreSQL in production:** A relational database suited to structured financial records and relationships.
+- **SQLite for development:** A convenient option for local development.
+- **Tailwind CSS:** Utility-first styling for a consistent and responsive interface.
+- **Railway:** Used to deploy the application and configure production infrastructure.
+
+## 🧩 Challenges and Lessons Learned
+
+Building Finora provided hands-on experience with several full-stack engineering concerns:
+
+- Designing a financial dashboard that makes key metrics easy to understand
+- Modeling relationships between users and financial records
+- Integrating Google OAuth with application authentication
+- Keeping financial calculations consistent across the application
+- Configuring production databases, environment variables, and deployment settings
+- Connecting a custom domain and configuring HTTPS
+- Debugging differences between local and production environments
+
+## 🛣️ Future Improvements
+
+Potential next steps include:
+
+- [ ] AI-assisted spending insights and recommendations
+- [ ] Spending trend analysis and forecasting
+- [ ] Recurring transaction support
+- [ ] Bank account integrations
+- [ ] PDF financial report exports
+- [ ] More advanced investment analytics
+- [ ] Multi-currency support
+- [ ] Notifications and reminders
+- [ ] Mobile application support
+
+## 🎓 What I Learned
+
+Finora brought together concepts from CS50 and extended them into a complete application. The project strengthened my understanding of:
+
+- Full-stack web development with Python and Flask
+- Relational database design and ORM usage
+- Authentication and session management
+- API and OAuth integration
+- Modular application architecture
+- UI/UX design and responsive interfaces
+- Cloud deployment, configuration, and production debugging
+
+## ⚠️ Disclaimer
+
+Finora is an educational software project for tracking and understanding personal financial information. Its summaries and indicators are informational and should not be treated as professional financial, investment, tax, or legal advice.
+
+## 👨‍💻 Author
+
+**Syed Nazeer S**
+
+- GitHub: [@Syed-Nazeer-07](https://github.com/Syed-Nazeer-07)
+- Project repository: [Finora](https://github.com/Syed-Nazeer-07/Finora)
+- Demo URL: [finoraweb.online](https://finoraweb.online) *(currently unavailable)*
 
 ---
 
-# Technology Stack
+<div align="center">
 
-## Frontend
+**Built with 💚 as my CS50 Final Project**
 
-The frontend was developed using:
+If you find the project interesting, feel free to explore the repository.
 
-- HTML5
-- CSS3
-- JavaScript (ES6+)
-- Tailwind CSS
-- Lucide Icons
-
-The interface emphasizes responsiveness, accessibility, and modern design principles.
-
----
-
-## Backend
-
-The backend was built using:
-
-- Python
-- Flask
-- SQLAlchemy
-- Flask Blueprints
-
-Flask was chosen because it is lightweight, flexible, and allows clear separation between business logic and presentation layers.
-
----
-
-## Database
-
-Finora uses:
-
-- PostgreSQL (Production)
-- SQLite (Development)
-
-SQLAlchemy provides ORM functionality, making database interactions more maintainable and secure.
-
----
-
-## Authentication
-
-Authentication technologies include:
-
-- Google OAuth
-- Secure password hashing
-- Session management
-
-These features ensure secure user access and account protection.
-
----
-
-## Deployment
-
-The production environment uses:
-
-- Railway
-- PostgreSQL
-- Custom Domain Configuration
-- HTTPS Support
-
-Deploying the project to a live environment required configuring DNS records, custom domains, SSL certificates, environment variables, and production database connections.
-
----
-
-# Project Structure
-
-The application is organized into multiple modules to improve maintainability and scalability.
-
-## app.py
-
-The main Flask application entry point.
-
-Responsibilities include:
-
-- Application initialization
-- Blueprint registration
-- Configuration loading
-- Database initialization
-
----
-
-## templates/
-
-Contains all HTML templates rendered by Flask.
-
-Examples include:
-
-- Login pages
-- Dashboard pages
-- Onboarding screens
-- Password recovery pages
-
----
-
-## static/
-
-Contains:
-
-- CSS files
-- JavaScript files
-- Images
-- UI assets
-
-This folder handles the visual and interactive components of the application.
-
----
-
-## models/
-
-Contains SQLAlchemy database models.
-
-These models define:
-
-- Users
-- Transactions
-- Budgets
-- Goals
-- Investments
-
-and their relationships within the database.
-
----
-
-## services/
-
-Contains business logic that powers:
-
-- Financial calculations
-- Analytics
-- Dashboard metrics
-- Goal tracking
-
-Separating these operations from route handlers improves code organization.
-
----
-
-## utils/
-
-Contains helper functions and reusable utilities used throughout the application.
-
----
-
-# Design Decisions
-
-Several important design decisions were made during development.
-
-First, Flask was selected instead of larger frameworks because it provides flexibility and encourages understanding of how web applications operate internally.
-
-Second, PostgreSQL was chosen for production because it offers reliability, scalability, and strong support for relational data structures.
-
-Third, Tailwind CSS was used to accelerate UI development while maintaining a professional appearance and consistent design language.
-
-Finally, the project was deployed using Railway to simplify cloud deployment and database management while still exposing the challenges of configuring production infrastructure.
-
----
-
-# Challenges Faced
-
-Developing Finora involved several technical challenges.
-
-Some of the most significant challenges included:
-
-- Designing an intuitive financial dashboard.
-- Managing relationships between financial entities.
-- Implementing Google OAuth authentication.
-- Handling deployment and production configuration.
-- Configuring custom domain records.
-- Setting up SSL certificates.
-- Managing environment variables securely.
-- Maintaining consistency between frontend and backend financial calculations.
-
-Each challenge provided valuable experience with real-world software engineering practices.
-
----
-
-# Future Improvements
-
-Several enhancements are planned for future versions of Finora.
-
-Potential improvements include:
-
-- AI-powered financial recommendations.
-- Spending prediction models.
-- Recurring transaction automation.
-- Bank account integrations.
-- Mobile application support.
-- Exporting reports as PDF files.
-- Advanced investment analytics.
-- Multi-currency support.
-- Notification and reminder systems.
-
----
-
-# What I Learned
-
-This project allowed me to apply and extend the concepts learned throughout CS50.
-
-Key areas of growth included:
-
-- Full-stack web development
-- Database design
-- Authentication systems
-- API integration
-- Cloud deployment
-- Production debugging
-- Software architecture
-- UI/UX design
-
-More importantly, it demonstrated how individual concepts from the course combine to create a complete real-world application.
-
----
-
-# Conclusion
-
-Finora is a comprehensive personal finance management platform that enables users to track, analyze, and improve their financial health. By combining modern web technologies with practical financial tools, the application provides an accessible solution for managing money and making informed financial decisions.
-
-This project represents the culmination of my CS50 journey and showcases the skills developed throughout the course, including programming, database management, web development, authentication, deployment, and software engineering best practices.
+</div>
