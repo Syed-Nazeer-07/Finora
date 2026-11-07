@@ -2052,61 +2052,28 @@ const App = {
         this.renderModal('confirm_sell');
     },
     async confirmSellInvestment() {
-        const { id, inv, sellQuantity, sellPrice, sellDate, totalSale, totalCost, profit, profitPct } = this.state.pendingSellInvestment;
+        const sale = this.state.pendingSellInvestment;
+        if (!sale) return;
         this.closeModal();
-        
         try {
-            // If selling partial quantity, update investment; otherwise delete it
-            const remainingQuantity = inv.shares - sellQuantity;
-            
-            if (remainingQuantity > 0) {
-                // Update investment with reduced quantity
-                const updateRes = await fetch(`/api/investments/${id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ shares: remainingQuantity })
-                });
-                if (!updateRes.ok) throw new Error('Failed to update investment');
-            } else {
-                // Delete investment if all shares sold
-                const deleteRes = await fetch(`/api/investments/${id}`, { method: 'DELETE' });
-                if (!deleteRes.ok) throw new Error('Failed to delete investment');
-            }
-            
-            // Create income transaction for sale proceeds
-            const txIncomeRes = await fetch('/api/transactions', {
+            const response = await fetch(`/api/investments/${sale.id}/sell`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    description: `Sold ${sellQuantity} ${this.escapeHtml(inv.symbol)} @ ${this.getCurrencySymbol()}${this.formatNumber(sellPrice)} - Realized ${profit >= 0 ? 'Gain' : 'Loss'}: ${this.getCurrencySymbol()}${this.formatNumber(Math.abs(profit))}`,
-                    amount: totalSale,
-                    category: 'Investment Returns',
-                    type: 'income',
-                    date: sellDate
+                    shares: sale.sellQuantity,
+                    price: sale.sellPrice,
+                    date: sale.sellDate
                 })
             });
-            if (!txIncomeRes.ok) throw new Error('Failed to create income transaction');
-            
-            // Create expense transaction for original cost basis
-            const txExpenseRes = await fetch('/api/transactions', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    description: `Original cost basis for ${sellQuantity} ${this.escapeHtml(inv.symbol)} @ ${this.getCurrencySymbol()}${this.formatNumber(inv.avgCost)}`,
-                    amount: totalCost,
-                    category: 'Investment Cost Basis',
-                    type: 'expense',
-                    date: sellDate
-                })
-            });
-            if (!txExpenseRes.ok) throw new Error('Failed to create cost basis transaction');
-            
-            Toast.show(`Sold ${sellQuantity} ${this.escapeHtml(inv.symbol)} - Realized ${profit >= 0 ? 'Gain' : 'Loss'}: ${this.getCurrencySymbol()}${this.formatNumber(Math.abs(profit))} (${profitPct}%)`, 'success');
-            await this.fetchInvestments();
-            await this.fetchTransactions();
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || 'Sale failed');
+            Toast.show('Investment sold and ledger updated', 'success');
             await DataSync.fullSync();
+            this.render(true);
         } catch (err) {
-            Toast.show('Error: ' + err.message, 'error');
+            Toast.show(err.message, 'error');
+        } finally {
+            this.state.pendingSellInvestment = null;
         }
     },
     openSellModal() {
@@ -2159,57 +2126,29 @@ const App = {
     async handleSellAsset(e) {
         e.preventDefault();
         const form = e.target;
-        const [invId, symbol, maxShares, avgCost] = form.sellAssetSelect.value.split('|');
-        const sellQuantity = parseFloat(form.sellQuantity.value) || 0;
-        const sellPrice = this._parseMoney(form.sellPrice.value) || 0;
+        const [invId, symbol, maxShares] = form.sellAssetSelect.value.split('|');
+        const sellQuantity = Number(form.sellQuantity.value);
+        const sellPrice = this._parseMoney(form.sellPrice.value);
         const sellDate = form.sellDate.value;
-        
-        if (sellQuantity <= 0 || sellQuantity > parseFloat(maxShares)) {
-            Toast.show('Invalid quantity', 'error');
+        if (!Number.isFinite(sellQuantity) || sellQuantity <= 0 || sellQuantity > Number(maxShares) ||
+            !Number.isFinite(sellPrice) || sellPrice <= 0) {
+            Toast.show('Please enter a valid quantity and sale price', 'error');
             return;
         }
-        if (sellPrice <= 0) {
-            Toast.show('Invalid sell price', 'error');
-            return;
-        }
-        
-        const totalSale = sellQuantity * sellPrice;
-        const totalCost = sellQuantity * parseFloat(avgCost);
-        const profit = totalSale - totalCost;
-        
         this.closeModal();
-        
         try {
-            const remainingQuantity = parseFloat(maxShares) - sellQuantity;
-            if (remainingQuantity > 0) {
-                const updateRes = await fetch(`/api/investments/${invId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ shares: remainingQuantity })
-                });
-                if (!updateRes.ok) throw new Error('Failed to update');
-            } else {
-                const deleteRes = await fetch(`/api/investments/${invId}`, { method: 'DELETE' });
-                if (!deleteRes.ok) throw new Error('Failed to delete');
-            }
-            
-            await fetch('/api/transactions', {
+            const response = await fetch(`/api/investments/${invId}/sell`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    description: `Sold ${sellQuantity} ${symbol} @ ${this.getCurrencySymbol()}${this.formatNumber(sellPrice)} - Profit ${profit >= 0 ? '+' : ''}${this.getCurrencySymbol()}${this.formatNumber(Math.abs(profit))}`,
-                    amount: totalSale,
-                    category: 'Investment Returns',
-                    type: 'income',
-                    date: sellDate
-                })
+                body: JSON.stringify({ shares: sellQuantity, price: sellPrice, date: sellDate })
             });
-            
-            Toast.show(`Sold ${sellQuantity} ${symbol} - Profit ${profit >= 0 ? '+' : ''}${this.getCurrencySymbol()}${this.formatNumber(Math.abs(profit))}`, 'success');
-            await this.fetchInvestments();
-            await this.fetchTransactions();
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || 'Sale failed');
+            Toast.show('Investment sold and ledger updated', 'success');
+            await DataSync.fullSync();
+            this.render(true);
         } catch (err) {
-            Toast.show('Error: ' + err.message, 'error');
+            Toast.show(err.message, 'error');
         }
     },
     updateAssetBox(assetType) {
