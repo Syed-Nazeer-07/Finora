@@ -9,21 +9,6 @@ const AppDashboard = {
         const isCashFlow = this.state.profile?.account_mode === 'cashflow';
         const financialInsights = [];
 
-        // ── Dashboard Mode Diagnostics ──
-        console.group('%c[Dashboard] Mode Diagnostics', 'color: #8b5cf6; font-weight: bold');
-        console.log('Current Mode:', isCashFlow ? 'CASHFLOW' : 'NET WORTH');
-        console.log('Active Data Source:', isCashFlow ? 'Transaction-derived monthly cashflow' : 'Profile + Portfolio net worth');
-        console.log('Hero Card:', {
-            label: isCashFlow ? 'Available Balance' : 'Total Net Worth',
-            value: isCashFlow ? calc.availableBalance : calc.netWorth,
-            growth: isCashFlow ? calc.cashFlowGrowth : calc.netWorthGrowth
-        });
-        console.log('Sub-metrics:', isCashFlow
-            ? { savings: calc.current_savings, monthlyIncome: calc.monthTxIncome, monthlyExpenses: calc.monthTxExpenses }
-            : { liquidCash: calc.currentCash, savings: calc.current_savings, investments: calc.totalInvestmentValue }
-        );
-        console.log('Chart Data:', { chartTitle: isCashFlow ? 'Balance Trend' : 'Net Worth Trend', expenseTitle: isCashFlow ? 'Spending Breakdown' : 'Expense Breakdown' });
-        console.groupEnd();
         const now = new Date();
         const thisYM = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
         const lastMonth = now.getMonth() === 0 ? 11 : now.getMonth() - 1;
