@@ -1,18 +1,29 @@
-venv/
-instance/
+# Python
 __pycache__/
-*.pyc
-.env
-.env.local
-.env.*.local
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local databases and logs (not durable hosting storage)
+instance/
+*.db
+*.db-journal
+*.sqlite3
+logs/
 *.log
-.DS_Store
+
+# Secrets and local Vercel configuration
+.env*
+!.env.example
+.vercel/
+
+# Editor and operating-system files
 .vscode/
 .idea/
-venv/
-__pycache__/
-instance/
-.env
-.env.save
-flask.log
-*.pyc
+.DS_Store
+Thumbs.db
+*:Zone.Identifier
