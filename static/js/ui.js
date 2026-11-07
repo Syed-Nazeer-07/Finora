@@ -1,3 +1,7 @@
+const escapeFinoraHtml = value => String(value ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+})[c]);
+
 
 const Toast = (() => {
     let container;
@@ -23,7 +27,7 @@ const Toast = (() => {
         el.innerHTML = `
             <div class="absolute bottom-0 left-0 h-0.5 ${s.bar} toast-progress" style="width:100%"></div>
             <i data-lucide="${s.icon}" class="w-5 h-5 shrink-0 mt-0.5 ${s.text}"></i>
-            <p class="text-sm font-medium text-slate-800 dark:text-slate-200 leading-snug">${message}</p>
+            <p class="text-sm font-medium text-slate-800 dark:text-slate-200 leading-snug">${escapeFinoraHtml(message)}</p>
         `;
         getContainer().appendChild(el);
         lucide.createIcons({ nodes: [el] });
@@ -52,12 +56,12 @@ const ConfirmModal = (() => {
                     <div class="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-500/10 flex items-center justify-center mx-auto mb-4">
                         <i data-lucide="trash-2" class="w-6 h-6 text-rose-500"></i>
                     </div>
-                    <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">${title}</h3>
-                    <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">${message}</p>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">${escapeFinoraHtml(title)}</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">${escapeFinoraHtml(message)}</p>
                 </div>
                 <div class="px-8 pb-8 flex gap-3">
                     <button id="confirm-cancel" class="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl font-semibold text-sm">Cancel</button>
-                    <button id="confirm-ok" class="flex-1 px-4 py-3 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-semibold text-sm shadow-lg shadow-rose-500/30">${confirmLabel}</button>
+                    <button id="confirm-ok" class="flex-1 px-4 py-3 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-semibold text-sm shadow-lg shadow-rose-500/30">${escapeFinoraHtml(confirmLabel)}</button>
                 </div>
             </div>
         `;
