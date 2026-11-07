@@ -1086,7 +1086,8 @@ def verify_email(token):
 @app.route("/verify-pending")
 def verify_pending():
     email = request.args.get("email", "")
-    return render_template("verify_pending.html", email=email)
+    delivery_failed = request.args.get("delivery") == "failed"
+    return render_template("verify_pending.html", email=email, delivery_failed=delivery_failed)
 
 
 
