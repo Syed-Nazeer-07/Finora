@@ -396,7 +396,8 @@
                 });
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error);
-                window.location.replace('/verify-pending?email=' + encodeURIComponent(email));
+                const failedDelivery = data.verification_email_sent === false ? '&delivery=failed' : '';
+                window.location.replace('/verify-pending?email=' + encodeURIComponent(email) + failedDelivery);
             } catch (err) {
                 showError(err.message);
                 btn.disabled = false;
