@@ -447,7 +447,27 @@ def security_headers(response):
 
 @app.before_request
 def log_request():
-    """Reject finance operations when a serverless deployment lacks a database."""
+    """Require same-origin browser mutations and available persistent storage."""
+    if request.method in ("POST", "PUT", "PATCH", "DELETE"):
+        # Browser-managed Fetch Metadata and Origin headers protect session
+        # cookies from cross-site form and fetch requests. API clients without
+        # browser headers remain supported; app endpoints still require auth.
+        fetch_site = request.headers.get("Sec-Fetch-Site")
+        if fetch_site in ("cross-site", "same-site"):
+            return jsonify({"error": "Cross-site requests are not permitted"}), 403
+        origin = request.headers.get("Origin")
+        if origin:
+            from urllib.parse import urlsplit
+            actual = urlsplit(request.host_url)
+            submitted = urlsplit(origin)
+            if (
+                submitted.scheme != actual.scheme
+                or submitted.netloc.lower() != actual.netloc.lower()
+                or submitted.path not in ("", "/")
+                or submitted.query
+                or submitted.fragment
+            ):
+                return jsonify({"error": "Request origin is not permitted"}), 403
     if database_unavailable and (
         request.path.startswith("/api/") or request.path.startswith("/auth/")
         or request.path.startswith("/verify-email/")
