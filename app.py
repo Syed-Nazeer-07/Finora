@@ -947,21 +947,60 @@ def _base_url():
 
 
 def _send_email(to, subject, body_html):
-    """Report success only after the provider accepts the email."""
-    if not resend.api_key:
-        app.logger.error("Email provider is not configured")
-        return False
+    """Send synchronously: serverless functions must finish delivery before returning.
+
+    Prefer Resend's HTTPS API; use authenticated Gmail/SMTP when configured.
+    Report provider failure honestly so the signup UI can offer a retry.
+    """
     html = _EMAIL_HEADER.format(base_url=_base_url()) + body_html + _EMAIL_FOOTER.format(base_url=_base_url())
     try:
-        response = resend.Emails.send({
-            "from": app.config["EMAIL_FROM"],
-            "to": [to],
-            "subject": subject,
-            "html": html,
-        })
-        return bool(response and response.get("id"))
+        if resend.api_key:
+            response = resend.Emails.send({
+                "from": app.config["EMAIL_FROM"],
+                "to": [to],
+                "subject": subject,
+                "html": html,
+            })
+            return bool(response and response.get("id"))
+
+        smtp_host = os.environ.get("MAIL_SERVER")
+        smtp_user = os.environ.get("MAIL_USERNAME")
+        smtp_password = os.environ.get("MAIL_PASSWORD")
+        if not (smtp_host and smtp_user and smtp_password):
+            app.logger.warning("Verification emails disabled: set RESEND_API_KEY or MAIL_SERVER/USERNAME/PASSWORD")
+            return False
+
+        import smtplib
+        import ssl
+        from email.message import EmailMessage
+        from email.utils import formataddr
+
+        port = int(os.environ.get("MAIL_PORT", "587"))
+        if port not in (465, 587):
+            app.logger.warning("Only encrypted SMTP ports 465 and 587 are supported")
+            return False
+
+        message = EmailMessage()
+        message["From"] = formataddr(("Finora", smtp_user))
+        message["To"] = to
+        message["Subject"] = subject
+        message.set_content("Please view this message in an HTML-capable mail client.")
+        message.add_alternative(html, subtype="html")
+        context = ssl.create_default_context()
+        if port == 465:
+            with smtplib.SMTP_SSL(smtp_host, port, timeout=6, context=context) as smtp:
+                smtp.login(smtp_user, smtp_password)
+                smtp.send_message(message)
+        else:
+            with smtplib.SMTP(smtp_host, port, timeout=6) as smtp:
+                smtp.ehlo()
+                smtp.starttls(context=context)
+                smtp.ehlo()
+                smtp.login(smtp_user, smtp_password)
+                smtp.send_message(message)
+        return True
     except Exception:
-        app.logger.exception("Email provider rejected an email request")
+        app.logger.exception("Email delivery failed")
         return False
 
 
