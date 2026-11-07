@@ -80,6 +80,16 @@ These indicators provide a consolidated view of financial habits. They are inten
 - Protected routes
 - User-specific financial data access
 
+## 🧭 How to Use Finora
+
+1. Sign in with Google or a verified email account, then complete the onboarding profile.
+2. Add income and expenses from **Transactions**. Use search and categories to review records.
+3. Create monthly spending limits under **Budgets & Alerts** and track their progress.
+4. Set savings targets in **Goal Forecasting** and record investment holdings in **Portfolio**.
+5. Use **Dashboard** to review your balance, budgets, goals and charts; change preferences under **Settings**.
+
+The dashboard deliberately keeps all core cards available, while the **This Month** and **Smart Insights** overview duplicates have been removed to reduce clutter. These changes do not remove underlying features.
+
 ## 🧰 Technology Stack
 
 | Layer | Technologies | Purpose |
@@ -232,7 +242,7 @@ Finora brought together concepts from CS50 and extended them into a complete app
 - Relational database design and ORM usage
 - Authentication and session management
 - API and OAuth integration
-- Modular application architecture
+- Separating Flask backend logic, HTML templates, and client-side modules
 - UI/UX design and responsive interfaces
 - Cloud deployment, configuration, and production debugging
 
@@ -241,18 +251,21 @@ Finora brought together concepts from CS50 and extended them into a complete app
 The repository includes tests for authentication, transactions, financial validation, investment sales, email transport and cross-account isolation.
 
 - ✅ **41 Python tests passed** on November 7, 2026, including same-origin request protection and verification-email UI states.
+- ✅ **11 JavaScript UI tests passed**, covering dashboard sections, empty states and single Add/Create actions.
+- ✅ All 8 Jinja templates compile, static-file references resolve and frontend API URLs match backend routes.
 - ✅ Frontend JavaScript syntax checks passed.
 - ✅ Production Flask, PostgreSQL health check, login page, static assets, API authentication barriers, and cross-origin protection were verified on the public domain.
-- 🔶 Real email delivery, Google OAuth, successful user signup/login, and logged-in data persistence across deployments still require live end-to-end testing.
+- 🔶 Real email delivery, a complete independently replayed OAuth/login journey, and logged-in data persistence across deployments still require live end-to-end testing.
 
-Run the suite locally:
+Run both suites locally:
 
 ```bash
 python -m pip install pytest
 python -m pytest -q
+node --test tests/*.test.cjs
 ```
 
-There is currently no active GitHub Actions workflow.
+**Node.js is needed only to run the frontend tests**, not to serve the Flask app. There is currently no active GitHub Actions workflow; verification runs must be executed manually.
 
 ## 🚀 Future Improvements
 
@@ -260,7 +273,7 @@ There is currently no active GitHub Actions workflow.
 - Add versioned database migrations and automatic CI.
 - Improve CSRF protection, rate limiting and monitoring.
 - Extend historical net-worth snapshots and financial calculation accuracy.
-- Polish accessibility and the production frontend asset build.
+- Polish accessibility and the production frontend asset build; replace unpinned development CDNs with version-controlled assets.
 
 ---
 
