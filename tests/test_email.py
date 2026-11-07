@@ -40,3 +40,19 @@ def test_resend_has_priority_over_smtp():
          patch.object(resend.Emails, "send", return_value={"id": "email_test"}), \
          app.test_request_context("/"):
         assert _send_email("recipient@example.invalid", "Verify", "<b>Hello</b>") is True
+
+
+
+def test_pending_page_explains_failed_delivery():
+    with app.test_client() as client:
+        response = client.get("/verify-pending?email=test%40example.invalid&delivery=failed")
+    assert response.status_code == 200
+    assert b"Verification email wasn&#39;t sent" in response.data or b"Verification email wasn't sent" in response.data
+    assert b"couldn&#39;t send its verification link" in response.data or b"couldn't send its verification link" in response.data
+
+
+def test_pending_page_normal_delivery_message():
+    with app.test_client() as client:
+        response = client.get("/verify-pending?email=test%40example.invalid")
+    assert response.status_code == 200
+    assert b"Check your inbox" in response.data
