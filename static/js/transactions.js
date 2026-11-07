@@ -72,7 +72,7 @@ const AppViews = {
                     <div>
                         <p class="font-semibold text-base text-slate-700 dark:text-slate-300 mb-1">No Transactions Yet</p>
                         <p class="text-sm mb-3">${this.state.txSearchQuery ? 'No results match your search' : 'Start tracking your finances'}</p>
-                        ${this.state.txSearchQuery ? `<button onclick="App.clearTxSearch()" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-sm rounded font-medium transition-colors">Clear Search</button>` : `<button onclick="App.openModal('transaction')" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-semibold transition-colors">Add Transaction</button>`}
+                        ${this.state.txSearchQuery ? `<button onclick="App.clearTxSearch()" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-sm rounded font-medium transition-colors">Clear Search</button>` : ''}
                     </div>
                 </div>
             </td></tr>`;
@@ -170,7 +170,7 @@ const AppViews = {
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     ${cardsHtml}
-                    ${calc.budgetProgress.length === 0 ? `<div class="col-span-full p-12 text-center flex flex-col items-center gap-4 border border-dashed border-slate-300 dark:border-slate-700 rounded-3xl"><i data-lucide="pie-chart" class="w-10 h-10 text-slate-400 dark:text-slate-600"></i><div><p class="font-semibold text-slate-700 dark:text-slate-300 mb-1">No Budgets Yet</p><p class="text-sm text-slate-500 dark:text-slate-400 mb-3">Create budgets to track spending</p><button onclick="App.openModal('budget')" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-semibold transition-colors focus:ring-2 focus:ring-brand-500 focus:outline-none">Create Budget</button></div></div>` : ''}
+                    ${calc.budgetProgress.length === 0 ? `<div class="col-span-full p-12 text-center flex flex-col items-center gap-4 border border-dashed border-slate-300 dark:border-slate-700 rounded-3xl"><i data-lucide="pie-chart" class="w-10 h-10 text-slate-400 dark:text-slate-600"></i><div><p class="font-semibold text-slate-700 dark:text-slate-300 mb-1">No Budgets Yet</p><p class="text-sm text-slate-500 dark:text-slate-400">Create budgets to track spending</p></div></div>` : ''}
                 </div>
             </div>
         `;
@@ -289,7 +289,6 @@ const AppViews = {
                 <div class="flex flex-col items-center justify-center py-16 text-slate-400 dark:text-slate-500 gap-4">
                     <i data-lucide="target" class="w-16 h-16 opacity-40"></i>
                     <p class="text-lg">No goals yet. Create your first goal to get started!</p>
-                    <button onclick="App.openModal('saving')" class="text-brand-500 hover:underline font-semibold">+ Add Goal</button>
                 </div>
                 ` : `<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">${cardsHtml}</div>`}
             </div>
