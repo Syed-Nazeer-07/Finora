@@ -240,7 +240,7 @@ Finora brought together concepts from CS50 and extended them into a complete app
 
 The repository includes tests for authentication, transactions, financial validation, investment sales, email transport and cross-account isolation.
 
-- ✅ **39 Python tests passed** on November 7, 2026, including same-origin request protection.
+- ✅ **41 Python tests passed** on November 7, 2026, including same-origin request protection and verification-email UI states.
 - ✅ Frontend JavaScript syntax checks passed.
 - ✅ Production Flask, PostgreSQL health check, login page, static assets, API authentication barriers, and cross-origin protection were verified on the public domain.
 - 🔶 Real email delivery, Google OAuth, successful user signup/login, and logged-in data persistence across deployments still require live end-to-end testing.
