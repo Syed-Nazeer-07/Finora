@@ -19,7 +19,7 @@ A full-stack personal finance application built with Flask, SQLAlchemy, and Post
 
 ---
 
-> 🌐 **Deployment status:** Finora builds on Vercel and its login page loads. A persistent PostgreSQL `DATABASE_URL` is **still needed** before accounts and financial storage work. Until configured, `/health` returns HTTP 503. The former [finoraweb.online](https://finoraweb.online) demo is currently unavailable.
+> 🌐 **Live application:** [Open Finora](https://finora-syed-nazeer-ss-projects.vercel.app) — hosted on Vercel with a connected Neon PostgreSQL database. Public login page and database health check have been verified (**HTTP 200**). Core API validations and account isolation are tested, but a complete hosted signup, email delivery, and logged-in data-persistence journey still need verification.
 
 ## 📌 Overview
 
@@ -180,7 +180,7 @@ The app creates missing tables with SQLAlchemy `create_all()`. This is **not** a
 ### 6. Deploy with Vercel + PostgreSQL
 
 1. Import the GitHub repository into **Vercel**. Select **Flask** and set **Root Directory** to the repository root, not `frontend`.
-2. Create and connect a durable PostgreSQL database, for example **Neon Free**. Confirm `DATABASE_URL` is assigned to Vercel's **Production** environment.
+2. Create and connect a durable PostgreSQL database, for example **Neon Free**. Confirm `DATABASE_URL` is assigned to Vercel's **Production** environment. The current hosted Finora project has this configured.
 3. Set `SECRET_KEY`, `PREFERRED_URL_SCHEME=https` and `FLASK_ENV=production`.
 4. Configure an email provider. For Google OAuth, register `https://YOUR_DOMAIN/auth/google/callback` as an authorized redirect URI.
 5. Redeploy and check `/health` — a correctly connected database returns HTTP **200**, with `{"status":"healthy","database":"connected"}`.
@@ -240,9 +240,10 @@ Finora brought together concepts from CS50 and extended them into a complete app
 
 The repository includes tests for authentication, transactions, financial validation, investment sales, email transport and cross-account isolation.
 
-- ✅ **32 Python tests passed** on November 7, 2026.
+- ✅ **39 Python tests passed** on November 7, 2026, including same-origin request protection.
 - ✅ Frontend JavaScript syntax checks passed.
-- 🔶 Live email delivery, Google OAuth, PostgreSQL persistence and complete hosted browser workflows are **not yet verified**.
+- ✅ Production Flask, PostgreSQL health check, login page, static assets, API authentication barriers, and cross-origin protection were verified on the public domain.
+- 🔶 Real email delivery, Google OAuth, successful user signup/login, and logged-in data persistence across deployments still require live end-to-end testing.
 
 Run the suite locally:
 
@@ -255,7 +256,7 @@ There is currently no active GitHub Actions workflow.
 
 ## 🚀 Future Improvements
 
-- Connect the production PostgreSQL database and verify persistence across deployments.
+- Verify hosted signup, email verification, Google OAuth and financial data persistence across deployments.
 - Add versioned database migrations and automatic CI.
 - Improve CSRF protection, rate limiting and monitoring.
 - Extend historical net-worth snapshots and financial calculation accuracy.
@@ -273,7 +274,7 @@ Finora is an educational financial-tracking project. Its analyses are informatio
 
 - GitHub: [@Syed-Nazeer-07](https://github.com/Syed-Nazeer-07)
 - Project repository: [Finora](https://github.com/Syed-Nazeer-07/Finora)
-- Deployment: Vercel (PostgreSQL setup pending); former demo domain [finoraweb.online](https://finoraweb.online) *(currently unavailable)*
+- Live app: [Finora on Vercel](https://finora-syed-nazeer-ss-projects.vercel.app) (Neon PostgreSQL connected)
 
 ---
 
