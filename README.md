@@ -1,264 +1,171 @@
 <div align="center">
 
-# 💰 Finora
-### Personal Finance Operating System
+# Finora
+### Personal Finance OS
 
-**Understand your money. Track your progress. Build better financial habits.**
+**Track your spending. Plan your goals. Understand your finances.**
 
-A full-stack personal finance application built with Flask, SQLAlchemy, and PostgreSQL as my **CS50 Final Project**.
+A full-stack personal finance web application built with **Python, Flask, and SQLAlchemy** as a **Harvard CS50x final project**.
 
-[![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![Flask](https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
-[![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-D71F00?style=for-the-badge&logo=sqlalchemy&logoColor=white)](https://www.sqlalchemy.org/)
-
-[Features](#-features) · [Tech Stack](#-technology-stack) · [Architecture](#-project-structure) · [Getting Started](#-getting-started) · [Roadmap](#-future-improvements)
+[Features](#features) · [Tech stack](#tech-stack) · [Project structure](#project-structure) · [Run locally](#run-locally) · [Deploy](#deploy-with-vercel-and-postgresql) · [Tests](#tests)
 
 </div>
 
 ---
 
-> **Live demo:** [finoraweb.online](https://finoraweb.online)  
-> **Availability:** The hosted demo is currently offline due to hosting budget constraints. The project source code remains available in this repository.
+> **Deployment status — November 2026:** The Flask application builds on Vercel, and the login page and static files load. **The hosted app is not yet ready for real financial data:** the Vercel project still needs a persistent PostgreSQL `DATABASE_URL`. Until that is configured, `/health` returns HTTP 503 and database-backed APIs are deliberately unavailable. The former `finoraweb.online` demo is not currently active. A successful Vercel build does not mean signup or data storage is working.
 
-## 📌 Overview
+## About Finora
 
-Finora is a full-stack personal finance management web application designed to help people understand, organize, and improve their financial lives from one place.
+Finora brings transactions, monthly budgets, savings goals, investment holdings, and financial summaries into one interface. It was created to apply computer-science fundamentals to a practical financial-tracking application, with attention to usability, server-side data ownership, and reliable calculations.
 
-Instead of scattering financial information across spreadsheets, notes, and separate tools, Finora brings together transaction tracking, budgeting, savings goals, investment records, and financial health insights in a unified dashboard.
+This is an educational portfolio project, **not a banking platform or financial-advice service**.
 
-Built as my **CS50 Final Project**, Finora applies core concepts in web development, relational database design, authentication, backend architecture, API integration, and deployment to a practical application.
+## Features
 
-## 🎯 The Problem
+- **Dashboard:** view balances, monthly income/expenses, spending breakdowns, budget progress, charts, and indicative financial-health metrics.
+- **Transactions:** create, edit, delete, and categorize income and expenses; filter records and export transaction data.
+- **Monthly budgets:** set category limits and compare them with spending in the current month.
+- **Savings goals:** set targets, monitor progress, record contributions, and view estimated completion timelines.
+- **Investment tracker:** record holdings and prices. The investment-sale flow updates holdings and financial ledger entries in one database transaction.
+- **Personalization:** onboarding, user settings, appearance preferences, currency display, and category management.
+- **Authentication:** password login, email verification, reset-password flow, and optional Google OAuth sign-in.
+- **Account isolation:** users' transactions, budgets, goals, and investments are scoped to their accounts.
 
-Managing personal finances can be difficult when income, expenses, budgets, savings, and goals are tracked separately. This can make it harder to understand spending habits, stay within limits, or measure progress toward financial goals.
+**Calculation note:** Financial health scores, forecasts, and net-worth charts are estimates; some historical accounting metrics still need more complete asset/liability snapshots before they should be treated as authoritative.
 
-Finora addresses this problem by centralizing financial activity and presenting useful summaries and progress indicators in a clear, approachable interface.
+## Tech stack
 
-## ✨ Features
+| Area | Stack |
+|---|---|
+| Backend | Python 3.12, Flask |
+| Database | SQLAlchemy; PostgreSQL for persistent hosting, SQLite for local development |
+| Authentication | Werkzeug password hashing, Flask sessions, Google OAuth (Authlib) |
+| Frontend | Jinja/HTML, JavaScript, CSS, Tailwind CSS (CDN) |
+| Charts and icons | Chart.js, Lucide |
+| Transactional email | Resend API or encrypted SMTP fallback |
+| Hosting | Vercel Flask Functions; external PostgreSQL provider (Neon is an option) |
+| Tests | pytest, Flask test client |
 
-### 📊 Financial Dashboard
-Get a consolidated overview of your financial position, including:
-- Total balance and savings
-- Monthly income and expenses
-- Net worth
-- Spending summaries
-- Budget progress
-- Financial health indicators
+The UI uses plain JavaScript and server-rendered templates; there is **no React/Vite frontend build**. The application currently keeps its Flask routes and SQLAlchemy models together in `app.py`; it does not yet have separate `models/` or `services/` packages.
 
-### 💳 Transaction Management
-Organize financial activity in one place:
-- Add, edit, and delete transactions
-- Record income and expenses
-- Track savings contributions
-- Record investment entries
-- Categorize transactions for reporting and analysis
-
-### 🧾 Budget Tracking
-Create category-based budgets and compare spending with planned limits. Example categories include food, transportation, entertainment, education, and utilities.
-
-### 🎯 Savings Goals
-Set financial targets and follow progress over time. Goals can represent an emergency fund, a laptop purchase, travel, or education expenses. Progress indicators help show how much has been saved and what remains.
-
-### 📈 Investment Tracking
-Record investments and asset values to help understand how investment holdings contribute to overall net worth.
-
-### 🩺 Financial Health Analysis
-Review indicators related to:
-- Savings behavior
-- Spending patterns
-- Cash flow
-- Goal progress
-- Budget adherence
-
-These indicators provide a consolidated view of financial habits. They are intended as informational summaries, not professional financial advice.
-
-### 🔐 Authentication and Account Protection
-- Email and password authentication
-- Google OAuth sign-in
-- Session-based user management
-- Protected routes
-- User-specific financial data access
-
-## 🧰 Technology Stack
-
-| Layer | Technologies | Purpose |
-|---|---|---|
-| Frontend | HTML5, CSS3, JavaScript (ES6+), Tailwind CSS, Lucide Icons | Responsive interface and interactive UI |
-| Backend | Python, Flask, Flask Blueprints | Application routes and backend logic |
-| ORM | SQLAlchemy | Database models and queries |
-| Production database | PostgreSQL | Persistent relational data storage |
-| Development database | SQLite | Local development |
-| Authentication | Google OAuth, password hashing, sessions | Sign-in and session handling |
-| Hosting | Railway | Application and production database deployment |
-| Domain and transport | Custom domain, HTTPS | Public access and encrypted connections |
-
-## 🏗️ Project Structure
-
-The application separates route handling, data models, templates, static assets, and reusable business logic. The structure below describes the main areas of the project; exact filenames may vary by repository version.
+## Project structure
 
 ```text
 Finora/
-├── app.py              # Flask application entry point
-├── models/             # SQLAlchemy models and relationships
-├── services/           # Financial calculations and business logic
-├── templates/          # Jinja/HTML templates
-├── static/             # CSS, JavaScript, images, and UI assets
-├── utils/              # Shared helper functions
-└── ...                 # Configuration and supporting files
+├── app.py                    # Flask app, models, auth, APIs and health check
+├── requirements.txt          # Python dependencies
+├── .env.example              # Environment variable names; no real secrets
+├── pytest.ini
+├── templates/                # Login, onboarding, dashboard and account pages
+├── static/
+│   ├── js/                   # Dashboard, transactions, charts and UI logic
+│   ├── css/style.css
+│   ├── branding/             # Logos referenced by the UI
+│   └── ...                   # Icons and web app manifest
+└── tests/                    # API, auth, email, finance and isolation tests
 ```
 
-### Architectural responsibilities
+## Run locally
 
-- **`app.py`** — initializes the Flask application, loads configuration, registers blueprints, and sets up database integration.
-- **`models/`** — defines data entities such as users, transactions, budgets, goals, and investments.
-- **`services/`** — keeps reusable financial calculations and dashboard logic separate from route handlers.
-- **`templates/`** — contains rendered pages such as authentication, onboarding, and dashboard views.
-- **`static/`** — contains stylesheets, client-side JavaScript, images, and other interface assets.
-- **`utils/`** — provides shared helper functions.
+**Requirements:** Git and Python 3.12 (recommended). A PostgreSQL server is optional for local development; SQLite works locally.
 
-## 🚀 Getting Started
+1. Clone the repository:
 
-The live deployment is currently unavailable. To run the project locally, use the repository source code.
+   ```bash
+   git clone https://github.com/Syed-Nazeer-07/Finora.git
+   cd Finora
+   ```
 
-### Prerequisites
+2. Create a virtual environment:
 
-- Python 3.10 or later (use the version supported by the project)
-- Git
-- pip
-- SQLite for local development, or PostgreSQL if configuring a PostgreSQL database
+   **Windows PowerShell**
 
-### 1. Clone the repository
+   ```powershell
+   py -3.12 -m venv .venv
+   .\.venv\Scripts\Activate.ps1
+   ```
+
+   **macOS / Linux**
+
+   ```bash
+   python3.12 -m venv .venv
+   source .venv/bin/activate
+   ```
+
+3. Install dependencies:
+
+   ```bash
+   python -m pip install -r requirements.txt
+   ```
+
+4. Create a local environment file from the supplied template:
+
+   **Windows PowerShell:** `Copy-Item .env.example .env`
+
+   **macOS / Linux:** `cp .env.example .env`
+
+   Edit `.env` with a randomly generated `SECRET_KEY` (for example, generate one with `python -c "import secrets; print(secrets.token_hex(32))"`). The template enables a local SQLite database. **Never commit secrets or a real database connection string.**
+
+5. Start Flask:
+
+   ```bash
+   flask --app app run --debug
+   ```
+
+   Open **http://127.0.0.1:5000/login**.
+
+**Email verification:** Creating an account requires a working verification-email provider to complete password signup. Configure either `RESEND_API_KEY` and `EMAIL_FROM`, or `MAIL_SERVER`, `MAIL_PORT`, `MAIL_USERNAME`, and `MAIL_PASSWORD`. The app will report a failed send instead of claiming delivery when email is not configured. Google login requires its own OAuth client credentials.
+
+## Deploy with Vercel and PostgreSQL
+
+Finora uses a single Flask app, so it can run on Vercel without a separate frontend project.
+
+1. Connect this repository to a **Vercel** project. Set **Framework Preset = Flask** and **Root Directory = repository root** (empty), *not* a nonexistent `frontend` directory. Leave build and output commands on automatic defaults.
+2. Provision a **persistent PostgreSQL** database, for example Neon's Free plan, and connect it to the Finora Vercel project. Check that the integration exposes a usable `DATABASE_URL` in the **Production** environment.
+3. In **Vercel → Project Settings → Environment Variables**, configure at least:
+   - `DATABASE_URL` — full PostgreSQL connection URI (keep private)
+   - `SECRET_KEY` — a secure random secret
+   - `PREFERRED_URL_SCHEME=https`
+   - `FLASK_ENV=production`
+4. For password signups and password recovery, configure **one** supported email provider. Resend requires a valid API key and an approved sending identity; SMTP uses authenticated TLS on port 465 or 587.
+5. For Google login, add `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` and register `https://YOUR_DEPLOYED_DOMAIN/auth/google/callback` as an authorized redirect URI.
+6. Deploy the latest `main` commit and check `https://YOUR_DEPLOYED_DOMAIN/health`. A working installation responds with HTTP **200** and `{"status":"healthy","database":"connected"}`.
+7. Before adding real data, verify signup → email verification → login → create/edit/delete transactions → logout → login again. Confirm data survives a new deployment and cannot be accessed from another user account.
+
+**Without a configured persistent database**, Vercel intentionally serves public pages but returns HTTP **503** for database-backed routes. Never rely on local SQLite inside Vercel Functions for stored financial data: serverless filesystem changes are not durable.
+
+**Database migrations:** The app currently uses SQLAlchemy `db.create_all()` to create missing tables at startup. This does **not** migrate existing schemas. Back up production data and implement versioned migrations before changing deployed models.
+
+**Free hosting:** Vercel Hobby and Neon Free can suit a small personal/educational deployment within their usage limits. Check current quotas and terms directly with each provider; free hosting does not guarantee 24/7 availability or suitability for sensitive production workloads.
+
+## Tests
+
+Install pytest separately and run the suite:
 
 ```bash
-git clone https://github.com/Syed-Nazeer-07/Finora.git
-cd Finora
+python -m pip install pytest
+python -m pytest -q
 ```
 
-### 2. Create and activate a virtual environment
+**Last independently executed suite (7 Nov 2026): 32 tests passed** using Python 3.12 in an isolated environment. Frontend JavaScript syntax checks also passed. The tests cover authentication, financial validation, transaction handling, investment-sale consistency, email transport with mocks, and cross-account record isolation.
 
-**Windows (PowerShell)**
+These are **not** complete production end-to-end tests. Live email delivery, Google OAuth, the hosted PostgreSQL connection, mobile UI behavior, and persistence across deployments still require verification. There is no currently active GitHub Actions workflow.
 
-```powershell
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-```
+## Security and limitations
 
-**macOS / Linux**
+- Never expose `SECRET_KEY`, Google OAuth secrets, email credentials, or `DATABASE_URL` in the browser or Git.
+- Deploy behind HTTPS and use strong session secrets.
+- Ownership checks and input validation are included, but CSRF defenses, rate limiting, and operational hardening should be strengthened before inviting public users.
+- Financial values are informational and may require reconciliation with actual banking or brokerage records.
+- Historical net-worth snapshots and database migrations remain engineering priorities.
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-```
+## Author
 
-### 3. Install dependencies
+**Syed Nazeer S** — Harvard CS50x Final Project
 
-If the repository contains a `requirements.txt` file:
-
-```bash
-pip install -r requirements.txt
-```
-
-If it does not, install the dependencies listed by the project and its configuration. Do not assume a dependency list without checking the repository.
-
-### 4. Configure environment variables
-
-Copy `.env.example` into a local `.env` file. Use a strong random `SECRET_KEY`, and never commit actual keys or passwords. Local development can use SQLite; **Vercel requires a durable PostgreSQL database**, set through `DATABASE_URL`.
-
-For Google sign-in, create a Google OAuth web client and authorize the exact callback URL `https://YOUR_DOMAIN/auth/google/callback`. For account verification and password reset, use **either** Resend (`RESEND_API_KEY`, `EMAIL_FROM`) **or** authenticated SMTP (`MAIL_SERVER`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`). Without a configured email provider, password signups cannot complete verification.
-
-### 5. Initialize the database
-
-During development, the Flask app currently creates missing tables using SQLAlchemy `create_all()`. This is **not a migration system**: it cannot safely alter existing columns or preserve data across arbitrary schema changes. Back up the database before updating models; proper versioned migrations are planned.
-
-### Deploy for free: Vercel + Neon PostgreSQL
-
-1. Connect this GitHub repository to your Vercel project on the Hobby plan (personal, non-commercial use).
-2. In **Project Settings → Build and Deployment**, choose **Flask** and set **Root Directory** to the repository root, not `frontend`. Keep build and output commands on their automatic defaults.
-3. In **Vercel → Storage → Create Database**, choose **Neon** and its **Free** plan. Create a separate database for Finora and connect it to this Vercel project. Select Production (and Preview only if you actually want it connected).
-4. In **Vercel → Environment Variables**, confirm `DATABASE_URL` is present for Production. Never share its value in a public issue, screenshot, or commit. Set `SECRET_KEY` and `PREFERRED_URL_SCHEME=https`.
-5. Add the appropriate Google OAuth and email environment variables if those features are required, and authorize the deployed domain in Google Cloud Console.
-6. Trigger a fresh deployment. Visit `/health` and verify it returns HTTP 200 with `"status":"healthy"` and `"database":"connected"`. A READY deployment does **not** guarantee database connectivity.
-7. Test signup, verification, login, logout, creating a transaction, and retrieving the same transaction after a redeploy. Verify data isolation between accounts.
-
-**Important**: Without `DATABASE_URL`, serverless Finora intentionally serves public pages but responds 503 to database-backed routes. Never use local SQLite inside a Vercel function for real financial records; filesystem changes are not durable.
-
-**Free-tier constraints**: Neon Free has storage, compute and transfer quotas and can suspend compute upon exceeding them. Vercel Hobby is suitable for a small non-commercial portfolio, not a production financial institution. Review the current plans before publishing publicly.
-
-### 6. Run the application
-
-For a standard Flask setup, the application may be started with:
-
-```bash
-flask --app app run --debug
-```
-
-If the project defines a different startup command, use that command instead. Once running, open the local URL printed by Flask in your browser.
-
-## 🔒 Security Notes
-
-Because Finora handles personal financial information, security and data isolation are important design considerations.
-
-- Keep secret keys, database credentials, and OAuth secrets out of version control.
-- Use HTTPS for deployed environments.
-- Use secure password hashing and session configuration.
-- Protect authenticated routes and enforce user-level data access.
-- Use environment-specific configuration for local and production deployments.
-
-## 🧠 Design Decisions
-
-- **Flask:** A lightweight framework that supports clear separation of routes, models, and application logic.
-- **SQLAlchemy:** An ORM that makes relational data and model relationships easier to manage.
-- **PostgreSQL in production:** A relational database suited to structured financial records and relationships.
-- **SQLite for development:** A convenient option for local development.
-- **Tailwind CSS:** Utility-first styling for a consistent and responsive interface.
-- **Vercel + PostgreSQL:** Flask functions on Vercel with durable PostgreSQL (for example Neon) for small personal deployments.
-
-## 🧩 Challenges and Lessons Learned
-
-Building Finora provided hands-on experience with several full-stack engineering concerns:
-
-- Designing a financial dashboard that makes key metrics easy to understand
-- Modeling relationships between users and financial records
-- Integrating Google OAuth with application authentication
-- Keeping financial calculations consistent across the application
-- Configuring production databases, environment variables, and deployment settings
-- Connecting a custom domain and configuring HTTPS
-- Debugging differences between local and production environments
-
-
-
-## 🎓 What I Learned
-
-Finora brought together concepts from CS50 and extended them into a complete application. The project strengthened my understanding of:
-
-- Full-stack web development with Python and Flask
-- Relational database design and ORM usage
-- Authentication and session management
-- API and OAuth integration
-- Modular application architecture
-- UI/UX design and responsive interfaces
-- Cloud deployment, configuration, and production debugging
-
-## ⚠️ Disclaimer
-
-Finora is an educational software project for tracking and understanding personal financial information. Its summaries and indicators are informational and should not be treated as professional financial, investment, tax, or legal advice.
-
-## 👨‍💻 Author
-
-**Syed Nazeer S**
-
-- GitHub: [@Syed-Nazeer-07](https://github.com/Syed-Nazeer-07)
-- Project repository: [Finora](https://github.com/Syed-Nazeer-07/Finora)
-- Demo URL: [finoraweb.online](https://finoraweb.online) *(currently unavailable)*
+[GitHub profile](https://github.com/Syed-Nazeer-07) · [Finora repository](https://github.com/Syed-Nazeer-07/Finora)
 
 ---
 
-<div align="center">
-
-**Built with 💚 as my CS50 Final Project**
-
-If you find the project interesting, feel free to explore the repository.
-
-</div>
+*Finora is educational software, not financial, tax, legal, or investment advice.*
