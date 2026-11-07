@@ -16,6 +16,7 @@ const AppDashboard = {
         const lastYM = `${lastYear}-${String(lastMonth+1).padStart(2,'0')}`;
         const txThis = this.state.transactions.filter(t => t.date.startsWith(thisYM));
         const txLast = this.state.transactions.filter(t => t.date.startsWith(lastYM));
+        const hasComparableMonths = txThis.length > 0 && txLast.length > 0;
         const hasExpenseData = this.state.transactions.some(t =>
             t.type === 'expense' && (!isCashFlow || t.date.startsWith(thisYM))
         );
@@ -232,7 +233,7 @@ const AppDashboard = {
                                 </div>
                                 <h2 class="text-4xl sm:text-5xl font-extrabold tracking-tight">${this.formatCurrency(isCashFlow ? calc.availableBalance : calc.netWorth)}</h2>
                             </div>
-                            <div class="px-3 py-1.5 rounded-full ${(isCashFlow ? calc.cashFlowGrowth : calc.netWorthGrowth) >= 0 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'} flex items-center gap-1 text-sm font-bold backdrop-blur-md shrink-0" title="${isCashFlow ? 'Cash flow change vs last month' : 'Net worth growth this month'}">
+                            <div class="${hasComparableMonths ? 'flex' : 'hidden'} px-3 py-1.5 rounded-full ${(isCashFlow ? calc.cashFlowGrowth : calc.netWorthGrowth) >= 0 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'} items-center gap-1 text-sm font-bold backdrop-blur-md shrink-0" title="${isCashFlow ? 'Cash flow change vs last month' : 'Net worth growth this month'}">
                                 <i data-lucide="${(isCashFlow ? calc.cashFlowGrowth : calc.netWorthGrowth) >= 0 ? 'trending-up' : 'trending-down'}" class="w-4 h-4"></i>
                                 ${(isCashFlow ? calc.cashFlowGrowth : calc.netWorthGrowth) >= 0 ? '+' : ''}${(isCashFlow ? calc.cashFlowGrowth : calc.netWorthGrowth).toFixed(1)}%
                             </div>
@@ -275,31 +276,8 @@ const AppDashboard = {
                     </div>
                 </div>
             </div>
-            <!-- Row 2: Monthly Summary + Budget Snapshot -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 slide-up delay-150">
-                <!-- Monthly Summary -->
-                <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm hover-card">
-                    <div class="flex items-center justify-between mb-5">
-                        <h3 class="font-bold text-lg text-slate-900 dark:text-white dark:text-white flex items-center gap-2">
-                            <i data-lucide="calendar" class="w-5 h-5 text-brand-500"></i> This Month
-                        </h3>
-                        ${streak > 0 ? `<div class="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-900/30 rounded-lg"><span class="text-orange-500">🔥</span><span class="text-sm font-bold text-orange-600 dark:text-orange-400">${streak}d</span></div>` : ''}
-                    </div>
-                    <div class="space-y-3">
-                        <div class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
-                            <span class="text-sm font-medium text-slate-600 dark:text-slate-400">${isCashFlow ? 'Money Received' : 'Income'}</span>
-                            <span class="font-bold text-emerald-600 dark:text-emerald-400">${this.formatCurrency(report.income)}</span>
-                        </div>
-                        <div class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
-                            <span class="text-sm font-medium text-slate-600 dark:text-slate-400">${isCashFlow ? 'Money Spent' : 'Expenses'}</span>
-                            <span class="font-bold text-rose-600 dark:text-rose-400">${this.formatCurrency(report.expenses)}</span>
-                        </div>
-                        <div class="flex items-center justify-between p-3 bg-brand-50 dark:bg-brand-900/10 rounded-xl border border-brand-200 dark:border-brand-900/30">
-                            <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">${isCashFlow ? 'Remaining' : 'Saved'}</span>
-                            <span class="font-extrabold text-lg text-brand-600 dark:text-brand-400">${this.formatCurrency(report.savings)}</span>
-                        </div>
-                    </div>
-                </div>
+            <!-- Row 2: Budget Snapshot -->
+            <div class="grid grid-cols-1 gap-6 slide-up delay-150">
                 <!-- Budget Snapshot -->
                 <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm hover-card">
                     <div class="flex items-center justify-between mb-4">
@@ -334,8 +312,8 @@ const AppDashboard = {
                     }).join('') : '<div class="flex flex-col items-center justify-center py-6 text-slate-400 dark:text-slate-500"><i data-lucide="pie-chart" class="w-8 h-8 mb-2 opacity-40"></i><p class="text-sm">No budgets set</p><button onclick="App.openModal(\'budget\')" class="text-xs text-brand-500 hover:underline mt-1">Create Budget</button></div>'}
                 </div>
             </div>
-            <!-- Row 3: Recent Activity + Goals + Insights -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 slide-up delay-200">
+            <!-- Row 3: Recent Activity + Active Goals -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 slide-up delay-200">
                 <!-- Recent Activity -->
                 <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm hover-card">
                     <div class="flex items-center justify-between mb-4">
@@ -372,13 +350,6 @@ const AppDashboard = {
                         <button onclick="App.setActiveTab('savings')" class="text-xs text-brand-500 hover:text-brand-600 font-semibold">View All →</button>
                     </div>
                     ${goalsHtml}
-                </div>
-                <!-- Smart Insights -->
-                <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm hover-card">
-                    <h3 class="font-bold text-sm text-slate-900 dark:text-white dark:text-white mb-4 flex items-center gap-2">
-                        <i data-lucide="lightbulb" class="w-4 h-4 text-amber-500"></i> Smart Insights
-                    </h3>
-                    <div class="space-y-2 max-h-64 overflow-y-auto">${insightsHtml || '<p class="text-xs text-slate-400">No insights available</p>'}</div>
                 </div>
             </div>
             <!-- Row 3: Charts -->
