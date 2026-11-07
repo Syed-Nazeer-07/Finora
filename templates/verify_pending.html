@@ -45,9 +45,11 @@
                     <i data-lucide="mail" class="w-9 h-9 text-brand-400"></i>
                 </div>
 
-                <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 mb-3">Check your inbox</h1>
+                <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 mb-3">
+                    {% if delivery_failed %}Verification email wasn't sent{% else %}Check your inbox{% endif %}
+                </h1>
                 <p class="text-slate-600 text-sm leading-relaxed mb-4">
-                    We've sent a verification link to
+                    {% if delivery_failed %}Your account was created, but we couldn't send its verification link to{% else %}We've requested a verification link for{% endif %}
                 </p>
 
                 
@@ -59,7 +61,11 @@
                 {% endif %}
 
                 <p class="text-slate-500 text-xs leading-relaxed mb-8 max-w-xs mx-auto">
+                    {% if delivery_failed %}
+                    Please try resending below. If delivery keeps failing, the email service may need attention.
+                    {% else %}
                     Click the link in the email to activate your account.<br>The link expires in <strong class="text-slate-600">24 hours</strong>.
+                    {% endif %}
                 </p>
 
                 
@@ -104,13 +110,16 @@
         btn.disabled = true;
         btn.textContent = 'Sending…';
         try {
-            await fetch('/api/auth/resend-verification', {
+            const response = await fetch('/api/auth/resend-verification', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email })
             });
-            msg.textContent = '✓ A new link has been sent. Please check your inbox and spam folder.';
-            msg.classList.remove('hidden');
+            if (!response.ok) throw new Error('Request failed');
+            // The API intentionally doesn't reveal account existence or delivery.
+            msg.textContent = 'If your account is eligible, a new link will arrive shortly. Check your inbox or try later.';
+            msg.classList.remove('hidden', 'text-rose-600');
+            msg.classList.add('text-slate-600');
             let t = 60;
             btn.textContent = `Resend again in ${t}s`;
             const iv = setInterval(() => {
@@ -119,6 +128,9 @@
                 else btn.textContent = `Resend again in ${t}s`;
             }, 1000);
         } catch (e) {
+            msg.textContent = 'We couldn\'t request a link right now. Please try again.';
+            msg.classList.remove('hidden', 'text-slate-600');
+            msg.classList.add('text-rose-600');
             btn.disabled = false;
             btn.textContent = 'Resend verification email';
         }
