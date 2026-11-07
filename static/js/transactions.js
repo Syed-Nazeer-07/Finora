@@ -15,14 +15,14 @@ const AppViews = {
                 <div class="flex flex-col sm:flex-row gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
                     <div class="relative flex-1">
                         <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
-                        <input id="tx-search-input" type="text" placeholder="Search by description, category, or type…" oninput="App.handleTxSearch(event)" value="${this.state.txSearchQuery}" autocomplete="off" class="w-full pl-10 pr-8 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm transition-all">
+                        <input id="tx-search-input" type="text" placeholder="Search by description, category, or type…" oninput="App.handleTxSearch(event)" value="${this.escapeHtml(this.state.txSearchQuery)}" autocomplete="off" class="w-full pl-10 pr-8 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm transition-all">
                         <button id="tx-search-clear" onclick="App.clearTxSearch()" class="${this.state.txSearchQuery ? '' : 'hidden'} absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors" title="Clear search">
                             <i data-lucide="x" class="w-3.5 h-3.5"></i>
                         </button>
                     </div>
                     <select id="tx-filter-select" onchange="App.handleTxFilter(event)" class="px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm transition-all">
                         <option value="All">All Categories</option>
-                        ${this.getCategoryNames().map(c => `<option value="${c}" ${this.state.txFilterCategory === c ? 'selected' : ''}>${this.getCategoryEmoji(c)} ${c}</option>`).join('')}
+                        ${this.getCategoryNames().map(c => `<option value="${this.escapeHtml(c)}" ${this.state.txFilterCategory === c ? 'selected' : ''}>${this.getCategoryEmoji(c)} ${this.escapeHtml(c)}</option>`).join('')}
                     </select>
                 </div>
                 <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden w-full">
@@ -89,11 +89,11 @@ const AppViews = {
                 <td class="px-6 py-4">
                     <div class="flex items-center gap-4">
                         <div class="p-2 rounded-xl border-2 shadow-sm text-lg flex items-center justify-center w-10 h-10 shrink-0" style="border-color: ${catColor}; background-color: ${catColor}15">${catEmoji}</div>
-                        <span class="font-semibold text-slate-900 dark:text-white">${tx.description}</span>
+                        <span class="font-semibold text-slate-900 dark:text-white">${this.escapeHtml(tx.description)}</span>
                     </div>
                 </td>
                 <td class="px-6 py-4">
-                    <span class="text-xs font-medium px-2.5 py-1 rounded-lg whitespace-nowrap" style="background-color: ${catColor}20; color: ${catColor}">${tx.category}</span>
+                    <span class="text-xs font-medium px-2.5 py-1 rounded-lg whitespace-nowrap" style="background-color: ${catColor}20; color: ${catColor}">${this.escapeHtml(tx.category)}</span>
                 </td>
                 <td class="px-6 py-4 font-bold text-right whitespace-nowrap ${tx.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900'}">
                     ${tx.type === 'income' ? '+' : '-'}${this.formatCurrency(tx.amount)}
@@ -113,7 +113,10 @@ const AppViews = {
             const percent = Math.min((b.spent / b.limit) * 100, 100);
             const isOver = b.spent > b.limit;
             const remaining = b.limit - b.spent;
-            const runRate = b.spent * 2;
+            const now = new Date();
+            const daysElapsed = now.getDate();
+            const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+            const runRate = daysElapsed > 0 ? b.spent * daysInMonth / daysElapsed : b.spent;
             const forecastClass = runRate > b.limit ? 'text-rose-500' : 'text-emerald-500';
             const catColor = this.getCategoryColor(b.category);
             return `
@@ -127,7 +130,7 @@ const AppViews = {
                             <span class="text-2xl">${this.getCategoryEmoji(b.category)}</span>
                         </div>
                         <div>
-                            <h3 class="font-bold text-lg text-slate-900 leading-tight">${b.category}</h3>
+                            <h3 class="font-bold text-lg text-slate-900 leading-tight">${this.escapeHtml(b.category)}</h3>
                             <span class="text-xs font-bold uppercase tracking-wider ${isOver ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}">
                                 ${isOver ? 'Over Budget' : 'On Track'}
                             </span>
@@ -220,7 +223,7 @@ const AppViews = {
                     insightsHtml = forecast.insights.map(insight => `
                         <div class="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400">
                             <i data-lucide="lightbulb" class="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5"></i>
-                            <span>${insight}</span>
+                            <span>${this.escapeHtml(insight)}</span>
                         </div>
                     `).join('');
                 }
@@ -234,7 +237,7 @@ const AppViews = {
                     </div>
                     <div class="flex justify-between items-start w-full mb-6">
                         <div>
-                            <h3 class="font-bold text-xl text-slate-900 mb-1">${goal.name}</h3>
+                            <h3 class="font-bold text-xl text-slate-900 mb-1">${this.escapeHtml(goal.name)}</h3>
                             <p class="text-sm text-slate-500 dark:text-slate-400">Target: <span class="font-semibold text-slate-800 dark:text-slate-200">${this.formatCurrency(goal.target)}</span></p>
                         </div>
                         <div class="px-2.5 py-1 text-[10px] font-bold uppercase rounded border ${healthClass}">${healthLabel}</div>
@@ -341,7 +344,7 @@ const AppViews = {
                         ${activeAssets.map(inv => `
                             <div class="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
                                 <div>
-                                    <p class="font-semibold text-slate-900 dark:text-white">${inv.symbol}</p>
+                                    <p class="font-semibold text-slate-900 dark:text-white">${this.escapeHtml(inv.symbol)}</p>
                                     <p class="text-sm text-slate-600 dark:text-slate-400">${inv.shares} Units</p>
                                 </div>
                                 <div class="text-right">
@@ -591,9 +594,9 @@ const AppViews = {
                             <div class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border-2" style="border-color: ${cat.color}40">
                                 <div class="flex items-center gap-3 min-w-0">
                                     <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style="background-color: ${cat.color}20; border: 2px solid ${cat.color}">
-                                        <span class="text-base">${cat.emoji}</span>
+                                        <span class="text-base">${this.escapeHtml(cat.emoji)}</span>
                                     </div>
-                                    <span class="text-sm font-medium text-slate-900 truncate">${cat.name}</span>
+                                    <span class="text-sm font-medium text-slate-900 truncate">${this.escapeHtml(cat.name)}</span>
                                     ${cat.is_default ? '<span class="text-[10px] px-2 py-0.5 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 rounded-full font-semibold">Default</span>' : ''}
                                 </div>
                                 ${!cat.is_default ? `

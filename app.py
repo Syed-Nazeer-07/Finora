@@ -700,7 +700,9 @@ def forecast_goals():
     txs = Transaction.query.filter_by(user_id=uid).all()
     
     now = datetime.utcnow()
-    three_months_ago = datetime(now.year, now.month - 2 if now.month > 2 else now.month + 10, 1)
+    lookback_month = ((now.month - 3) % 12) + 1
+    lookback_year = now.year - (1 if now.month <= 2 else 0)
+    three_months_ago = datetime(lookback_year, lookback_month, 1)
     recent_txs = [t for t in txs if datetime.strptime(t.date, "%Y-%m-%d") >= three_months_ago]
     income = sum(t.amount for t in recent_txs if t.type == 'income')
     expenses = sum(t.amount for t in recent_txs if t.type == 'expense')
@@ -1330,7 +1332,7 @@ def get_financial_health():
         monthly_exp = profile.monthly_expenses if profile else (expenses / max(1, len({t.date[:7] for t in txs})))
         monthly_inc = profile.monthly_income if profile else (income / max(1, len({t.date[:7] for t in txs})))
         
-        savings_rate = (savings / (monthly_inc * 12)) if monthly_inc > 0 else 0
+        savings_rate = max(0, (income - expenses) / income) if income > 0 else 0
         savings_rate_score = min(20, savings_rate * 100)
         
         emergency_months = (savings / monthly_exp) if monthly_exp > 0 else 0
@@ -1372,7 +1374,7 @@ def get_financial_health():
             stability_score = 5
         
         net_worth = income - expenses + savings + inv_value
-        growth_score = 5 if net_worth > 0 else 2
+        growth_score = 0  # Historical changes cannot be measured from current assets alone.
         
         total = savings_rate_score + emergency_fund_score + budget_score + goal_score + investment_score + stability_score + growth_score
         
@@ -1400,8 +1402,6 @@ def get_financial_health():
     now = datetime.utcnow()
     this_ym = f"{now.year}-{now.month:02d}"
     txs_this = Transaction.query.filter_by(user_id=uid).filter(Transaction.date.startswith(this_ym)).all()
-    if not txs_this:
-        txs_this = Transaction.query.filter_by(user_id=uid).all()
     
     profile = Profile.query.filter_by(user_id=uid).first()
     budgets = Budget.query.filter_by(user_id=uid).all()
@@ -1425,9 +1425,10 @@ def get_financial_health():
     comps = current_health["components"]
     
     if comps["savingsRate"] < 15:
-        needed = max(0, (0.2 * (profile.monthly_income if profile else 50000) * 12) - (profile.current_savings if profile else 0))
-        if needed > 0:
-            recommendations.append(f"Increase savings by ₹{int(needed / 12)}/month to improve savings rate score.")
+        if profile and profile.monthly_income > 0:
+            needed = max(0, 0.2 * profile.monthly_income - max(0, profile.monthly_income - profile.monthly_expenses))
+            if needed > 0:
+                recommendations.append(f"Improve your monthly cashflow by {int(needed)} to target a 20% savings rate.")
     
     if comps["emergencyFund"] < 15:
         target_months = 6
@@ -1444,8 +1445,7 @@ def get_financial_health():
     if comps["goalProgress"] < 10 and goals:
         recommendations.append("Increase goal contributions to improve progress score.")
     
-    if comps["investmentActivity"] < 10:
-        recommendations.append("Consider investing surplus savings to improve investment score.")
+    # Investment decisions should never be encouraged solely to raise a score.
     
     if not recommendations:
         recommendations.append("Excellent! Maintain your current financial habits.")

@@ -158,7 +158,7 @@ const AppDashboard = {
                 return `
                 <div class="py-3 border-b border-slate-100 dark:border-slate-700 last:border-0">
                     <div class="flex justify-between items-start mb-1.5">
-                        <span class="text-sm font-semibold text-slate-900 dark:text-white dark:text-white truncate mr-2">${goal.name}</span>
+                        <span class="text-sm font-semibold text-slate-900 dark:text-white dark:text-white truncate mr-2">${this.escapeHtml(goal.name)}</span>
                         <div class="flex items-center gap-2 shrink-0">
                             ${healthBadge}
                             <span class="text-xs font-bold ${isComplete ? 'text-emerald-500' : 'text-slate-500 dark:text-slate-400'}">${pct.toFixed(0)}%</span>
@@ -185,8 +185,8 @@ const AppDashboard = {
                         <span class="text-base">${this.getCategoryEmoji(tx.category)}</span>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium text-slate-900 dark:text-white dark:text-white truncate">${tx.description}</p>
-                        <p class="text-xs font-medium" style="color: ${catColor}">${tx.category}</p>
+                        <p class="text-sm font-medium text-slate-900 dark:text-white dark:text-white truncate">${this.escapeHtml(tx.description)}</p>
+                        <p class="text-xs font-medium" style="color: ${catColor}">${this.escapeHtml(tx.category)}</p>
                     </div>
                     <span class="text-sm font-bold shrink-0 ${tx.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white dark:text-white'}">
                         ${tx.type === 'income' ? '+' : '-'}${this.formatCurrency(tx.amount)}
@@ -211,7 +211,7 @@ const AppDashboard = {
         const insightsHtml = insights.map(ins => `
             <div class="flex items-start gap-2.5 p-3 rounded-xl border text-xs font-medium mb-2 last:mb-0 ${insightColors[ins.type] || insightColors.info}">
                 <i data-lucide="${ins.icon}" class="w-4 h-4 shrink-0 mt-0.5"></i>
-                <span>${ins.text}</span>
+                <span>${this.escapeHtml(ins.text)}</span>
             </div>`).join('');
         return `
         <div class="space-y-6 sm:space-y-8 pb-10">
@@ -219,7 +219,7 @@ const AppDashboard = {
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 slide-up">
                 ${showGreeting
                     ? `<div>
-                        <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white dark:text-white mb-1">Good ${timeOfDay}, ${this.state.currentUser?.name ?? ''} 👋</h1>
+                        <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white dark:text-white mb-1">Good ${timeOfDay}, ${this.escapeHtml(this.state.currentUser?.name ?? '')} 👋</h1>
                         <p class="text-slate-500 dark:text-slate-400 text-sm">Here's your financial snapshot.</p>
                        </div>`
                     : `<div>
@@ -331,7 +331,7 @@ const AppDashboard = {
                                     <div class="w-6 h-6 rounded-md flex items-center justify-center text-xs" style="background-color: ${catColor}30; border: 1.5px solid ${catColor}">
                                         ${this.getCategoryEmoji(b.category)}
                                     </div>
-                                    <span class="text-sm font-medium text-slate-700 dark:text-slate-300">${b.category}</span>
+                                    <span class="text-sm font-medium text-slate-700 dark:text-slate-300">${this.escapeHtml(b.category)}</span>
                                 </div>
                                 <span class="text-xs font-bold ${textColor}">${Math.round(pct)}%</span>
                             </div>
@@ -365,8 +365,8 @@ const AppDashboard = {
                                 <span class="text-base">${this.getCategoryEmoji(tx.category)}</span>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-sm font-medium text-slate-900 dark:text-white dark:text-white truncate">${tx.description}</p>
-                                <p class="text-xs font-medium" style="color: ${catColor}">${tx.category}</p>
+                                <p class="text-sm font-medium text-slate-900 dark:text-white dark:text-white truncate">${this.escapeHtml(tx.description)}</p>
+                                <p class="text-xs font-medium" style="color: ${catColor}">${this.escapeHtml(tx.category)}</p>
                             </div>
                             <span class="text-sm font-bold shrink-0 ${tx.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white dark:text-white'}">
                                 ${tx.type === 'income' ? '+' : '-'}${this.formatCurrency(tx.amount)}
@@ -432,7 +432,7 @@ const AppDashboard = {
         content.innerHTML = insights.map(ins => `
             <div class="flex items-start gap-2.5 p-3 rounded-xl border text-xs font-medium mb-2 last:mb-0 ${insightColors[ins.type] || insightColors.info}">
                 <i data-lucide="${ins.icon}" class="w-4 h-4 shrink-0 mt-0.5"></i>
-                <span>${ins.text}</span>
+                <span>${this.escapeHtml(ins.text)}</span>
             </div>`).join('');
         lucide.createIcons({ nodes: [content] });
     },

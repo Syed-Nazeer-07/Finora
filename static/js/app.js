@@ -294,6 +294,11 @@ const App = {
         if (sidebarLogoIcon) sidebarLogoIcon.src = logoPath;
         if (mobileLogo) mobileLogo.src = logoPath;
     },
+    escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, char => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[char]);
+    },
     getCurrencySymbol() {
         const SYMBOLS = { INR: '₹', USD: '$', EUR: '€', GBP: '£', AED: 'د.إ', SGD: 'S$' };
         return SYMBOLS[this.state.settings?.currency] || '₹';
@@ -593,7 +598,7 @@ const App = {
             }
 
             const budgetProgress = budgets.map(budget => {
-                const spent = txs.filter(t => t.type === 'expense' && t.category === budget.category).reduce((acc, curr) => acc + curr.amount, 0);
+                const spent = txThisMonth.filter(t => t.type === 'expense' && t.category === budget.category).reduce((acc, curr) => acc + curr.amount, 0);
                 return { ...budget, spent };
             });
 
@@ -1512,7 +1517,7 @@ const App = {
         if (!suggestions.length) { dropdown.classList.add('hidden'); return; }
         dropdown.innerHTML = suggestions.map(s =>
             `<li class="px-4 py-2.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 border-b border-slate-100 dark:border-slate-800 last:border-0"
-                onmousedown="App._descSelect(event,'${s.replace(/'/g, "\\'")}')">${s}</li>`
+                onmousedown="App._descSelect(event,'${s.replace(/'/g, "\\'")}')">${this.escapeHtml(s)}</li>`
         ).join('');
         dropdown.classList.remove('hidden');
     },
@@ -1675,7 +1680,7 @@ const App = {
                 <div class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl mb-2 border border-slate-200 dark:border-slate-700">
                     <div class="flex items-center gap-3">
                         <i data-lucide="${s.icon}" class="w-4 h-4 text-slate-500"></i>
-                        <span class="text-sm font-semibold">${s.title}</span>
+                        <span class="text-sm font-semibold">${this.escapeHtml(s.title)}</span>
                         <select onchange="App.updateRoadmapStatus(${s.id}, this.value)" class="text-xs bg-transparent text-slate-600 dark:text-slate-400 font-medium outline-none cursor-pointer">
                             <option value="completed" ${s.status === 'completed' ? 'selected' : ''}>Completed</option>
                             <option value="active" ${s.status === 'active' ? 'selected' : ''}>Active</option>
@@ -1716,7 +1721,7 @@ const App = {
                     <div class="bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl modal-standard">
                         <div class="px-8 py-6 border-b border-slate-100 dark:border-slate-800">
                             <h2 class="text-xl font-bold text-slate-900 dark:text-white">Confirm Sale</h2>
-                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Sell ${sellQuantity} shares of ${inv.symbol}</p>
+                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Sell ${sellQuantity} shares of ${this.escapeHtml(inv.symbol)}</p>
                         </div>
                         <div class="p-8 space-y-4">
                             <div class="bg-slate-50 dark:bg-slate-800 rounded-xl p-4 space-y-3">
@@ -1984,7 +1989,7 @@ const App = {
             <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
                 <div class="bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl max-w-md w-full">
                     <div class="px-8 py-6 border-b border-slate-100 dark:border-slate-800">
-                        <h2 class="text-xl font-bold text-slate-900 dark:text-white">Sell ${inv.symbol}</h2>
+                        <h2 class="text-xl font-bold text-slate-900 dark:text-white">Sell ${this.escapeHtml(inv.symbol)}</h2>
                         <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">You own ${inv.shares} shares</p>
                     </div>
                     <form onsubmit="App.processSellInvestment(event, ${id})" class="p-8 space-y-4">
@@ -2073,7 +2078,7 @@ const App = {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    description: `Sold ${sellQuantity} ${inv.symbol} @ ${this.getCurrencySymbol()}${this.formatNumber(sellPrice)} - Realized ${profit >= 0 ? 'Gain' : 'Loss'}: ${this.getCurrencySymbol()}${this.formatNumber(Math.abs(profit))}`,
+                    description: `Sold ${sellQuantity} ${this.escapeHtml(inv.symbol)} @ ${this.getCurrencySymbol()}${this.formatNumber(sellPrice)} - Realized ${profit >= 0 ? 'Gain' : 'Loss'}: ${this.getCurrencySymbol()}${this.formatNumber(Math.abs(profit))}`,
                     amount: totalSale,
                     category: 'Investment Returns',
                     type: 'income',
@@ -2087,7 +2092,7 @@ const App = {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    description: `Original cost basis for ${sellQuantity} ${inv.symbol} @ ${this.getCurrencySymbol()}${this.formatNumber(inv.avgCost)}`,
+                    description: `Original cost basis for ${sellQuantity} ${this.escapeHtml(inv.symbol)} @ ${this.getCurrencySymbol()}${this.formatNumber(inv.avgCost)}`,
                     amount: totalCost,
                     category: 'Investment Cost Basis',
                     type: 'expense',
@@ -2096,7 +2101,7 @@ const App = {
             });
             if (!txExpenseRes.ok) throw new Error('Failed to create cost basis transaction');
             
-            Toast.show(`Sold ${sellQuantity} ${inv.symbol} - Realized ${profit >= 0 ? 'Gain' : 'Loss'}: ${this.getCurrencySymbol()}${this.formatNumber(Math.abs(profit))} (${profitPct}%)`, 'success');
+            Toast.show(`Sold ${sellQuantity} ${this.escapeHtml(inv.symbol)} - Realized ${profit >= 0 ? 'Gain' : 'Loss'}: ${this.getCurrencySymbol()}${this.formatNumber(Math.abs(profit))} (${profitPct}%)`, 'success');
             await this.fetchInvestments();
             await this.fetchTransactions();
             await DataSync.fullSync();
@@ -2123,7 +2128,7 @@ const App = {
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Select Asset</label>
                             <select name="sellAssetSelect" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-sm">
                                 <option value="">Choose asset to sell...</option>
-                                ${activeAssets.map(inv => `<option value="${inv.id}|${inv.symbol}|${inv.shares}|${inv.avgCost}">${inv.symbol} (${inv.shares} units)</option>`).join('')}
+                                ${activeAssets.map(inv => `<option value="${inv.id}|${this.escapeHtml(inv.symbol)}|${inv.shares}|${inv.avgCost}">${this.escapeHtml(inv.symbol)} (${inv.shares} units)</option>`).join('')}
                             </select>
                         </div>
                         <div>
