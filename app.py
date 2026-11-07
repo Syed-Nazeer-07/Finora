@@ -242,6 +242,32 @@ def login_required_json():
         return jsonify({"error": "Unauthorized"}), 401
     return None
 
+def _validated_finance_date(value):
+    if value in ("", None):
+        return None
+    if not isinstance(value, str):
+        raise ValueError("Date must be YYYY-MM-DD")
+    result = date.fromisoformat(value)
+    if result.isoformat() != value:
+        raise ValueError("Date must be YYYY-MM-DD")
+    return value
+
+
+def _money(value, *, zero_ok=False):
+    try:
+        number = float(value)
+    except (TypeError, ValueError, OverflowError):
+        raise ValueError("A numeric amount is required")
+    if not math.isfinite(number) or number > 1e12 or (number < 0 if zero_ok else number <= 0):
+        raise ValueError("Amount must be finite and positive")
+    return number
+
+
+@app.errorhandler(ValueError)
+def invalid_financial_input(exc):
+    return jsonify({"error": str(exc)}), 400
+
+
 def _tx_dict(t):
     return {"id": t.id, "description": t.description, "amount": t.amount,
             "category": t.category, "type": t.type, "date": t.date}
@@ -483,32 +509,32 @@ def update_profile():
     try:
         if "monthly_income" in data:
             val = float(data["monthly_income"] or 0)
-            if val < 0:
-                return jsonify({"error": "monthly_income cannot be negative"}), 400
+            if not math.isfinite(val) or val < 0:
+                return jsonify({"error": "monthly_income must be finite and non-negative"}), 400
             if val > 1e10:
                 return jsonify({"error": "monthly_income exceeds reasonable limit"}), 400
             p.monthly_income = val
         
         if "current_savings" in data:
             val = float(data["current_savings"] or 0)
-            if val < 0:
-                return jsonify({"error": "current_savings cannot be negative"}), 400
+            if not math.isfinite(val) or val < 0:
+                return jsonify({"error": "current_savings must be finite and non-negative"}), 400
             if val > 1e10:
                 return jsonify({"error": "current_savings exceeds reasonable limit"}), 400
             p.current_savings = val
         
         if "current_investments" in data:
             val = float(data["current_investments"] or 0)
-            if val < 0:
-                return jsonify({"error": "current_investments cannot be negative"}), 400
+            if not math.isfinite(val) or val < 0:
+                return jsonify({"error": "current_investments must be finite and non-negative"}), 400
             if val > 1e10:
                 return jsonify({"error": "current_investments exceeds reasonable limit"}), 400
             p.current_investments = val
         
         if "monthly_expenses" in data:
             val = float(data["monthly_expenses"] or 0)
-            if val < 0:
-                return jsonify({"error": "monthly_expenses cannot be negative"}), 400
+            if not math.isfinite(val) or val < 0:
+                return jsonify({"error": "monthly_expenses must be finite and non-negative"}), 400
             if val > 1e10:
                 return jsonify({"error": "monthly_expenses exceeds reasonable limit"}), 400
             p.monthly_expenses = val
@@ -603,7 +629,7 @@ def create_budget():
     if not data.get("category") or not data.get("limit"):
         return jsonify({"error": "category and limit are required"}), 400
     b = Budget(user_id=session["user_id"], category=str(data["category"])[:50],
-               limit_amount=float(data["limit"]))
+               limit_amount=_money(data["limit"]))
     db.session.add(b)
     db.session.commit()
     return jsonify({"id": b.id, "category": b.category, "limit": b.limit_amount}), 201
@@ -617,7 +643,7 @@ def update_budget(budget_id):
     if not b: return jsonify({"error": "Budget not found"}), 404
     data = request.get_json(silent=True) or {}
     if "category" in data: b.category = str(data["category"])[:50]
-    if "limit" in data: b.limit_amount = float(data["limit"])
+    if "limit" in data: b.limit_amount = _money(data["limit"])
     db.session.commit()
     return jsonify({"id": b.id, "category": b.category, "limit": b.limit_amount})
 
@@ -655,10 +681,10 @@ def create_goal():
     if not data.get("name") or not data.get("target"):
         return jsonify({"error": "name and target are required"}), 400
     g = Goal(user_id=session["user_id"], title=str(data["name"])[:100],
-             target_amount=float(data["target"]),
-             current_amount=float(data.get("current") or 0),
-             monthly_contribution=float(data.get("monthlyContribution") or 0),
-             target_date=str(data["date"]) if data.get("date") else None)
+             target_amount=_money(data["target"]),
+             current_amount=_money(data.get("current") or 0, zero_ok=True),
+             monthly_contribution=_money(data.get("monthlyContribution") or 0, zero_ok=True),
+             target_date=_validated_finance_date(data.get("date")))
     db.session.add(g)
     db.session.commit()
     return jsonify(_goal_dict(g)), 201
@@ -672,10 +698,10 @@ def update_goal(goal_id):
     if not g: return jsonify({"error": "Goal not found"}), 404
     data = request.get_json(silent=True) or {}
     if "name" in data: g.title = str(data["name"])[:100]
-    if "target" in data: g.target_amount = float(data["target"])
-    if "current" in data: g.current_amount = float(data["current"])
-    if "monthlyContribution" in data: g.monthly_contribution = float(data["monthlyContribution"])
-    if "date" in data: g.target_date = str(data["date"]) if data["date"] else None
+    if "target" in data: g.target_amount = _money(data["target"])
+    if "current" in data: g.current_amount = _money(data["current"], zero_ok=True)
+    if "monthlyContribution" in data: g.monthly_contribution = _money(data["monthlyContribution"], zero_ok=True)
+    if "date" in data: g.target_date = _validated_finance_date(data["date"])
     db.session.commit()
     return jsonify(_goal_dict(g))
 
@@ -803,8 +829,8 @@ def create_investment():
         return jsonify({"error": "symbol and shares are required"}), 400
     inv = Investment(user_id=session["user_id"], symbol=str(data["symbol"])[:100],
                      asset_type=str(data.get("type") or "Stock")[:50],
-                     quantity=float(data["shares"]), average_cost=float(data.get("avgCost") or 0),
-                     current_value=float(data.get("currentPrice") or 0))
+                     quantity=_money(data["shares"]), average_cost=_money(data.get("avgCost") or 0, zero_ok=True),
+                     current_value=_money(data.get("currentPrice") or 0, zero_ok=True))
     db.session.add(inv)
     db.session.commit()
     return jsonify(_inv_dict(inv)), 201
@@ -819,9 +845,9 @@ def update_investment(inv_id):
     data = request.get_json(silent=True) or {}
     if "symbol" in data: inv.symbol = str(data["symbol"])[:100]
     if "type" in data: inv.asset_type = str(data["type"])[:50]
-    if "shares" in data: inv.quantity = float(data["shares"])
-    if "avgCost" in data: inv.average_cost = float(data["avgCost"])
-    if "currentPrice" in data: inv.current_value = float(data["currentPrice"])
+    if "shares" in data: inv.quantity = _money(data["shares"])
+    if "avgCost" in data: inv.average_cost = _money(data["avgCost"], zero_ok=True)
+    if "currentPrice" in data: inv.current_value = _money(data["currentPrice"], zero_ok=True)
     db.session.commit()
     return jsonify(_inv_dict(inv))
 
