@@ -25,14 +25,15 @@ def isolated_accounts():
             users.append(user.id)
         db.session.commit()
 
-    with app.test_client() as owner, app.test_client() as other:
-        assert owner.post("/api/auth/login", json={
-            "email": emails[0], "password": "Testing123",
-        }).status_code == 200
-        assert other.post("/api/auth/login", json={
-            "email": emails[1], "password": "Testing123",
-        }).status_code == 200
-        yield owner, other, users
+    owner = app.test_client()
+    other = app.test_client()
+    assert owner.post("/api/auth/login", json={
+        "email": emails[0], "password": "Testing123",
+    }).status_code == 200
+    assert other.post("/api/auth/login", json={
+        "email": emails[1], "password": "Testing123",
+    }).status_code == 200
+    yield owner, other, users
 
     with app.app_context():
         for uid in users:
