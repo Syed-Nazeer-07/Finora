@@ -864,6 +864,63 @@ def delete_investment(inv_id):
 
 
 
+@app.route("/api/investments/<int:inv_id>/sell", methods=["POST"])
+def sell_investment(inv_id):
+    """Apply a sale and its ledger entries in one database transaction."""
+    err = login_required_json()
+    if err:
+        return err
+
+    inv = Investment.query.filter_by(id=inv_id, user_id=session["user_id"]).first()
+    if not inv:
+        return jsonify({"error": "Investment not found"}), 404
+
+    data = request.get_json(silent=True) or {}
+    try:
+        quantity = _money(data.get("shares"))
+        price = _money(data.get("price"))
+        sale_date = _validated_finance_date(data.get("date"))
+        if not sale_date:
+            raise ValueError("Sale date is required")
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    if quantity > inv.quantity + 1e-9:
+        return jsonify({"error": "Insufficient shares"}), 400
+
+    # The two ledger records preserve the existing realized P/L calculation:
+    # proceeds as income, cost basis as expense.
+    cost_basis = quantity * inv.average_cost
+    proceeds = quantity * price
+    symbol = inv.symbol
+    user_id = session["user_id"]
+    remaining = max(0.0, inv.quantity - quantity)
+    try:
+        db.session.add(Transaction(
+            user_id=user_id, description=f"Sold {quantity:g} {symbol}"[:100],
+            amount=proceeds, category="Investment Returns",
+            type="income", date=sale_date))
+        if cost_basis > 0:
+            db.session.add(Transaction(
+                user_id=user_id, description=f"Cost basis: {quantity:g} {symbol}"[:100],
+                amount=cost_basis, category="Investment Cost Basis",
+                type="expense", date=sale_date))
+        if remaining <= 1e-9:
+            db.session.delete(inv)
+        else:
+            inv.quantity = remaining
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        app.logger.exception("Investment sale failed")
+        return jsonify({"error": "Unable to complete sale"}), 500
+    return jsonify({
+        "success": True, "remainingShares": remaining,
+        "proceeds": proceeds, "costBasis": cost_basis,
+        "realizedProfit": proceeds - cost_basis,
+    })
+
+
+
 _EMAIL_HEADER = """
 <div style="font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;max-width:580px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e2e8f0">
   <div style="background:linear-gradient(135deg,#2563eb 0%,#4f46e5 100%);padding:32px 40px">
