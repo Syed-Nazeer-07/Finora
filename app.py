@@ -1195,7 +1195,9 @@ def create_category():
         return jsonify({"error": "Category already exists"}), 400
     
     emoji = (data.get("emoji") or "📦").strip()[:10]
-    color = (data.get("color") or "#3b82f6").strip()[:7]
+    color = (data.get("color") or "#3b82f6").strip()
+    if not __import__("re").fullmatch(r"#[0-9A-Fa-f]{6}", color):
+        return jsonify({"error": "Color must be a valid hex value"}), 400
     cat = Category(user_id=session["user_id"], name=name, emoji=emoji, color=color, category_type=category_type, is_default=False)
     db.session.add(cat)
     db.session.commit()
@@ -1222,7 +1224,10 @@ def update_category(cat_id):
     if "emoji" in data:
         cat.emoji = (data["emoji"] or "📦").strip()[:10]
     if "color" in data:
-        cat.color = (data["color"] or "#3b82f6").strip()[:7]
+        color = (data["color"] or "#3b82f6").strip()
+        if not __import__("re").fullmatch(r"#[0-9A-Fa-f]{6}", color):
+            return jsonify({"error": "Color must be a valid hex value"}), 400
+        cat.color = color
     if "category_type" in data:
         category_type = (data["category_type"] or "expense").strip()
         if category_type in ("income", "expense"):
