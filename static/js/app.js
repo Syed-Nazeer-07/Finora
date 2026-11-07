@@ -1097,28 +1097,12 @@ const App = {
     renderDashboardOnly() {
         if (this.state.activeTab !== 'dashboard') return;
         const content = document.getElementById('main-content');
-        
-        // Show skeleton first for instant feel
-        if (!this.state.profile || !this.state.transactions.length) {
-            content.innerHTML = this.getDashboardSkeleton();
-            setTimeout(() => {
-                if (this.state.profile && this.state.transactions.length) {
-                    content.innerHTML = this.getDashboardHTML();
-                    lucide.createIcons();
-                    this.initDashboardCharts();
-                }
-            }, 100);
-            return;
-        }
-        
+        if (!content) return;
+        // An empty account is a valid loaded state, not a perpetual skeleton.
         content.innerHTML = this.getDashboardHTML();
         lucide.createIcons();
-        setTimeout(() => {
-            if (!this.state.chartsInitializing) {
-                this.state.chartsInitializing = true;
-                this.initDashboardCharts().finally(() => { this.state.chartsInitializing = false; });
-            }
-        }, 50);
+        if (window.tailwind && window.tailwind.process) window.tailwind.process();
+        this._initChartsWithLazyLoading();
     },
     renderTransactionsOnly() {
         if (this.state.activeTab !== 'transactions') return;
@@ -1172,14 +1156,7 @@ const App = {
         }
         let html = '';
         switch (this.state.activeTab) {
-            case 'dashboard':
-                // Show skeleton while preparing dashboard
-                html = LazyLoader.wrapWithFadeIn(
-                    LazyLoader.createSkeleton('metric', 4) + 
-                    LazyLoader.createSkeleton('chart', 3),
-                    'dashboard-skeleton'
-                );
-                break;
+            case 'dashboard': html = this.getDashboardHTML(); break;
             case 'transactions': html = this.getTransactionsHTML(); break;
             case 'budgets':      html = this.getBudgetsHTML(); break;
             case 'savings':      html = this.getSavingsHTML(); break;
@@ -1189,17 +1166,12 @@ const App = {
         content.innerHTML = html;
         lucide.createIcons();
         
-        // Load dashboard content after skeleton displays
+        // Render the real dashboard once; skeletons caused a visible flash on every redraw.
         if (this.state.activeTab === 'dashboard') {
-            requestAnimationFrame(() => {
-                const dashboardHTML = this.getDashboardHTML();
-                content.innerHTML = dashboardHTML;
-                lucide.createIcons();
-                if (window.tailwind && window.tailwind.process) {
-                    window.tailwind.process();
-                }
-                this._initChartsWithLazyLoading();
-            });
+            if (window.tailwind && window.tailwind.process) {
+                window.tailwind.process();
+            }
+            this._initChartsWithLazyLoading();
         } else {
             // Force Tailwind CDN to process new classes
             if (window.tailwind && window.tailwind.process) {
@@ -1220,6 +1192,8 @@ const App = {
     
     _initChartsWithLazyLoading() {
         if (this.state.chartsInitializing) return;
+        // Do not schedule chart work for accounts without enough financial history.
+        if (!document.getElementById('netWorthChart') && !document.getElementById('expenseChart')) return;
         this.state.chartsInitializing = true;
         
         // Lazy load charts with slight delays for smooth rendering
