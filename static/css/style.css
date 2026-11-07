@@ -506,3 +506,48 @@ textarea:focus {
 .skip-link:focus {
     top: 0;
 }
+
+/* Finora interaction polish: restrained motion and consistent controls */
+:root {
+    color-scheme: light;
+}
+.dark {
+    color-scheme: dark;
+}
+button, input, select, textarea {
+    -webkit-tap-highlight-color: transparent;
+}
+button:not(:disabled) {
+    cursor: pointer;
+}
+button:disabled {
+    cursor: not-allowed;
+}
+#main-content {
+    min-width: 0;
+}
+#main-content table {
+    font-variant-numeric: tabular-nums;
+}
+#main-content th,
+#main-content td {
+    vertical-align: middle;
+}
+@media (max-width: 640px) {
+    #main-content {
+        padding-bottom: max(2rem, env(safe-area-inset-bottom));
+    }
+    .modal-standard {
+        width: min(100%, 28rem);
+        max-height: calc(100dvh - 2rem);
+        overflow-y: auto;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+    }
+}
