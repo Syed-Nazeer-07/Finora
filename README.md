@@ -164,21 +164,27 @@ If it does not, install the dependencies listed by the project and its configura
 
 ### 4. Configure environment variables
 
-Create a local `.env` file if the project uses environment-based configuration. Add the variables required by the application, such as database connection settings and Google OAuth credentials.
+Copy `.env.example` into a local `.env` file. Use a strong random `SECRET_KEY`, and never commit actual keys or passwords. Local development can use SQLite; **Vercel requires a durable PostgreSQL database**, set through `DATABASE_URL`.
 
-```env
-# Example placeholders only — use the variable names expected by the application
-SECRET_KEY=replace-with-a-local-secret
-DATABASE_URL=replace-with-your-database-url
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
-```
-
-**Important:** These are illustrative placeholders, not a verified list of the application's exact environment variable names. Check the source code and configuration before running the app. Never commit real secrets or credentials.
+For Google sign-in, create a Google OAuth web client and authorize the exact callback URL `https://YOUR_DOMAIN/auth/google/callback`. For account verification and password reset, use **either** Resend (`RESEND_API_KEY`, `EMAIL_FROM`) **or** authenticated SMTP (`MAIL_SERVER`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`). Without a configured email provider, password signups cannot complete verification.
 
 ### 5. Initialize the database
 
-Follow the database setup and migration steps implemented by the repository. The exact command depends on how database initialization is configured.
+During development, the Flask app currently creates missing tables using SQLAlchemy `create_all()`. This is **not a migration system**: it cannot safely alter existing columns or preserve data across arbitrary schema changes. Back up the database before updating models; proper versioned migrations are planned.
+
+### Deploy for free: Vercel + Neon PostgreSQL
+
+1. Connect this GitHub repository to your Vercel project on the Hobby plan (personal, non-commercial use).
+2. In **Project Settings → Build and Deployment**, choose **Flask** and set **Root Directory** to the repository root, not `frontend`. Keep build and output commands on their automatic defaults.
+3. In **Vercel → Storage → Create Database**, choose **Neon** and its **Free** plan. Create a separate database for Finora and connect it to this Vercel project. Select Production (and Preview only if you actually want it connected).
+4. In **Vercel → Environment Variables**, confirm `DATABASE_URL` is present for Production. Never share its value in a public issue, screenshot, or commit. Set `SECRET_KEY` and `PREFERRED_URL_SCHEME=https`.
+5. Add the appropriate Google OAuth and email environment variables if those features are required, and authorize the deployed domain in Google Cloud Console.
+6. Trigger a fresh deployment. Visit `/health` and verify it returns HTTP 200 with `"status":"healthy"` and `"database":"connected"`. A READY deployment does **not** guarantee database connectivity.
+7. Test signup, verification, login, logout, creating a transaction, and retrieving the same transaction after a redeploy. Verify data isolation between accounts.
+
+**Important**: Without `DATABASE_URL`, serverless Finora intentionally serves public pages but responds 503 to database-backed routes. Never use local SQLite inside a Vercel function for real financial records; filesystem changes are not durable.
+
+**Free-tier constraints**: Neon Free has storage, compute and transfer quotas and can suspend compute upon exceeding them. Vercel Hobby is suitable for a small non-commercial portfolio, not a production financial institution. Review the current plans before publishing publicly.
 
 ### 6. Run the application
 
@@ -207,7 +213,7 @@ Because Finora handles personal financial information, security and data isolati
 - **PostgreSQL in production:** A relational database suited to structured financial records and relationships.
 - **SQLite for development:** A convenient option for local development.
 - **Tailwind CSS:** Utility-first styling for a consistent and responsive interface.
-- **Railway:** Used to deploy the application and configure production infrastructure.
+- **Vercel + PostgreSQL:** Flask functions on Vercel with durable PostgreSQL (for example Neon) for small personal deployments.
 
 ## 🧩 Challenges and Lessons Learned
 
