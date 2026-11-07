@@ -181,6 +181,23 @@ const AppDashboard = {
             </div>`;
         };
         const hasActivity = activity.today.length + activity.yesterday.length + activity.earlier.length > 0;
+        // Render dashboard previews only when they have meaningful content.
+        const hasTransactions = this.state.transactions.length > 0;
+        const hasMonthlyActivity = txThis.length > 0;
+        const hasBudgets = calc.budgetProgress.length > 0;
+        const hasGoals = this.state.savings.length > 0;
+        const hasHealthData = this.state.transactions.some(t => t.type === 'income') &&
+            this.state.transactions.some(t => t.type === 'expense');
+        const hasComparedMonths = txThis.length > 0 && txLast.length > 0;
+        const hasTrend = new Set(this.state.transactions.map(t => t.date.slice(0, 7))).size >= 2;
+        const hasBreakdown = this.state.transactions.some(t =>
+            t.type === 'expense' && (!isCashFlow || t.date.startsWith(thisYM))
+        );
+        const meaningfulInsights = hasTransactions
+            ? insights.filter(ins => !/add transactions to see spending insights/i.test(ins.text))
+            : [];
+        const hasInsights = meaningfulInsights.length > 0;
+        const secondaryCards = Number(hasActivity) + Number(hasGoals) + Number(hasInsights);
         const activityHtml = hasActivity
             ? txGroup('Today', activity.today) + txGroup('Yesterday', activity.yesterday) + txGroup('Earlier', activity.earlier)
             : `<div class="flex flex-col items-center justify-center py-8 text-slate-400 dark:text-slate-500 text-sm gap-2">
@@ -193,7 +210,7 @@ const AppDashboard = {
             danger:  'bg-rose-50 dark:bg-rose-500/10 border-rose-200 dark:border-rose-500/20 text-rose-800 dark:text-rose-300',
             info:    'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300',
         };
-        const insightsHtml = insights.map(ins => `
+        const insightsHtml = meaningfulInsights.map(ins => `
             <div class="flex items-start gap-2.5 p-3 rounded-xl border text-xs font-medium mb-2 last:mb-0 ${insightColors[ins.type] || insightColors.info}">
                 <i data-lucide="${ins.icon}" class="w-4 h-4 shrink-0 mt-0.5"></i>
                 <span>${this.escapeHtml(ins.text)}</span>
@@ -217,7 +234,7 @@ const AppDashboard = {
             </div>
             <!-- Row 1: Net Worth Hero + Financial Health -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 slide-up delay-100">
-                <div class="lg:col-span-2 relative overflow-hidden rounded-3xl p-6 sm:p-8 bg-slate-900 dark:bg-slate-900 border border-slate-800 dark:border-slate-700 text-white shadow-2xl hover-card">
+                <div class="${hasHealthData ? 'lg:col-span-2' : 'lg:col-span-3'} relative overflow-hidden rounded-3xl p-6 sm:p-8 bg-slate-900 dark:bg-slate-900 border border-slate-800 dark:border-slate-700 text-white shadow-2xl hover-card">
                     <div class="absolute top-0 right-0 w-96 h-96 bg-brand-500/30 rounded-full blur-3xl -mr-20 -mt-40 pointer-events-none animate-pulse-slow"></div>
                     <div class="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none"></div>
                     <div class="relative z-10 flex flex-col h-full justify-between">
@@ -229,16 +246,16 @@ const AppDashboard = {
                                 </div>
                                 <h2 class="text-4xl sm:text-5xl font-extrabold tracking-tight">${this.formatCurrency(isCashFlow ? calc.availableBalance : calc.netWorth)}</h2>
                             </div>
-                            <div class="px-3 py-1.5 rounded-full ${(isCashFlow ? calc.cashFlowGrowth : calc.netWorthGrowth) >= 0 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'} flex items-center gap-1 text-sm font-bold backdrop-blur-md shrink-0" title="${isCashFlow ? 'Cash flow change vs last month' : 'Net worth growth this month'}">
+                            <div class="${hasComparedMonths ? 'flex' : 'hidden'} px-3 py-1.5 rounded-full ${(isCashFlow ? calc.cashFlowGrowth : calc.netWorthGrowth) >= 0 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'} items-center gap-1 text-sm font-bold backdrop-blur-md shrink-0" title="${isCashFlow ? 'Cash flow change vs last month' : 'Net worth growth this month'}">
                                 <i data-lucide="${(isCashFlow ? calc.cashFlowGrowth : calc.netWorthGrowth) >= 0 ? 'trending-up' : 'trending-down'}" class="w-4 h-4"></i>
                                 ${(isCashFlow ? calc.cashFlowGrowth : calc.netWorthGrowth) >= 0 ? '+' : ''}${(isCashFlow ? calc.cashFlowGrowth : calc.netWorthGrowth).toFixed(1)}%
                             </div>
                         </div>
-                        <div class="grid grid-cols-3 gap-4 border-t border-white/10 pt-6">
+                        <div class="grid ${isCashFlow && !hasMonthlyActivity ? 'grid-cols-1' : 'grid-cols-3'} gap-4 border-t border-white/10 pt-6">
                             ${isCashFlow 
                                 ? `<div><p class="text-slate-400 text-xs mb-1">Savings</p><p class="font-semibold text-lg">${this.formatCurrency(calc.current_savings)}</p></div>
-                                   <div><p class="text-slate-400 text-xs mb-1">This Month Income</p><p class="font-semibold text-lg">${this.formatCurrency(calc.monthTxIncome)}</p></div>
-                                   <div><p class="text-slate-400 text-xs mb-1">This Month Expenses</p><p class="font-semibold text-lg">${this.formatCurrency(calc.monthTxExpenses)}</p></div>`
+                                   <div class="${hasMonthlyActivity ? 'block' : 'hidden'}"><p class="text-slate-400 text-xs mb-1">This Month Income</p><p class="font-semibold text-lg">${this.formatCurrency(calc.monthTxIncome)}</p></div>
+                                   <div class="${hasMonthlyActivity ? 'block' : 'hidden'}"><p class="text-slate-400 text-xs mb-1">This Month Expenses</p><p class="font-semibold text-lg">${this.formatCurrency(calc.monthTxExpenses)}</p></div>`
                                 : `<div><p class="text-slate-400 text-xs mb-1">Liquid Cash</p><p class="font-semibold text-lg">${this.formatCurrency(calc.currentCash)}</p></div>
                                    <div><p class="text-slate-400 text-xs mb-1">Savings</p><p class="font-semibold text-lg">${this.formatCurrency(calc.current_savings)}</p></div>
                                    <div><p class="text-slate-400 text-xs mb-1">Investments</p><p class="font-semibold text-lg">${this.formatCurrency(calc.totalInvestmentValue)}</p></div>`
@@ -247,7 +264,7 @@ const AppDashboard = {
                     </div>
                 </div>
                 <!-- Financial Health -->
-                <div id="financial-health-card" class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm hover-card flex flex-col">
+                <div id="financial-health-card" class="${hasHealthData ? 'flex' : 'hidden'} bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm hover-card flex-col">
                     <div class="flex justify-between items-start mb-4">
                         <h3 class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Financial Health</h3>
                         <button onclick="App.showHealthModal()" class="text-brand-500 hover:text-brand-600 text-xs font-semibold flex items-center gap-1">
@@ -272,10 +289,21 @@ const AppDashboard = {
                     </div>
                 </div>
             </div>
+            ${!hasTransactions ? `
+            <div class="rounded-2xl border border-brand-200 dark:border-brand-900/40 bg-brand-50 dark:bg-brand-900/10 px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 slide-up">
+                <div class="flex items-start gap-3">
+                    <i data-lucide="sparkles" class="w-5 h-5 mt-0.5 shrink-0 text-brand-500"></i>
+                    <div>
+                        <p class="text-sm font-semibold text-slate-900 dark:text-white">Your dashboard is ready</p>
+                        <p class="text-sm text-slate-600 dark:text-slate-400 mt-0.5">Add a transaction to unlock useful insights and charts.</p>
+                    </div>
+                </div>
+                <button onclick="App.openModal('transaction')" class="text-sm font-semibold text-brand-600 dark:text-brand-400 hover:underline text-left shrink-0">Add a transaction →</button>
+            </div>` : ''}
             <!-- Row 2: Monthly Summary + Budget Snapshot -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 slide-up delay-150">
+            <div class="${hasMonthlyActivity || hasBudgets ? 'grid' : 'hidden'} grid-cols-1 ${hasMonthlyActivity && hasBudgets ? 'md:grid-cols-2' : ''} gap-6 slide-up delay-150">
                 <!-- Monthly Summary -->
-                <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm hover-card">
+                <div class="${hasMonthlyActivity ? 'block' : 'hidden'} bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm hover-card">
                     <div class="flex items-center justify-between mb-5">
                         <h3 class="font-bold text-lg text-slate-900 dark:text-white dark:text-white flex items-center gap-2">
                             <i data-lucide="calendar" class="w-5 h-5 text-brand-500"></i> This Month
@@ -298,7 +326,7 @@ const AppDashboard = {
                     </div>
                 </div>
                 <!-- Budget Snapshot -->
-                <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm hover-card">
+                <div class="${hasBudgets ? 'block' : 'hidden'} bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm hover-card">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="font-bold text-lg text-slate-900 dark:text-white dark:text-white flex items-center gap-2">
                             <i data-lucide="pie-chart" class="w-5 h-5 text-brand-500"></i> Budgets
@@ -332,9 +360,9 @@ const AppDashboard = {
                 </div>
             </div>
             <!-- Row 3: Recent Activity + Goals + Insights -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 slide-up delay-200">
+            <div class="${secondaryCards ? 'grid' : 'hidden'} grid-cols-1 ${secondaryCards === 2 ? 'lg:grid-cols-2' : secondaryCards >= 3 ? 'lg:grid-cols-3' : ''} gap-6 slide-up delay-200">
                 <!-- Recent Activity -->
-                <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm hover-card">
+                <div class="${hasActivity ? 'block' : 'hidden'} bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm hover-card">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="font-bold text-sm text-slate-900 dark:text-white dark:text-white flex items-center gap-2">
                             <i data-lucide="clock" class="w-4 h-4 text-purple-500"></i> Recent Activity
@@ -361,7 +389,7 @@ const AppDashboard = {
                     </div>
                 </div>
                 <!-- Goal Progress -->
-                <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm hover-card">
+                <div class="${hasGoals ? 'block' : 'hidden'} bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm hover-card">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="font-bold text-sm text-slate-900 dark:text-white dark:text-white flex items-center gap-2">
                             <i data-lucide="target" class="w-4 h-4 text-brand-500"></i> Active Goals
@@ -371,30 +399,31 @@ const AppDashboard = {
                     ${goalsHtml}
                 </div>
                 <!-- Smart Insights -->
-                <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm hover-card">
+                <div class="${hasInsights ? 'block' : 'hidden'} bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm hover-card">
                     <h3 class="font-bold text-sm text-slate-900 dark:text-white dark:text-white mb-4 flex items-center gap-2">
                         <i data-lucide="lightbulb" class="w-4 h-4 text-amber-500"></i> Smart Insights
                     </h3>
                     <div class="space-y-2 max-h-64 overflow-y-auto">${insightsHtml || '<p class="text-xs text-slate-400">No insights available</p>'}</div>
                 </div>
             </div>
-            <!-- Row 3: Charts -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 slide-up delay-300">
+            <!-- Charts appear only when there is useful transaction history. -->
+            ${hasTrend || hasBreakdown ? `
+            <div class="grid grid-cols-1 ${hasTrend && hasBreakdown ? 'lg:grid-cols-2' : ''} gap-6 slide-up delay-300">
+                ${hasTrend ? `
                 <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm hover-card">
-                    <h3 class="font-bold text-lg text-slate-900 dark:text-white dark:text-white mb-6">${isCashFlow ? 'Balance Trend' : 'Net Worth Trend'}</h3>
+                    <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-6">${isCashFlow ? 'Balance Trend' : 'Net Worth Trend'}</h3>
                     <div class="h-56 relative w-full">
-                        <div class="skeleton skeleton-chart absolute inset-0" id="netWorthSkeleton"></div>
-                        <canvas id="netWorthChart" data-mode="${isCashFlow ? 'cashflow' : 'networth'}" style="opacity: 0;"></canvas>
+                        <canvas id="netWorthChart" data-mode="${isCashFlow ? 'cashflow' : 'networth'}"></canvas>
                     </div>
-                </div>
+                </div>` : ''}
+                ${hasBreakdown ? `
                 <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm hover-card">
-                    <h3 class="font-bold text-lg text-slate-900 dark:text-white dark:text-white mb-6">${isCashFlow ? 'Spending Breakdown' : 'Expense Breakdown'}</h3>
+                    <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-6">${isCashFlow ? 'Spending Breakdown' : 'Expense Breakdown'}</h3>
                     <div class="h-56 relative w-full flex justify-center">
-                        <div class="skeleton skeleton-chart absolute inset-0" id="expenseSkeleton"></div>
-                        <canvas id="expenseChart" data-mode="${isCashFlow ? 'cashflow' : 'networth'}" style="opacity: 0;"></canvas>
+                        <canvas id="expenseChart" data-mode="${isCashFlow ? 'cashflow' : 'networth'}"></canvas>
                     </div>
-                </div>
-            </div>
+                </div>` : ''}
+            </div>` : ''}
         </div>`;
     },
     _dashInsightPeriod(period) {
