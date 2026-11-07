@@ -655,16 +655,6 @@ const App = {
             breakdown = { savingsRateScore: Math.round(savingsRateScore), emergencyFundScore: Math.round(emergencyFundScore), budgetScore: Math.round(budgetScore), goalScore: Math.round(goalScore), investmentScore: Math.round(investmentScore), stabilityScore: Math.round(stabilityScore), growthScore: Math.round(growthScore) };
         }
 
-        // --- Temporary Console Logs for Audit ---
-        console.group('%c[Audit] Financial Calculations', 'color: #f59e0b; font-weight: bold');
-        console.log('Total Income (txs + profile):', totalIncome);
-        console.log('Total Expenses (txs + profile):', totalExpenses);
-        console.log('Transaction Net Cash (currentCash):', currentCash);
-        console.log('Baseline Savings (profile):', current_savings);
-        console.log('Calculated Balance (availableBalance):', availableBalance);
-        console.log('Calculated Net Worth:', netWorth);
-        console.groupEnd();
-
         return {
             totalIncome, totalExpenses, currentCash, current_savings, monthly_income, monthly_expenses,
             monthTxIncome, monthTxExpenses, lastMonthTxIncome, lastMonthTxExpenses,
