@@ -20,10 +20,14 @@ app.wsgi_app = ProxyFix(
 )
 
 database_url = os.environ.get("DATABASE_URL")
+# A Vercel function cannot use its local filesystem for persistent finance data.
+# Keep public pages renderable while refusing all database-backed operations until
+# a durable DATABASE_URL is configured.
+database_unavailable = bool(os.environ.get("VERCEL")) and not database_url
 if not database_url:
-    if os.environ.get("FLASK_ENV") == "production":
+    if os.environ.get("FLASK_ENV") == "production" and not database_unavailable:
         raise RuntimeError("DATABASE_URL environment variable is required in production")
-    database_url = "sqlite:///finora.db"
+    database_url = "sqlite://" if database_unavailable else "sqlite:///finora.db"
 if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 app.config["SQLALCHEMY_DATABASE_URI"] = database_url
@@ -45,35 +49,17 @@ app.config["PROPAGATE_EXCEPTIONS"] = os.environ.get("FLASK_ENV") != "production"
 app.config["MAX_CONTENT_LENGTH"] = 1024 * 1024
 
 import logging
-from logging.handlers import RotatingFileHandler
-if not app.debug:
-    if not os.path.exists("logs"):
-        os.mkdir("logs")
-    file_handler = RotatingFileHandler("logs/finora.log", maxBytes=10240000, backupCount=10)
-    file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s: %(message)s"))
-    file_handler.setLevel(logging.INFO)
-    app.logger.addHandler(file_handler)
-    app.logger.setLevel(logging.INFO)
-    
-    # Log database configuration on startup
-    db_uri = app.config["SQLALCHEMY_DATABASE_URI"]
-    if db_uri.startswith("postgresql://"):
-        # Extract and mask host
-        parts = db_uri.split('@')
-        if len(parts) == 2:
-            host_db = parts[1].split('/')[0]  # host:port
-            host = host_db.split(':')[0]
-            masked_host = f"{host[:20]}..." if len(host) > 20 else host
-            app.logger.info(f"✓ Using PostgreSQL: {masked_host}")
-        else:
-            app.logger.info("✓ Using PostgreSQL: (configured)")
-    elif db_uri.startswith("sqlite:///"):
-        app.logger.error(f"⚠ CRITICAL: Using SQLite: {db_uri} - DATA WILL BE LOST ON DEPLOYMENT!")
-        if os.environ.get("FLASK_ENV") == "production":
-            raise RuntimeError("SQLite is not allowed in production. Configure DATABASE_URL.")
-    else:
-        app.logger.info(f"Using database: {db_uri.split(':')[0]}")
-    app.logger.info("Finora startup")
+# File logging crashes in serverless runtimes (read-only application filesystem).
+# Stream handlers feed Vercel, Render and local process logs instead.
+app.logger.setLevel(logging.INFO)
+if not any(isinstance(h, logging.StreamHandler) for h in app.logger.handlers):
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s: %(message)s"))
+    handler.setLevel(logging.INFO)
+    app.logger.addHandler(handler)
+app.logger.info("Finora startup")
+if database_unavailable:
+    app.logger.warning("Persistent database not configured; authenticated routes are unavailable")
 
 resend.api_key = os.environ.get("RESEND_API_KEY", "")
 app.config["EMAIL_FROM"] = os.environ.get("EMAIL_FROM", "Finora <onboarding@resend.dev>")
@@ -228,8 +214,9 @@ class Category(db.Model):
 
 # TODO: Replace create_all with versioned migrations before further schema changes.
 # Never seed a predictable demo account when initializing a production database.
-with app.app_context():
-    db.create_all()
+if not database_unavailable:
+    with app.app_context():
+        db.create_all()
 
 
 def current_user():
@@ -431,7 +418,9 @@ def me():
 
 @app.route("/health", methods=["GET"])
 def health_check():
-    """Health check endpoint for Render monitoring"""
+    """Health check requires a durable database, not an ephemeral local SQLite file."""
+    if database_unavailable:
+        return jsonify({"status": "unhealthy", "database": "not_configured"}), 503
     try:
         from sqlalchemy import text
         db.session.execute(text("SELECT 1"))
@@ -458,7 +447,12 @@ def security_headers(response):
 
 @app.before_request
 def log_request():
-    """Log incoming requests in production"""
+    """Reject finance operations when a serverless deployment lacks a database."""
+    if database_unavailable and (
+        request.path.startswith("/api/") or request.path.startswith("/auth/")
+        or request.path.startswith("/verify-email/")
+    ):
+        return jsonify({"error": "Persistent database is not configured"}), 503
     if not app.debug and app.logger.level <= logging.INFO:
         app.logger.info(f"{request.method} {request.path}")
 
