@@ -5,7 +5,8 @@ from datetime import date, datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
 from dotenv import load_dotenv
-import os, secrets
+import os, secrets, math
+from html import escape as escape_html
 import resend
 load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 
@@ -32,12 +33,16 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 3600,
     "echo": False
 }
-app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-change-in-production")
+secret_key = os.environ.get("SECRET_KEY")
+if not secret_key and os.environ.get("FLASK_ENV") == "production":
+    raise RuntimeError("SECRET_KEY is required in production")
+app.config["SECRET_KEY"] = secret_key or secrets.token_hex(32)
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["SESSION_COOKIE_SECURE"]   = os.environ.get("PREFERRED_URL_SCHEME", "http") == "https"
 app.config["PREFERRED_URL_SCHEME"]    = os.environ.get("PREFERRED_URL_SCHEME", "http")
-app.config["PROPAGATE_EXCEPTIONS"] = True
+app.config["PROPAGATE_EXCEPTIONS"] = os.environ.get("FLASK_ENV") != "production"
+app.config["MAX_CONTENT_LENGTH"] = 1024 * 1024
 
 import logging
 from logging.handlers import RotatingFileHandler
@@ -221,57 +226,10 @@ class Category(db.Model):
 
 
 
+# TODO: Replace create_all with versioned migrations before further schema changes.
+# Never seed a predictable demo account when initializing a production database.
 with app.app_context():
     db.create_all()
-
-    if User.query.count() == 0:
-        demo = User(
-            name="Nazeer",
-            email="nazeer@finora.app",
-            password_hash=generate_password_hash("changeme"),
-        )
-        db.session.add(demo)
-        db.session.flush()
-
-        db.session.add(Profile(user_id=demo.id))
-
-        # Expense categories
-        expense_cats = [
-            ("Food & Dining", "🍔"), ("Groceries", "🛒"), ("Transportation", "🚗"),
-            ("Fuel", "⛽"), ("Housing", "🏠"), ("Rent", "🏘️"), ("Utilities", "💡"),
-            ("Internet & Mobile", "📱"), ("Shopping", "🛍️"), ("Entertainment", "🍿"),
-            ("Healthcare", "🏥"), ("Education", "📚"), ("Insurance", "🛡️"),
-            ("Debt Payments", "💳"), ("Subscriptions", "📺"), ("Gifts & Donations", "🎁"),
-            ("Travel", "✈️"), ("Other Expense", "📦")
-        ]
-        for name, emoji in expense_cats:
-            db.session.add(Category(user_id=demo.id, name=name, emoji=emoji, category_type="expense", is_default=True))
-        
-        # Income categories
-        income_cats = [
-            ("Salary", "💵"), ("Pocket Money", "💸"), ("Freelance", "🚀"),
-            ("Business Income", "💼"), ("Scholarship", "🎓"), ("Allowance", "👛"),
-            ("Internship", "🧑‍💼"), ("Gift Received", "🎁"), ("Interest Income", "🏦"),
-            ("Investment Returns", "📊"), ("Refund", "↩️"), ("Bonus", "🎉"),
-            ("Side Hustle", "⚡"), ("Other Income", "📦")
-        ]
-        for name, emoji in income_cats:
-            db.session.add(Category(user_id=demo.id, name=name, emoji=emoji, category_type="income", is_default=True))
-
-        if Transaction.query.count() == 0:
-            db.session.add_all([
-                Transaction(user_id=demo.id, description="TechCorp Salary",     amount=150000, category="Salary",       type="income",  date="2026-06-05"),
-                Transaction(user_id=demo.id, description="Amazon Purchase",      amount=12000,  category="Shopping",      type="expense", date="2026-06-08"),
-                Transaction(user_id=demo.id, description="Zomato Delivery",      amount=850,    category="Food & Dining", type="expense", date="2026-06-03"),
-                Transaction(user_id=demo.id, description="Apartment Rent",       amount=25000,  category="Housing",       type="expense", date="2026-06-01"),
-                Transaction(user_id=demo.id, description="Netflix Subscription", amount=649,    category="Entertainment", type="expense", date="2026-05-28"),
-                Transaction(user_id=demo.id, description="Uber Rides",           amount=1240,   category="Transportation",type="expense", date="2026-05-25"),
-            ])
-        else:
-            Transaction.query.filter_by(user_id=None).update({"user_id": demo.id})
-
-        db.session.commit()
-
 
 
 def current_user():
@@ -289,17 +247,27 @@ def _tx_dict(t):
             "category": t.category, "type": t.type, "date": t.date}
 
 def _validate_tx(data):
-    required = ["description", "amount", "category", "type", "date"]
-    missing = [f for f in required if not data.get(f) and data.get(f) != 0]
-    if missing:
-        return None, (jsonify({"error": f"Missing fields: {', '.join(missing)}"}), 400)
+    required = ("description", "amount", "category", "type", "date")
+    if any(key not in data or data[key] is None for key in required):
+        return None, (jsonify({"error": "Missing transaction fields"}), 400)
     if data["type"] not in ("income", "expense"):
-        return None, (jsonify({"error": "type must be 'income' or 'expense'"}), 400)
+        return None, (jsonify({"error": "Invalid transaction type"}), 400)
+    if not isinstance(data["description"], str) or not data["description"].strip():
+        return None, (jsonify({"error": "Description is required"}), 400)
+    if not isinstance(data["category"], str) or not data["category"].strip():
+        return None, (jsonify({"error": "Category is required"}), 400)
+    if not isinstance(data["date"], str):
+        return None, (jsonify({"error": "Invalid transaction date"}), 400)
     try:
-        return float(data["amount"]), None
-    except (ValueError, TypeError):
-        return None, (jsonify({"error": "amount must be a number"}), 400)
-
+        parsed_date = date.fromisoformat(data["date"])
+        if parsed_date.isoformat() != data["date"]:
+            raise ValueError("Invalid ISO date")
+        amount = float(data["amount"])
+    except (ValueError, TypeError, OverflowError):
+        return None, (jsonify({"error": "Invalid amount or date"}), 400)
+    if not math.isfinite(amount) or not 0 < amount <= 1e12:
+        return None, (jsonify({"error": "Amount must be positive and finite"}), 400)
+    return amount, None
 
 
 @app.route("/login")
@@ -408,6 +376,7 @@ def login():
     if not user.email_verified:
         return jsonify({"error": "Please verify your email before continuing.", "unverified": True, "email": email}), 403
 
+    session.clear()
     session["user_id"] = user.id
     return jsonify({"id": user.id, "name": user.name, "email": user.email})
 
@@ -451,31 +420,22 @@ def favicon():
     from flask import send_from_directory
     return send_from_directory('static', 'favicon.ico', mimetype='image/x-icon')
 
+@app.after_request
+def security_headers(response):
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    if request.path.startswith("/api/"):
+        response.headers["Cache-Control"] = "no-store"
+    return response
+
+
 @app.before_request
 def log_request():
     """Log incoming requests in production"""
     if not app.debug and app.logger.level <= logging.INFO:
         app.logger.info(f"{request.method} {request.path}")
 
-
-@app.route("/debug/oauth", methods=["GET"])
-def debug_oauth():
-    client_id = os.environ.get("GOOGLE_CLIENT_ID")
-    client_secret = os.environ.get("GOOGLE_CLIENT_SECRET")
-    if not client_id or not client_secret:
-        return jsonify({"error": "OAuth credentials missing"}), 400
-    return jsonify({
-        "client_id_loaded": bool(client_id),
-        "client_id_length": len(client_id) if client_id else 0,
-        "client_secret_loaded": bool(client_secret),
-        "client_secret_length": len(client_secret) if client_secret else 0,
-        "redirect_uri_template": url_for("google_callback", _external=True),
-        "app_url_scheme": os.environ.get("PREFERRED_URL_SCHEME", "http"),
-        "google_client_config": {
-            "client_id_starts_with": client_id[:20] if client_id else None,
-            "client_secret_starts_with": client_secret[:10] if client_secret else None
-        }
-    })
 
 @app.route("/")
 def index():
@@ -907,38 +867,29 @@ def _base_url():
         return "http://127.0.0.1:5000"
 
 
-import threading
-
-def _async_send_email(app, to, subject, html):
-    with app.app_context():
-        try:
-            app.logger.info(f"Email request started: Sending '{subject}' to {to} via Resend")
-            params = {
-                "from": app.config.get("EMAIL_FROM", "Finora <onboarding@resend.dev>"),
-                "to": [to],
-                "subject": subject,
-                "html": html
-            }
-            response = resend.Emails.send(params)
-            app.logger.info(f"Email delivered successfully to {to}. Resend ID: {response.get('id')}")
-        except Exception as e:
-            app.logger.error(f"Email API error for {to}: {type(e).__name__}: {e}")
-
 def _send_email(to, subject, body_html):
-    """Send email asynchronously using Resend API to prevent UI freezing."""
+    """Report success only after the provider accepts the email."""
+    if not resend.api_key:
+        app.logger.error("Email provider is not configured")
+        return False
     html = _EMAIL_HEADER.format(base_url=_base_url()) + body_html + _EMAIL_FOOTER.format(base_url=_base_url())
-    
-    # Run the email sending in a background thread so the web request returns immediately
-    import threading
-    thr = threading.Thread(target=_async_send_email, args=(app, to, subject, html))
-    thr.start()
-    return True
+    try:
+        response = resend.Emails.send({
+            "from": app.config["EMAIL_FROM"],
+            "to": [to],
+            "subject": subject,
+            "html": html,
+        })
+        return bool(response and response.get("id"))
+    except Exception:
+        app.logger.exception("Email provider rejected an email request")
+        return False
 
 
 def _send_verification_email(user, token):
     verify_url = url_for("verify_email", token=token, _external=True)
     body = f"""
-    <h2 style="margin:0 0 6px;color:#0f172a;font-size:22px;font-weight:700">Hi {user.name},</h2>
+    <h2 style="margin:0 0 6px;color:#0f172a;font-size:22px;font-weight:700">Hi {escape_html(user.name)},</h2>
     <p style="color:#64748b;margin:0 0 28px;line-height:1.7;font-size:15px">
       Thanks for signing up. Click the button below to verify your email address and activate your Finora account.
     </p>
@@ -960,7 +911,7 @@ def _send_verification_email(user, token):
 def _send_password_reset_email(user, token):
     reset_url = url_for("reset_password_page", token=token, _external=True)
     body = f"""
-    <h2 style="margin:0 0 6px;color:#0f172a;font-size:22px;font-weight:700">Hi {user.name},</h2>
+    <h2 style="margin:0 0 6px;color:#0f172a;font-size:22px;font-weight:700">Hi {escape_html(user.name)},</h2>
     <p style="color:#64748b;margin:0 0 28px;line-height:1.7;font-size:15px">
       We received a request to reset the password for your Finora account. Click the button below to choose a new password.
     </p>
@@ -1561,53 +1512,6 @@ def delete_account():
     session.clear()
     return jsonify({"success": True})
 
-@app.route("/api/admin/test-smtp", methods=["GET"])
-def test_smtp():
-    import smtplib, socket
-    server = app.config.get('MAIL_SERVER')
-    port = app.config.get('MAIL_PORT')
-    use_tls = app.config.get('MAIL_USE_TLS')
-    use_ssl = app.config.get('MAIL_USE_SSL')
-    username = app.config.get('MAIL_USERNAME')
-    password = app.config.get('MAIL_PASSWORD')
-    
-    stages = []
-    
-    try:
-        stages.append("1. DNS Resolution: Attempting...")
-        ips = socket.gethostbyname_ex(server)
-        stages[-1] += f" OK ({ips[2]})"
-        
-        stages.append(f"2. TCP Connection to {server}:{port}: Attempting...")
-        if use_ssl:
-            import ssl
-            context = ssl.create_default_context()
-            smtp = smtplib.SMTP_SSL(server, port, context=context, timeout=10)
-        else:
-            smtp = smtplib.SMTP(server, port, timeout=10)
-        stages[-1] += " OK"
-        
-        stages.append("3. EHLO Handshake: Attempting...")
-        smtp.ehlo()
-        stages[-1] += " OK"
-        
-        if use_tls and not use_ssl:
-            stages.append("3b. STARTTLS Handshake: Attempting...")
-            smtp.starttls()
-            stages[-1] += " OK"
-            
-        stages.append("4. SMTP Authentication: Attempting...")
-        smtp.login(username, password)
-        stages[-1] += " OK"
-        
-        smtp.quit()
-        return jsonify({"success": True, "stages": stages})
-    except Exception as e:
-        stages[-1] += f" FAILED: {type(e).__name__} - {str(e)}"
-        return jsonify({"success": False, "error": str(e), "stages": stages}), 500
-
-
-
 @app.route("/api/net-worth-history")
 def net_worth_history():
     """Return last 6 months of net-worth snapshots computed from transactions."""
@@ -1675,8 +1579,12 @@ def google_callback():
         app.logger.warning("Google OAuth: No userinfo returned")
         return redirect(url_for("login_page"))
 
+    if not info.get("email_verified"):
+        app.logger.warning("Google OAuth returned an unverified email")
+        return redirect(url_for("login_page"))
+
     google_id = info["sub"]
-    email = info["email"]
+    email = info["email"].strip().lower()
     name = info.get("name") or email.split("@")[0]
 
     is_new = False
@@ -1719,6 +1627,7 @@ def google_callback():
             is_new = True
         db.session.commit()
 
+    session.clear()
     session["user_id"] = user.id
 
     if is_new:
