@@ -76,7 +76,7 @@ const AppCharts = {
                             const abs = Math.abs(val);
                             if (abs >= 1e7) return (val/1e7).toFixed(1).replace(/\.0$/,'') + ' Cr';
                             if (abs >= 1e5) return (val/1e5).toFixed(1).replace(/\.0$/,'') + ' L';
-                            if (abs >= 1e3) return (val/1e3).toFixed(abs < 1e4 ? 2 : 1).replace(/0+$/,'').replace(/\\.$/,'') + 'k';
+                            if (abs >= 1e3) return (val/1e3).toFixed(abs < 1e4 ? 2 : 1).replace(/0+$/,'').replace(/\.$/,'') + 'k';
                             return sym + val;
                         }}},
                         x: { border: {display: false}, grid: { display: false }, ticks: { color: textColor } }
