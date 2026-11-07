@@ -1510,15 +1510,21 @@ const App = {
             .map(x => x.d);
     },
     _descAutocomplete(e) {
-        const input = e.target;
         const dropdown = document.getElementById('tx-desc-dropdown');
         if (!dropdown) return;
-        const suggestions = this._descGetSuggestions(input.value);
-        if (!suggestions.length) { dropdown.classList.add('hidden'); return; }
-        dropdown.innerHTML = suggestions.map(s =>
-            `<li class="px-4 py-2.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 border-b border-slate-100 dark:border-slate-800 last:border-0"
-                onmousedown="App._descSelect(event,'${s.replace(/'/g, "\\'")}')">${this.escapeHtml(s)}</li>`
-        ).join('');
+        const suggestions = this._descGetSuggestions(e.target.value);
+        dropdown.replaceChildren();
+        if (!suggestions.length) {
+            dropdown.classList.add('hidden');
+            return;
+        }
+        for (const suggestion of suggestions) {
+            const item = document.createElement('li');
+            item.className = 'px-4 py-2.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 border-b border-slate-100 dark:border-slate-800 last:border-0';
+            item.textContent = suggestion;
+            item.addEventListener('mousedown', event => this._descSelect(event, suggestion));
+            dropdown.appendChild(item);
+        }
         dropdown.classList.remove('hidden');
     },
     _descSelect(e, value) {
