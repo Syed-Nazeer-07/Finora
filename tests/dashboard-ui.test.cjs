@@ -55,12 +55,13 @@ function dashboard({ transactions = [], budgets = [], goals = [], insights = [] 
 
 function assertCompleteDashboard(html) {
     for (const section of [
-        'Financial Health', 'This Month', 'Budgets',
-        'Recent Activity', 'Active Goals', 'Smart Insights',
+        'Financial Health', 'Budgets', 'Recent Activity', 'Active Goals',
         'Balance Trend', 'Spending Breakdown',
     ]) assert.ok(html.includes(section), 'Missing dashboard section: ' + section);
     assert.match(html, /id="financial-health-card" class="bg-white/);
     assert.match(html, /id="netWorthChart"/);
+    assert.doesNotMatch(html, /<h3[^>]*>This Month<\/h3>/);
+    assert.doesNotMatch(html, />Smart Insights<\/h3>/);
 }
 
 test('new accounts retain all original dashboard sections with useful empty states', () => {
@@ -85,7 +86,7 @@ test('a month with spending shows a functional spending chart, not an empty stat
     assert.doesNotMatch(html, /id="expenseSkeleton"/);
 });
 
-test('populated budgets, goals, insights and charts all remain visible', () => {
+test('populated budgets, goals and charts remain visible after dashboard simplification', () => {
     const html = dashboard({
         transactions: [
             { date: month(), type: 'expense', category: 'Food', description: 'Lunch', amount: 45 },
@@ -98,7 +99,7 @@ test('populated budgets, goals, insights and charts all remain visible', () => {
     assertCompleteDashboard(html);
     assert.match(html, /id="expenseChart"/);
     assert.match(html, /Vacation/);
-    assert.match(html, /Useful financial insight/);
+    assert.doesNotMatch(html, /Useful financial insight/);
 });
 
 test('older expenses retain their card with a clear current-month empty message', () => {
@@ -109,4 +110,25 @@ test('older expenses retain their card with a clear current-month empty message'
     assertCompleteDashboard(html);
     assert.doesNotMatch(html, /id="expenseChart"/);
     assert.match(html, /No spending data yet/);
+});
+
+
+test('growth percentage is hidden without two comparable months', () => {
+    const html = dashboard();
+    assert.match(html, /class="hidden px-3 py-1\.5 rounded-full/);
+});
+
+test('growth percentage is shown when current and previous month have records', () => {
+    const html = dashboard({
+        transactions: [
+            { date: month(), type: 'expense', category: 'Food', description: 'Lunch', amount: 25 },
+            { date: month(-1), type: 'income', category: 'Salary', description: 'Pay', amount: 100 },
+        ],
+    });
+    assert.match(html, /class="flex px-3 py-1\.5 rounded-full/);
+});
+
+test('dashboard keeps its primary add-transaction button', () => {
+    const html = dashboard();
+    assert.equal((html.match(/App\.openModal\('transaction'\)/g) || []).length, 1);
 });
