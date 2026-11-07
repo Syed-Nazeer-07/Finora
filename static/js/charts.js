@@ -5,23 +5,22 @@ const AppCharts = {
         const textColor = isDark ? '#94a3b8' : '#64748b';
         const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
         
-        // Initialize charts with staggered timing
-        await Promise.all([
-            this._initNetWorthChart(isDark, textColor, gridColor),
-            new Promise(resolve => setTimeout(() => {
-                this._initExpenseChart(isDark, textColor);
-                resolve();
-            }, 150))
-        ]);
+        // Hidden/empty dashboard panels do not need Chart.js instances.
+        // Avoid initializing off-screen canvases or leaving empty chart loaders.
+        const tasks = [];
+        if (document.getElementById('netWorthChart')) {
+            tasks.push(this._initNetWorthChart(isDark, textColor, gridColor));
+        }
+        if (document.getElementById('expenseChart')) {
+            tasks.push(Promise.resolve().then(() => this._initExpenseChart(isDark, textColor)));
+        }
+        await Promise.all(tasks);
     },
     
     async _initNetWorthChart(isDark, textColor, gridColor) {
         try {
             const nwCtx = document.getElementById('netWorthChart');
-            if (!nwCtx) {
-                console.warn('Net Worth chart container not found');
-                return;
-            }
+            if (!nwCtx) return;
             
             const existingNwChart = Chart.getChart(nwCtx);
             if (existingNwChart) existingNwChart.destroy();
@@ -77,7 +76,7 @@ const AppCharts = {
                             const abs = Math.abs(val);
                             if (abs >= 1e7) return (val/1e7).toFixed(1).replace(/\.0$/,'') + ' Cr';
                             if (abs >= 1e5) return (val/1e5).toFixed(1).replace(/\.0$/,'') + ' L';
-                            if (abs >= 1e3) return (val/1e3).toFixed(0) + 'k';
+                            if (abs >= 1e3) return (val/1e3).toFixed(abs < 1e4 ? 2 : 1).replace(/0+$/,'').replace(/\\.$/,'') + 'k';
                             return sym + val;
                         }}},
                         x: { border: {display: false}, grid: { display: false }, ticks: { color: textColor } }
@@ -97,10 +96,7 @@ const AppCharts = {
     _initExpenseChart(isDark, textColor) {
         try {
             const expCtx = document.getElementById('expenseChart');
-            if (!expCtx) {
-                console.warn('Expense chart container not found');
-                return;
-            }
+            if (!expCtx) return;
             
             const existingExpChart = Chart.getChart(expCtx);
             if (existingExpChart) existingExpChart.destroy();
@@ -122,7 +118,9 @@ const AppCharts = {
             }
 
             if (!expenses || expenses.length === 0) {
-                console.warn('No expense data available');
+                // Data may change while a render is in flight; never leave a chart skeleton behind.
+                if (skeleton) skeleton.style.display = 'none';
+                expCtx.style.display = 'none';
                 return;
             }
             
@@ -130,7 +128,8 @@ const AppCharts = {
             expenses.forEach(e => { categoryTotals[e.category] = (categoryTotals[e.category] || 0) + e.amount; });
             
             if (Object.keys(categoryTotals).length === 0) {
-                console.warn('No category totals calculated');
+                if (skeleton) skeleton.style.display = 'none';
+                expCtx.style.display = 'none';
                 return;
             }
             
