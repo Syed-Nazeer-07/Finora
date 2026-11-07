@@ -53,28 +53,39 @@ function dashboard({ transactions = [], budgets = [], goals = [], insights = [] 
     return app.getDashboardHTML();
 }
 
-test('new accounts show one starter prompt, not empty charts or a false risk score', () => {
+function assertCompleteDashboard(html) {
+    for (const section of [
+        'Financial Health', 'This Month', 'Budgets',
+        'Recent Activity', 'Active Goals', 'Smart Insights',
+        'Balance Trend', 'Spending Breakdown',
+    ]) assert.ok(html.includes(section), 'Missing dashboard section: ' + section);
+    assert.match(html, /id="financial-health-card" class="bg-white/);
+    assert.match(html, /id="netWorthChart"/);
+}
+
+test('new accounts retain all original dashboard sections with useful empty states', () => {
     const html = dashboard();
-    assert.match(html, /Your dashboard is ready/);
+    assertCompleteDashboard(html);
+    assert.match(html, /No budgets set/);
+    assert.match(html, /No Goals Yet/);
+    assert.match(html, /No recent transactions/);
+    assert.match(html, /No spending data yet/);
+    assert.doesNotMatch(html, /id="expenseSkeleton"/);
     assert.doesNotMatch(html, /id="expenseChart"/);
-    assert.doesNotMatch(html, /id="netWorthChart"/);
-    assert.doesNotMatch(html, /skeleton skeleton-chart/);
-    assert.match(html, /id="financial-health-card" class="hidden /);
-    assert.match(html, /Monthly Summary \+ Budget Snapshot -->\s*<div class="hidden /);
-    assert.match(html, /Recent Activity \+ Goals \+ Insights -->\s*<div class="hidden /);
+    assert.doesNotMatch(html, /Your dashboard is ready/);
 });
 
-test('one month of spending shows only the useful spending chart', () => {
+test('a month with spending shows a functional spending chart, not an empty state', () => {
     const html = dashboard({ transactions: [
         { date: month(), type: 'expense', category: 'Food', description: 'Lunch', amount: 45 },
     ] });
+    assertCompleteDashboard(html);
     assert.match(html, /id="expenseChart"/);
-    assert.doesNotMatch(html, /id="netWorthChart"/);
-    assert.doesNotMatch(html, /Your dashboard is ready/);
-    assert.match(html, /id="financial-health-card" class="hidden /);
+    assert.doesNotMatch(html, /No spending data yet/);
+    assert.doesNotMatch(html, /id="expenseSkeleton"/);
 });
 
-test('real history shows both charts and restores populated dashboard cards', () => {
+test('populated budgets, goals, insights and charts all remain visible', () => {
     const html = dashboard({
         transactions: [
             { date: month(), type: 'expense', category: 'Food', description: 'Lunch', amount: 45 },
@@ -84,18 +95,18 @@ test('real history shows both charts and restores populated dashboard cards', ()
         goals: [{ id: 1, name: 'Vacation', current: 20, target: 100 }],
         insights: [{ type: 'info', icon: 'info', text: 'Useful financial insight' }],
     });
+    assertCompleteDashboard(html);
     assert.match(html, /id="expenseChart"/);
-    assert.match(html, /id="netWorthChart"/);
-    assert.match(html, /id="financial-health-card" class="flex /);
     assert.match(html, /Vacation/);
     assert.match(html, /Useful financial insight/);
 });
 
-test('older-only expenses do not show a current-month spending breakdown', () => {
+test('older expenses retain their card with a clear current-month empty message', () => {
     const html = dashboard({ transactions: [
         { date: month(-1), type: 'expense', category: 'Food', description: 'Dinner', amount: 60 },
         { date: month(-2), type: 'expense', category: 'Travel', description: 'Tickets', amount: 100 },
     ] });
-    assert.match(html, /id="netWorthChart"/);
+    assertCompleteDashboard(html);
     assert.doesNotMatch(html, /id="expenseChart"/);
+    assert.match(html, /No spending data yet/);
 });
