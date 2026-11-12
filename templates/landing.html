@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f8f8f3">
+  <meta name="description" content="Finora brings your transactions, budgets, savings goals and financial insights into one thoughtfully designed workspace. Make sense of your money.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Finora — Make sense of your money">
+  <meta property="og:description" content="A clearer view of what comes in, what goes out, and where you're headed.">
+  <meta property="og:url" content="https://finora-syed-nazeer-ss-projects.vercel.app/">
+  <link rel="canonical" href="https://finora-syed-nazeer-ss-projects.vercel.app/">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='branding/finora-mark.svg') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}">
+  <script defer src="{{ url_for('static', filename='js/landing.js') }}"></script>
+  <title>Finora — Make sense of your money</title>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header" id="top">
+    <div class="container nav-bar">
+      <a class="wordmark" href="#top" aria-label="Finora home"><img src="{{ url_for('static', filename='branding/finora-mark.svg') }}" alt="" width="36" height="36"><span>finora<span class="wordmark-dot">.</span></span></a>
+      <nav class="nav-links" aria-label="Main navigation">
+        <a href="#features">The platform</a>
+        <a href="#experience">How it works</a>
+        <a href="#principles">Our approach</a>
+      </nav>
+      <div class="nav-right">
+        <a class="nav-signin" href="{{ url_for('login_page') }}">Sign in</a>
+        <a class="btn btn-dark nav-cta" href="{{ url_for('login_page') }}">Open Finora <span aria-hidden="true">↗</span></a>
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu" aria-label="Open navigation"><span></span><span></span></button>
+      </div>
+    </div>
+    <nav id="mobile-menu" class="mobile-menu" aria-label="Mobile navigation" hidden>
+      <a href="#features">The platform</a>
+      <a href="#experience">How it works</a>
+      <a href="#principles">Our approach</a>
+      <a href="{{ url_for('login_page') }}">Sign in</a>
+      <a href="{{ url_for('login_page') }}">Open Finora</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <div class="eyebrow"><span class="eyebrow-line"></span> YOUR FINANCIAL SPACE, REIMAGINED</div>
+          <h1>Make sense<br>of your <span class="serif-underline">money.</span></h1>
+          <p class="hero-lead">A little less guessing. A lot more clarity. Bring your spending, budgets, and goals together in one considered place.</p>
+          <div class="hero-actions">
+            <a class="btn btn-dark btn-large" href="{{ url_for('login_page') }}">Get started <span aria-hidden="true">↗</span></a>
+            <a class="btn btn-light btn-large" href="#features">Explore Finora <span aria-hidden="true">↓</span></a>
+          </div>
+          <div class="hero-note"><span class="note-star" aria-hidden="true">✳</span> Built for real life, not spreadsheets.</div>
+        </div>
+        <div class="hero-visual" aria-label="Illustrative Finora dashboard showing sample financial data">
+          <div class="visual-backdrop visual-backdrop-one"></div><div class="visual-backdrop visual-backdrop-two"></div>
+          <div class="preview-window">
+            <div class="preview-topbar">
+              <div class="preview-brand"><img src="{{ url_for('static', filename='branding/finora-mark.svg') }}" alt="" width="25" height="25"><strong>finora</strong><span class="preview-divider"></span><span>Overview</span></div>
+              <div class="preview-avatar" aria-label="Sample profile">JD</div>
+            </div>
+            <div class="preview-content">
+              <div class="preview-heading"><div><span class="mini-kicker">YOUR FINANCIAL OVERVIEW</span><h2>Good morning, Jordan <span aria-hidden="true">✳</span></h2><p>Here's how things are looking.</p></div><span class="sample-pill">SAMPLE DATA</span></div>
+              <div class="period-tabs" role="group" aria-label="Switch illustrative preview period">
+                <button class="period-tab is-active" type="button" data-period="current" aria-pressed="true">This month</button>
+                <button class="period-tab" type="button" data-period="previous" aria-pressed="false">Last month</button>
+              </div>
+              <div class="kpi-row">
+                <div class="kpi-card kpi-card-feature"><span class="kpi-label">Total balance <span aria-hidden="true">↗</span></span><strong data-metric="balance">₹2,84,750</strong><span class="metric-trend"><span aria-hidden="true">↗</span> <span data-metric="balanceTrend">+8.2%</span> vs last period</span><div class="card-watermark" aria-hidden="true">₹</div></div>
+                <div class="kpi-card"><span class="kpi-label">Income</span><strong data-metric="income">₹82,400</strong><span class="kpi-hint"><i class="hint-dot green"></i> Money in</span></div>
+                <div class="kpi-card"><span class="kpi-label">Expenses</span><strong data-metric="expenses">₹32,150</strong><span class="kpi-hint"><i class="hint-dot coral"></i> Money out</span></div>
+              </div>
+              <div class="preview-bottom">
+                <div class="chart-panel">
+                  <div class="panel-header"><div><span class="mini-kicker">THE BIG PICTURE</span><h3>Cash flow</h3></div><div class="chart-legend"><span><i class="legend-dot ink"></i>Income</span><span><i class="legend-dot sage"></i>Expenses</span></div></div>
+                  <div class="chart-area" aria-hidden="true">
+                    <div class="chart-gridlines"><span></span><span></span><span></span><span></span></div>
+                    <div class="chart-columns">
+                      <div class="chart-pair"><i style="--bar-h:64%"></i><b style="--bar-h:41%"></b></div>
+                      <div class="chart-pair"><i style="--bar-h:80%"></i><b style="--bar-h:50%"></b></div>
+                      <div class="chart-pair"><i style="--bar-h:71%"></i><b style="--bar-h:35%"></b></div>
+                      <div class="chart-pair"><i style="--bar-h:94%"></i><b style="--bar-h:44%"></b></div>
+                      <div class="chart-pair"><i style="--bar-h:77%"></i><b style="--bar-h:36%"></b></div>
+                      <div class="chart-pair"><i style="--bar-h:88%"></i><b style="--bar-h:57%"></b></div>
+                    </div>
+                  </div>
+                  <div class="chart-labels" aria-hidden="true"><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span><span>Nov</span></div>
+                </div>
+                <div class="goal-panel"><div class="panel-header"><div><span class="mini-kicker">WORKING TOWARD</span><h3>Travel fund</h3></div><span class="goal-icon" aria-hidden="true">✳</span></div><div class="goal-ring" role="img" aria-label="Sample savings goal 72 percent complete"><div><strong>72%</strong><span>saved</span></div></div><div class="goal-bottom"><strong>Every step counts.</strong><span>₹72,000 of ₹1,00,000</span></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="floating-detail"><span class="floating-icon" aria-hidden="true">✓</span><div><strong>Small habits. Big progress.</strong><span>See what your money is doing.</span></div></div>
+          <p class="preview-disclaimer">Interactive product illustration · Example figures, not account data</p>
+        </div>
+      </div>
+      <div class="container hero-bottom"><span>THE WAY FORWARD, MADE CLEARER</span><span class="hero-bottom-pattern" aria-hidden="true">✳ &nbsp; ✳ &nbsp; ✳</span><span>FINORA / PERSONAL FINANCE</span></div>
+    </section>
+
+    <section class="value-strip" aria-label="Finora highlights"><div class="container value-items"><span>TRACK WHAT MATTERS</span><i></i><span>PLAN WITH PURPOSE</span><i></i><span>SEE THE FULL PICTURE</span><i></i><span>GROW AT YOUR PACE</span></div></section>
+
+    <section class="section features-section" id="features" aria-labelledby="features-title">
+      <div class="container">
+        <div class="section-caption"><span>01 / THE PLATFORM</span><span>LESS NOISE. MORE KNOW-HOW.</span></div>
+        <div class="section-heading"><h2 id="features-title">A clearer picture of<br><em>your financial life.</em></h2><p>From everyday purchases to long-term plans, all the essentials work better when they're connected.</p></div>
+        <div class="feature-grid">
+          <article class="feature-card feature-large">
+            <div class="feature-number">01 / UNDERSTAND</div><div class="feature-illustration overview-art" aria-hidden="true"><div class="overview-art-top"><span>Spending by category</span><span>THIS MONTH</span></div><div class="donut-art"><span class="donut-center"><strong>₹32.1k</strong><small>Total spending</small></span></div><div class="art-legend"><span><i class="leg leg-one"></i>Essentials</span><span><i class="leg leg-two"></i>Lifestyle</span><span><i class="leg leg-three"></i>Other</span></div></div><h3>Know where it all goes.</h3><p>Organize transactions, browse spending patterns, and make informed choices without digging through endless numbers.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-number">02 / PLAN</div><div class="feature-illustration budget-art" aria-hidden="true"><div class="budget-art-head"><span>Monthly budget</span><strong>78%</strong></div><div class="budget-track"><span></span></div><div class="budget-art-foot"><span>₹15,600 used</span><span>₹20,000 limit</span></div><div class="budget-art-status"><span>✳</span> Keep your plans in view.</div></div><h3>Give every plan a place.</h3><p>Set spending boundaries and see your progress toward the goals that matter most.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-number">03 / GROW</div><div class="feature-illustration growth-art" aria-hidden="true"><span>YOUR PROGRESS</span><svg viewBox="0 0 320 130" role="presentation" focusable="false"><defs><linearGradient id="growthFade" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#b4dfad" stop-opacity=".55"/><stop offset="100%" stop-color="#b4dfad" stop-opacity="0"/></linearGradient></defs><path d="M0 118 C50 115,62 95,100 99 S164 79,195 81 S261 34,320 17 L320 130 L0 130Z" fill="url(#growthFade)"/><path d="M0 118 C50 115,62 95,100 99 S164 79,195 81 S261 34,320 17" stroke="#23604a" fill="none" stroke-width="4" stroke-linecap="round"/><circle cx="320" cy="17" r="7" fill="#23604a" stroke="#e7f2e5" stroke-width="6"/></svg></div><h3>See the bigger picture.</h3><p>Follow savings goals, investments, and financial trends from the same workspace.</p>
+          </article>
+        </div>
+        <p class="art-note">Illustrations use sample numbers to demonstrate the interface.</p>
+      </div>
+    </section>
+
+    <section class="section workflow-section" id="experience" aria-labelledby="experience-title">
+      <div class="container workflow-grid">
+        <div class="workflow-intro"><div class="section-caption"><span>02 / HOW IT WORKS</span></div><h2 id="experience-title">A good plan starts<br>with <em>a little clarity.</em></h2><p>No complicated rituals. Just the useful things, laid out in a way that makes sense.</p><a class="text-cta" href="{{ url_for('login_page') }}">Step into Finora <span aria-hidden="true">↗</span></a></div>
+        <div class="steps">
+          <div class="step"><div class="step-index">01</div><div><h3>Bring it together.</h3><p>Record income, expenses, and investments in one organized workspace.</p></div><span aria-hidden="true" class="step-symbol">↗</span></div>
+          <div class="step"><div class="step-index">02</div><div><h3>Make room for your goals.</h3><p>Build budgets and savings targets around your real priorities.</p></div><span aria-hidden="true" class="step-symbol">↗</span></div>
+          <div class="step"><div class="step-index">03</div><div><h3>Move with confidence.</h3><p>Use visual summaries and progress tracking to understand your next step.</p></div><span aria-hidden="true" class="step-symbol">↗</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section approach-section" id="principles" aria-labelledby="approach-title">
+      <div class="container approach-grid">
+        <div class="approach-statement"><span class="section-kicker">03 / THE APPROACH</span><h2 id="approach-title">Less clutter.<br>More <em>control.</em></h2><p>Finora is built around a simple idea: understanding your own financial picture should feel straightforward.</p><div class="approach-seal"><span aria-hidden="true">✳</span> YOUR SPACE. YOUR PACE.</div></div>
+        <div class="approach-points"><article><span class="point-icon">01</span><div><h3>A place for the details</h3><p>Transactions, budgets, goals, and insights belong together, not scattered across tabs and spreadsheets.</p></div></article><article><span class="point-icon">02</span><div><h3>Useful, not overwhelming</h3><p>Thoughtful summaries put the numbers you care about in focus, with room to explore more.</p></div></article><article><span class="point-icon">03</span><div><h3>Clear boundaries</h3><p>Finora is a tracker and planning workspace. It doesn't connect to banks, transfer money, or trade on your behalf.</p></div></article></div>
+      </div>
+    </section>
+
+    <section class="faq-section section" aria-labelledby="faq-title"><div class="container faq-grid"><div><div class="section-caption"><span>04 / GOOD TO KNOW</span></div><h2 id="faq-title">A few things<br><em>worth knowing.</em></h2></div><div class="faq-list">
+      <details><summary>Can Finora connect to my bank account?<span aria-hidden="true">+</span></summary><p>No. Finora is built for manually tracking and organizing your finances; it doesn't sync bank accounts or move money.</p></details>
+      <details><summary>What can I track in Finora?<span aria-hidden="true">+</span></summary><p>Income, expenses, categories, budgets, savings goals, investments, and financial summaries.</p></details>
+      <details><summary>Can I use it on my phone?<span aria-hidden="true">+</span></summary><p>Finora is a responsive web application designed for modern desktop and mobile browsers.</p></details>
+      <details><summary>Is this financial or investment advice?<span aria-hidden="true">+</span></summary><p>No. Finora helps you organize and review your own information; its charts and summaries aren't professional financial advice.</p></details>
+    </div></div></section>
+
+    <section class="closing"><div class="container closing-inner"><div><span class="closing-kicker">IT STARTS WITH UNDERSTANDING.</span><h2>Good things grow<br>from <em>clearer thinking.</em></h2><p>Make a little more sense of your money, starting today.</p><a class="btn btn-lime btn-large" href="{{ url_for('login_page') }}">Open Finora <span aria-hidden="true">↗</span></a></div><div class="closing-orb" aria-hidden="true"><div class="orb-inner"><span>f.</span></div><div class="orb-orbit"></div></div></div></section>
+  </main>
+  <footer class="footer"><div class="container footer-inner"><a class="wordmark" href="#top" aria-label="Back to top"><img src="{{ url_for('static', filename='branding/finora-mark.svg') }}" alt="" width="32" height="32"><span>finora<span class="wordmark-dot">.</span></span></a><p>Make sense of your money.</p><div class="footer-links"><a href="#features">Features</a><a href="{{ url_for('login_page') }}">Sign in</a><a href="https://github.com/Syed-Nazeer-07/Finora" target="_blank" rel="noopener noreferrer">GitHub <span aria-hidden="true">↗</span></a></div><span class="copyright">© 2026 Finora · Built by Syed Nazeer S</span></div></footer>
+</body>
+</html>
