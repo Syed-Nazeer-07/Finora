@@ -479,6 +479,14 @@ def log_request():
 
 @app.route("/")
 def index():
+    # New visitors see the public site; signed-in users keep their existing dashboard.
+    if not session.get("user_id"):
+        return render_template("landing.html")
+    return render_template("index.html")
+
+
+@app.route("/app")
+def dashboard_page():
     if not session.get("user_id"):
         return redirect(url_for("login_page"))
     return render_template("index.html")
